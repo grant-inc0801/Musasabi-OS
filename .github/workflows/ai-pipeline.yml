@@ -24,46 +24,54 @@ jobs:
         run: |
           pip install openai requests
 
-      # --------------------------------------------------
-      # STEP 1: ChatGPTが実装用の技術指示書を作成
-      # --------------------------------------------------
       - name: 1. ChatGPT - Generate Specification
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
-          python - <<EOF
+          cat > generate_spec.py <<'PY'
           import os
           from openai import OpenAI
 
           client = OpenAI()
-          prompt = f"現在のタスク指示です。これを元に実装用の『技術指示書』をMarkdownで作成して。\n\nタスク: {os.getenv('ISSUE_TITLE')}\n詳細: {os.getenv('ISSUE_BODY')}"
-          
+
+          prompt = f"""現在のタスク指示です。
+          これを元に実装用の『技術指示書』をMarkdownで作成してください。
+
+          タスク: {os.getenv('ISSUE_TITLE')}
+          詳細: {os.getenv('ISSUE_BODY')}
+          """
+
           res = client.chat.completions.create(
               model="gpt-4o",
               messages=[{"role": "user", "content": prompt}]
           )
+
           with open("spec.md", "w", encoding="utf-8") as f:
               f.write(res.choices[0].message.content)
-          EOF
+          PY
+          python generate_spec.py
 
-      # --------------------------------------------------
-      # STEP 2: Codex (GPT-4o) が指示書からコードを生成
-      # --------------------------------------------------
-      - name: 2. Codex (GPT-4o) - Code Generation
+      - name: 2. Codex - Code Generation
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          python - <<EOF
+          cat > generate_code.py <<'PY'
           from openai import OpenAI
 
           client = OpenAI()
+
           with open("spec.md", "r", encoding="utf-8") as f:
               spec = f.read()
 
-          prompt = f"以下の指示書に従って、プログラムコードのみを記述してください。解説文は一切省き、コードのみを出力してください。\n\n【指示書】\n{spec}"
-          
+          prompt = f"""以下の指示書に従って、プログラムコードのみを記述してください。
+          解説文は一切省き、コードのみを出力してください。
+
+          【指示書】
+          {spec}
+          """
+
           res = client.chat.completions.create(
               model="gpt-4o",
               messages=[
@@ -71,13 +79,12 @@ jobs:
                   {"role": "user", "content": prompt}
               ]
           )
+
           with open("main_app.py", "w", encoding="utf-8") as f:
               f.write(res.choices[0].message.content)
-          EOF
+          PY
+          python generate_code.py
 
-      # --------------------------------------------------
-      # STEP 3: 生成したコードを自動でリポジトリに保存（コミット）
-      # --------------------------------------------------
       - name: 3. Commit Code Changes
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -86,34 +93,36 @@ jobs:
           git commit -m "AI Auto-Commit: Completed task ${{ github.event.issue.title }}" || echo "No changes to commit"
           git push
 
-      # --------------------------------------------------
-      # STEP 4: ChatGPTが「現在の完了状況」を見て、次のタスク（Issue）を自動作成
-      # --------------------------------------------------
       - name: 4. ChatGPT - Generate Next Task and Loop
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CURRENT_TASK: ${{ github.event.issue.title }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          python - <<EOF
+          cat > create_next_issue.py <<'PY'
           import os
           import json
           import requests
           from openai import OpenAI
 
-          # 現在のコードと指示書を読み込んで、次に何をすべきかChatGPTに考えさせる
           with open("main_app.py", "r", encoding="utf-8") as f:
               code = f.read()
 
           client = OpenAI()
+
           prompt = f"""
-          あなたは自律型開発AIです。現在のタスク「{os.getenv('CURRENT_TASK')}」が完了し、コードが保存されました。
-          現在のコードを元に、次に実装すべき機能や拡張（ステップアップ）を1つ考えて、次のIssueとして出力してください。
-          
-          出力は必ず以下のJSON形式でのみ出力してください。解説などのテキストは一切含めないでください。
+          あなたはMusasabi OSのAIプロジェクトマネージャーです。
+          現在のタスク「{os.getenv('CURRENT_TASK')}」が完了しました。
+
+          現在のコードを元に、次に実装すべき機能を1つだけ考えて、
+          GitHub Issue用のJSONを作成してください。
+
+          必ず以下のJSON形式のみで返してください。
+
           {{
-            "title": "次回のタスクタイトル（例: [STEP-02] 〇〇機能の追加）",
-            "body": "次に実装すべき詳細な指示や要件"
+            "title": "[NEXT] 次に実装する機能名",
+            "body": "目的、実装内容、完了条件を含む詳細"
           }}
 
           【現在のコード】
@@ -122,34 +131,39 @@ jobs:
 
           res = client.chat.completions.create(
               model="gpt-4o",
-              response_format={{ "type": "json_object" }}, # JSONで出力させる
+              response_format={"type": "json_object"},
               messages=[{"role": "user", "content": prompt}]
           )
-          
-          next_task = json.loads(res.choices[0].message.content)
-          
-          # GitHub APIを使って、自動で新しいIssueを作成して投稿する（これでループが回る）
-          repo = os.getenv("GITHUB_REPOSITORY")
-          url = f"https://api.github.com/repos/{{repo}}/issues"
-          headers = {{
-              "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
-              "Accept": "application/vnd.github.v3+json"
-          }}
-          data = {{
-              "title": next_task["title"],
-              "body": next_task["body"]
-          }}
-          
-          response = requests.post(url, headers=headers, json=data)
-          if response.status_key == 201:
-              print(f"成功: 次のタスク『{{next_task['title']}}』を自動投稿しました。ループします。")
-          else:
-              print("エラー: Issueの自動投稿に失敗しました。", response.text)
-          EOF
 
-      # --------------------------------------------------
-      # STEP 5: 終わった現在のIssueを自動で「Close（完了）」にする
-      # --------------------------------------------------
+          next_task = json.loads(res.choices[0].message.content)
+
+          repo = os.getenv("GITHUB_REPOSITORY")
+          url = f"https://api.github.com/repos/{repo}/issues"
+
+          headers = {
+              "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
+              "Accept": "application/vnd.github+json",
+              "X-GitHub-Api-Version": "2022-11-28"
+          }
+
+          data = {
+              "title": next_task["title"],
+              "body": next_task["body"],
+              "labels": ["ai-task", "musasabi-os"]
+          }
+
+          response = requests.post(url, headers=headers, json=data)
+
+          if response.status_code == 201:
+              print(f"成功: 次のタスク『{next_task['title']}』を自動投稿しました。")
+          else:
+              print("エラー: Issueの自動投稿に失敗しました。")
+              print(response.status_code)
+              print(response.text)
+              raise SystemExit(1)
+          PY
+          python create_next_issue.py
+
       - name: 5. Close Current Issue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
