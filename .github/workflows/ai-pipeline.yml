@@ -1,0 +1,128 @@
+name: AI Multi-Agent Pipeline
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  ai_pipeline:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          pip install openai anthropic
+
+      # --------------------------------------------------
+      # STEP 1: ChatGPT (GPT-4o) が要望から指示書を作成
+      # --------------------------------------------------
+      - name: 1. ChatGPT - Generate Specification
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          python - <<EOF
+          import os
+          from openai import OpenAI
+
+          client = OpenAI()
+          prompt = f"要望を元に、実装用の技術指示書（要件、タスク、構成）をMarkdownで作成して。\n\nタイトル: {os.getenv('ISSUE_TITLE')}\n内容: {os.getenv('ISSUE_BODY')}"
+          
+          res = client.chat.completions.create(
+              model="gpt-4o",
+              messages=[{"role": "user", "content": prompt}]
+          )
+          with open("spec.md", "w", encoding="utf-8") as f:
+              f.write(res.choices[0].message.content)
+          print("ChatGPT: 指示書の作成が完了しました。")
+          EOF
+
+      # --------------------------------------------------
+      # STEP 2: Codexの代わり (GPT-4o) が指示書からコードを生成
+      # --------------------------------------------------
+      - name: 2. Codex (GPT-4o) - Code Generation
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python - <<EOF
+          import os
+          from openai import OpenAI
+
+          client = OpenAI()
+          with open("spec.md", "r", encoding="utf-8") as f:
+              spec = f.read()
+
+          prompt = f"以下の指示書に従って、実行可能なソースコードのみを記述してください。余計な解説文は一切省いてコードブロック（あるいはプログラム単体）のみを出力してください。\n\n【指示書】\n{spec}"
+          
+          res = client.chat.completions.create(
+              model="gpt-4o",
+              messages=[
+                  {"role": "system", "content": "あなたはコード出力専門のCodexエンジンです。解説は一切せずコードのみを返します。"},
+                  {"role": "user", "content": prompt}
+              ]
+          )
+          with open("generated_code.py", "w", encoding="utf-8") as f:
+              f.write(res.choices[0].message.content)
+          print("Codex: コードの一次生成が完了しました。")
+          EOF
+
+      # --------------------------------------------------
+      # STEP 3: Claude がコードをレビュー＆リファクタリングして完成させる
+      # --------------------------------------------------
+      - name: 3. Claude - Review and Refine
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python - <<EOF
+          import os
+          import anthropic
+
+          client = anthropic.Anthropic()
+          with open("spec.md", "r", encoding="utf-8") as f:
+              spec = f.read()
+          with open("generated_code.py", "r", encoding="utf-8") as f:
+              raw_code = f.read()
+
+          prompt = f"指示書と、それに基づき生成されたコードがあります。バグ、エッジケース、可読性をチェックし、より完成度の高い最終的なコードに仕上げてください。\n\n【指示書】\n{spec}\n\n【生成されたコード】\n{raw_code}"
+          
+          message = client.messages.create(
+              model="claude-3-5-sonnet-20240620",
+              max_tokens=4000,
+              messages=[{"role": "user", "content": prompt}]
+          )
+          with open("final_output.py", "w", encoding="utf-8") as f:
+              f.write(message.content[0].text)
+          print("Claude: 最終レビューとコードのブラッシュアップが完了しました。")
+          EOF
+
+      # --------------------------------------------------
+      # STEP 4: 成果物をPull Requestとして提出
+      # --------------------------------------------------
+      - name: 4. Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "AI Pipeline: Auto generated features for Issue #${{ github.event.issue.number }}"
+          title: "🤖 AI生成コード: Issue #${{ github.event.issue.number }}"
+          body: |
+            AI連携パイプラインによってコードが自動生成されました。
+            
+            ### 📜 1. ChatGPTによる指示書
+            $(cat spec.md)
+            
+            ### 🚀 3. Claudeによる最終コード
+            生成された `final_output.py` を確認・マージしてください。
+          branch: "ai-ref-issue-${{ github.event.issue.number }}"
