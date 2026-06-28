@@ -166,6 +166,6 @@ jobs:
 
       - name: 5. Close Current Issue
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.AI_PAT }}
         run: |
           gh issue close ${{ github.event.issue.number }} --comment "AIによってタスクが完了したため、このIssueを閉じます。次のタスクへ移行しました。"
