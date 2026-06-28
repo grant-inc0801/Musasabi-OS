@@ -1,68 +1,180 @@
-# 技術指示書
+# 技術指示書: Workflow Foundation Implementation
 
-## タスク概要
-**タスク: Musasabi OS 引き継ぎ準備と現状整理**  
-現在Codexで開発中のプロジェクトをMusasabi OSとして引き継ぎ、今後の自動開発ループに接続できるよう現状を整理する。
+## 概要
 
-## 実施内容
+本書は、Musasabi AI の最小限の Workflow Foundation を実装するための技術指示書です。この実装は、ワークフローデータモデル、リポジトリ、サービス、シードワークフロー、デスクトップステータス表示の構築を目的とし、ワークフローの実行は含みません。
 
-1. **プロジェクト構成の確認**
-   - 使用技術: プロジェクトで使用されている技術スタックをリストアップして文書化する。
-   - ディレクトリ構成: プロジェクトの現在のディレクトリ構造を把握し、整理する。
-   - 実装済み機能: 現在実装されている機能をリスト化する。
-   - 未実装機能: 実装予定で未完了の機能を明確にする。
-   - エラー箇所: 既知のエラーやバグを特定し、文書化する。
-   - 不要ファイル: プロジェクト内で使用されていない不要なファイルを特定する。
-   - 重複コード: コードの重複を検出し、削減する。
+---
 
-2. **docsフォルダの作成**
-   - プロジェクトルートに`docs`フォルダを作成する。
+## 対象範囲
 
-3. **必要なファイルの作成**
-   - `docs`フォルダ内に以下のMarkdownファイルを作成する。
-     - `PROJECT_OVERVIEW.md`
-     - `CURRENT_CODE_AUDIT.md`
-     - `MUSASABI_OS_CONCEPT.md`
-     - `INTEGRATION_PLAN.md`
-     - `DEVELOPMENT_RULES.md`
-     - `ROADMAP.md`
-     - `CHANGELOG.md`
+以下のコンポーネントを実装します:
 
-4. **CURRENT_CODE_AUDIT.mdの整理**
-   - 現在のコード状況を「CURRENT_CODE_AUDIT.md」に記載する。
+- ワークフローリポジトリ
+- ワークフローサービス
+- SQLite マイグレーション
+- ワークフローモデル
+- ワークフロータスクモデル
+- シードワークフロー
+- デスクトップUIのステータス表示
+- 単体テスト
 
-5. **INTEGRATION_PLAN.mdの整備**
-   - 既存プロジェクトをMusasabi OSへ統合するための手順を「INTEGRATION_PLAN.md」に記載する。
+---
 
-6. **ROADMAP.mdの作成**
-   - 以下の開発順序で`ROADMAP.md`を整備する。
+## 必要なファイル
 
-     **Phase 1**
-     - Musasabi OS 基盤
-     - ダッシュボード
-     - AI部署メニュー
-     - AIチャット基盤
+以下のファイルを作成してください:
 
-     **Phase 2**
-     - AI CEO
-     - AI PM
-     - AI開発部
-     - GitHub Issue管理
+```
+packages/workflow/src/
+  - workflowRepository.js
+  - workflowService.js
+  - index.js
+```
 
-     **Phase 3**
-     - Codex連携
-     - AIレビュー
-     - Issue自動生成
-     - AI社員による機能提案
+---
 
-7. **README.mdの更新**
-   - 現在の状況
-   - 起動方法
-   - 開発ルール
-   - 今後のロードマップ
+## SQLite マイグレーション
 
-## 注意事項
-- 本タスクでは大きな機能実装は行わない。
-- 目的は、既存コードを破損せず、Musasabi OSとして引き継ぐ準備を整えることである。
+### テーブル: `workflows`
 
-以上が、Musasabi OS引き継ぎ準備に向けた技術指示書になります。各ステップに従い、必要な資料を作成し、プロジェクトを整理してください。
+- カラム:
+  - id
+  - title
+  - description
+  - status
+  - created_by
+  - created_at
+  - updated_at
+
+### テーブル: `workflow_tasks`
+
+- カラム:
+  - id
+  - workflow_id
+  - title
+  - task_type
+  - status
+  - order_index
+  - created_at
+  - updated_at
+
+---
+
+## シードワークフロー
+
+### 初期ワークフロー
+
+- タイトル: MUSA Full Auto Approval Workflow
+- 説明: Workflow for requesting approval before switching MUSA-001 to full auto mode.
+- 状態: ready
+
+#### タスク:
+1. 承認リクエストを作成
+   - task_type: approval
+   - status: ready
+   - order_index: 1
+
+2. CEOの承認を待つ
+   - task_type: human_review
+   - status: waiting
+   - order_index: 2
+
+---
+
+## サービスメソッド
+
+- `createWorkflow()`
+- `getWorkflow()`
+- `listWorkflows()`
+- `addTask()`
+- `listTasks()`
+
+---
+
+## リポジトリメソッド
+
+- `createWorkflow()`
+- `findWorkflowById()`
+- `listWorkflows()`
+- `createTask()`
+- `listTasksByWorkflowId()`
+
+---
+
+## UI
+
+表示内容:
+
+- Workflow Engine: Ready
+- ワークフロー: MUSA Full Auto Approval Workflow
+- ワークフローステータス: ready
+- タスク: 2
+
+---
+
+## テスト
+
+以下のテストを実装してください:
+
+- `workflows` テーブルが存在する
+- `workflow_tasks` テーブルが存在する
+- ワークフローの作成
+- ワークフローの一覧表示
+- タスクの作成
+- タスクの一覧表示
+- シードワークフローが存在する
+- デスクトップブートストラップが Musasabi OS と MUSA-001 を表示する
+
+---
+
+## ドキュメント更新
+
+以下を更新してください:
+
+- `README.md`
+- `CHANGELOG.md`
+
+---
+
+## 制約
+
+以下の実装は行わないでください:
+
+- ワークフローの実行
+- リトライ
+- ロールバック
+- プラグイン統合
+- スケジューラ統合
+- 外部API
+
+---
+
+## 受け入れ基準
+
+- WorkflowRepository が実装されている
+- WorkflowService が実装されている
+- `workflows` テーブルが存在する
+- `workflow_tasks` テーブルが存在する
+- シードワークフローが存在する
+- デスクトップUIが Workflow Engine Ready を表示すること
+- テストが通過する
+- README が更新されている
+- CHANGELOG が更新されている
+
+---
+
+## 納品物
+
+レポート内容:
+
+- 変更されたファイル
+- テスト結果
+- 提案されるコミットメッセージ
+
+GitHub へのプッシュは不要です。
+
+提案されるコミット:  
+`feat(workflow): implement workflow foundation`
+
+---
