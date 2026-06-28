@@ -99,8 +99,8 @@ jobs:
           prompt = f"指示書と、それに基づき生成されたコードがあります。バグ、エッジケース、可読性をチェックし、より完成度の高い最終的なコードに仕上げてください。\n\n【指示書】\n{spec}\n\n【生成されたコード】\n{raw_code}"
           
           message = client.messages.create(
-              model="claude-3-5-sonnet-20240620",
-              max_tokens=4000,
+              model="claude-sonnet-4-6-20230601",
+              max_tokens=1024,
               messages=[{"role": "user", "content": prompt}]
           )
           with open("final_output.py", "w", encoding="utf-8") as f:
