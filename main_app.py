@@ -1,37 +1,42 @@
-```bash
-mkdir docs
-touch docs/PROJECT_OVERVIEW.md
-touch docs/CURRENT_CODE_AUDIT.md
-touch docs/MUSASABI_OS_CONCEPT.md
-touch docs/INTEGRATION_PLAN.md
-touch docs/DEVELOPMENT_RULES.md
-touch docs/ROADMAP.md
-touch docs/CHANGELOG.md
+```python
+def generate_next_task(data):
+    # Ensure task data is processed correctly
+    labels = data.get('labels', [])
+    assignees = data.get('assignees', [])
+    title = data.get('title', "Default Title")
+    body = data.get('body', "Default Body")
 
-echo "# PROJECT OVERVIEW" > docs/PROJECT_OVERVIEW.md
-# Add relevant content to PROJECT_OVERVIEW.md
+    # Fix: Check data types and correct set usage
+    if isinstance(labels, list) and isinstance(assignees, list):
+        try:
+            # Assuming `create_issue` is a function that integrates with GitHub API
+            return create_issue(
+                title=title,
+                body=body,
+                labels=[str(label) for label in labels],  # ensure labels are strings
+                assignees=[str(assignee) for assignee in assignees]  # ensure assignees are strings
+            )
+        except Exception as e:
+            print(f"Failed to create task. Error: {e}")
+            return None
+    else:
+        print("Invalid data format for labels or assignees")
+        return None
 
-echo "# CURRENT CODE AUDIT" > docs/CURRENT_CODE_AUDIT.md
-# Add relevant content to CURRENT_CODE_AUDIT.md: usage, directory, implemented and missing features, errors, unnecessary files, duplicate code
+def create_issue(title, body, labels, assignees):
+    # Simulated function to create an issue in GitHub
+    print(f"Issue created with title: {title}")
+    print(f"Labels: {labels}")
+    print(f"Assignees: {assignees}")
+    return {"title": title, "body": body, "labels": labels, "assignees": assignees}
 
-echo "# MUSASABI OS CONCEPT" > docs/MUSASABI_OS_CONCEPT.md
-# Add relevant content to MUSASABI_OS_CONCEPT.md
+# Example usage and data validation
+next_task_data = {
+    "labels": ["bug", "urgent"],
+    "assignees": ["developer1", "developer2"],
+    "title": "Resolve TypeError",
+    "body": "Fix the unhashable dict type error."
+}
 
-echo "# INTEGRATION PLAN" > docs/INTEGRATION_PLAN.md
-# Add step-by-step integration instructions to INTEGRATION_PLAN.md
-
-echo "# DEVELOPMENT RULES" > docs/DEVELOPMENT_RULES.md
-# Add development rules content to DEVELOPMENT_RULES.md
-
-echo "# ROADMAP" > docs/ROADMAP.md
-# Add content under each phase in ROADMAP.md:
-# Phase 1: Musasabi OS Foundational, Dashboard, AI Department Menu, AI Chat Platform
-# Phase 2: AI CEO, AI PM, AI Development, GitHub Issue Management
-# Phase 3: Codex Integration, AI Review, Issue Auto-generation, AI Employee Feature Proposals
-
-echo "# CHANGELOG" > docs/CHANGELOG.md
-# Add relevant changelog content to CHANGELOG.md
-
-echo "# README" > README.md
-# Update README.md with current status, startup methods, development rules, and future roadmap
+generate_next_task(next_task_data)
 ```
