@@ -22,7 +22,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install openai requesta
+          pip install openai requests
 
       # --------------------------------------------------
       # STEP 1: ChatGPTが実装用の技術指示書を作成
