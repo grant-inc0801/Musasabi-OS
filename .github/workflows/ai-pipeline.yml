@@ -1,4 +1,4 @@
-name: AI Multi-Agent Pipeline
+name: Autonomous AI Developer Loop
 
 on:
   issues:
@@ -10,7 +10,6 @@ jobs:
     permissions:
       issues: write
       contents: write
-      pull-requests: write
 
     steps:
       - name: Checkout Repository
@@ -26,7 +25,7 @@ jobs:
           pip install openai
 
       # --------------------------------------------------
-      # STEP 1: ChatGPT (GPT-4o) が要望から指示書を作成
+      # STEP 1: ChatGPTが実装用の技術指示書を作成
       # --------------------------------------------------
       - name: 1. ChatGPT - Generate Specification
         env:
@@ -39,7 +38,7 @@ jobs:
           from openai import OpenAI
 
           client = OpenAI()
-          prompt = f"要望を元に、実装用の技術指示書（要件、タスク、構成）をMarkdownで作成して。\n\nタイトル: {os.getenv('ISSUE_TITLE')}\n内容: {os.getenv('ISSUE_BODY')}"
+          prompt = f"現在のタスク指示です。これを元に実装用の『技術指示書』をMarkdownで作成して。\n\nタスク: {os.getenv('ISSUE_TITLE')}\n詳細: {os.getenv('ISSUE_BODY')}"
           
           res = client.chat.completions.create(
               model="gpt-4o",
@@ -47,53 +46,112 @@ jobs:
           )
           with open("spec.md", "w", encoding="utf-8") as f:
               f.write(res.choices[0].message.content)
-          print("ChatGPT: 指示書の作成が完了しました。")
           EOF
 
       # --------------------------------------------------
-      # STEP 2: Codexの代わり (GPT-4o) が指示書から最終コードを生成
+      # STEP 2: Codex (GPT-4o) が指示書からコードを生成
       # --------------------------------------------------
       - name: 2. Codex (GPT-4o) - Code Generation
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           python - <<EOF
-          import os
           from openai import OpenAI
 
           client = OpenAI()
           with open("spec.md", "r", encoding="utf-8") as f:
               spec = f.read()
 
-          prompt = f"以下の指示書に従って、実行可能なソースコードのみを記述してください。余計な解説文は一切省いてコードブロック（あるいはプログラム単体）のみを出力してください。\n\n【指示書】\n{spec}"
+          prompt = f"以下の指示書に従って、プログラムコードのみを記述してください。解説文は一切省き、コードのみを出力してください。\n\n【指示書】\n{spec}"
           
           res = client.chat.completions.create(
               model="gpt-4o",
               messages=[
-                  {"role": "system", "content": "あなたはコード出力専門のCodexエンジンです。解説は一切せず、そのまま動くプログラムコードのみを返します。"},
+                  {"role": "system", "content": "あなたはコード出力専門のエンジニアです。"},
                   {"role": "user", "content": prompt}
               ]
           )
-          with open("final_output.py", "w", encoding="utf-8") as f:
+          with open("main_app.py", "w", encoding="utf-8") as f:
               f.write(res.choices[0].message.content)
-          print("Codex: コードの生成が完了しました。")
           EOF
 
       # --------------------------------------------------
-      # STEP 3: 成果物をPull Requestとして提出
+      # STEP 3: 生成したコードを自動でリポジトリに保存（コミット）
       # --------------------------------------------------
-      - name: 3. Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "AI Pipeline: Auto generated features for Issue #${{ github.event.issue.number }}"
-          title: "🤖 AI生成コード: Issue #${{ github.event.issue.number }}"
-          body: |
-            OpenAI（ChatGPT & Codex）の連携パイプラインによってコードが自動生成されました。
-            
-            ### 📜 1. ChatGPTによる指示書
-            $(cat spec.md)
-            
-            ### 🚀 2. Codexによる生成コード
-            生成された `final_output.py` を確認・マージしてください。
-          branch: "ai-ref-issue-${{ github.event.issue.number }}"
+      - name: 3. Commit Code Changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add main_app.py spec.md
+          git commit -m "AI Auto-Commit: Completed task ${{ github.event.issue.title }}" || echo "No changes to commit"
+          git push
+
+      # --------------------------------------------------
+      # STEP 4: ChatGPTが「現在の完了状況」を見て、次のタスク（Issue）を自動作成
+      # --------------------------------------------------
+      - name: 4. ChatGPT - Generate Next Task and Loop
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURRENT_TASK: ${{ github.event.issue.title }}
+        run: |
+          python - <<EOF
+          import os
+          import json
+          import requests
+          from openai import OpenAI
+
+          # 現在のコードと指示書を読み込んで、次に何をすべきかChatGPTに考えさせる
+          with open("main_app.py", "r", encoding="utf-8") as f:
+              code = f.read()
+
+          client = OpenAI()
+          prompt = f"""
+          あなたは自律型開発AIです。現在のタスク「{os.getenv('CURRENT_TASK')}」が完了し、コードが保存されました。
+          現在のコードを元に、次に実装すべき機能や拡張（ステップアップ）を1つ考えて、次のIssueとして出力してください。
+          
+          出力は必ず以下のJSON形式でのみ出力してください。解説などのテキストは一切含めないでください。
+          {{
+            "title": "次回のタスクタイトル（例: [STEP-02] 〇〇機能の追加）",
+            "body": "次に実装すべき詳細な指示や要件"
+          }}
+
+          【現在のコード】
+          {code}
+          """
+
+          res = client.chat.completions.create(
+              model="gpt-4o",
+              response_format={{ "type": "json_object" }}, # JSONで出力させる
+              messages=[{"role": "user", "content": prompt}]
+          )
+          
+          next_task = json.loads(res.choices[0].message.content)
+          
+          # GitHub APIを使って、自動で新しいIssueを作成して投稿する（これでループが回る）
+          repo = os.getenv("GITHUB_REPOSITORY")
+          url = f"https://api.github.com/repos/{{repo}}/issues"
+          headers = {{
+              "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
+              "Accept": "application/vnd.github.v3+json"
+          }}
+          data = {{
+              "title": next_task["title"],
+              "body": next_task["body"]
+          }}
+          
+          response = requests.post(url, headers=headers, json=data)
+          if response.status_key == 201:
+              print(f"成功: 次のタスク『{{next_task['title']}}』を自動投稿しました。ループします。")
+          else:
+              print("エラー: Issueの自動投稿に失敗しました。", response.text)
+          EOF
+
+      # --------------------------------------------------
+      # STEP 5: 終わった現在のIssueを自動で「Close（完了）」にする
+      # --------------------------------------------------
+      - name: 5. Close Current Issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue close ${{ github.event.issue.number }} --comment "AIによってタスクが完了したため、このIssueを閉じます。次のタスクへ移行しました。"
