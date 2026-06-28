@@ -1,158 +1,37 @@
-```javascript
-// packages/workflow/src/workflowRepository.js
-const sqlite3 = require('sqlite3').verbose();
+```bash
+mkdir docs
+touch docs/PROJECT_OVERVIEW.md
+touch docs/CURRENT_CODE_AUDIT.md
+touch docs/MUSASABI_OS_CONCEPT.md
+touch docs/INTEGRATION_PLAN.md
+touch docs/DEVELOPMENT_RULES.md
+touch docs/ROADMAP.md
+touch docs/CHANGELOG.md
 
-class WorkflowRepository {
-  constructor(db) {
-    this.db = db;
-  }
+echo "# PROJECT OVERVIEW" > docs/PROJECT_OVERVIEW.md
+# Add relevant content to PROJECT_OVERVIEW.md
 
-  createWorkflow(workflow) {
-    return new Promise((resolve, reject) => {
-      const { title, description, status, created_by } = workflow;
-      const createdAt = new Date().toISOString();
-      this.db.run(
-        `INSERT INTO workflows (title, description, status, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`,
-        [title, description, status, created_by, createdAt, createdAt],
-        function (err) {
-          if (err) reject(err);
-          else resolve(this.lastID);
-        }
-      );
-    });
-  }
+echo "# CURRENT CODE AUDIT" > docs/CURRENT_CODE_AUDIT.md
+# Add relevant content to CURRENT_CODE_AUDIT.md: usage, directory, implemented and missing features, errors, unnecessary files, duplicate code
 
-  findWorkflowById(id) {
-    return new Promise((resolve, reject) => {
-      this.db.get(`SELECT * FROM workflows WHERE id = ?`, [id], (err, row) => {
-        if (err) reject(err);
-        else resolve(row);
-      });
-    });
-  }
+echo "# MUSASABI OS CONCEPT" > docs/MUSASABI_OS_CONCEPT.md
+# Add relevant content to MUSASABI_OS_CONCEPT.md
 
-  listWorkflows() {
-    return new Promise((resolve, reject) => {
-      this.db.all(`SELECT * FROM workflows`, [], (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows);
-      });
-    });
-  }
+echo "# INTEGRATION PLAN" > docs/INTEGRATION_PLAN.md
+# Add step-by-step integration instructions to INTEGRATION_PLAN.md
 
-  createTask(task) {
-    return new Promise((resolve, reject) => {
-      const { workflow_id, title, task_type, status, order_index } = task;
-      const createdAt = new Date().toISOString();
-      this.db.run(
-        `INSERT INTO workflow_tasks (workflow_id, title, task_type, status, order_index, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [workflow_id, title, task_type, status, order_index, createdAt, createdAt],
-        function (err) {
-          if (err) reject(err);
-          else resolve(this.lastID);
-        }
-      );
-    });
-  }
+echo "# DEVELOPMENT RULES" > docs/DEVELOPMENT_RULES.md
+# Add development rules content to DEVELOPMENT_RULES.md
 
-  listTasksByWorkflowId(workflow_id) {
-    return new Promise((resolve, reject) => {
-      this.db.all(`SELECT * FROM workflow_tasks WHERE workflow_id = ?`, [workflow_id], (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows);
-      });
-    });
-  }
-}
+echo "# ROADMAP" > docs/ROADMAP.md
+# Add content under each phase in ROADMAP.md:
+# Phase 1: Musasabi OS Foundational, Dashboard, AI Department Menu, AI Chat Platform
+# Phase 2: AI CEO, AI PM, AI Development, GitHub Issue Management
+# Phase 3: Codex Integration, AI Review, Issue Auto-generation, AI Employee Feature Proposals
 
-module.exports = WorkflowRepository;
+echo "# CHANGELOG" > docs/CHANGELOG.md
+# Add relevant changelog content to CHANGELOG.md
 
-// packages/workflow/src/workflowService.js
-const WorkflowRepository = require('./workflowRepository');
-
-class WorkflowService {
-  constructor(workflowRepository) {
-    this.workflowRepository = workflowRepository;
-  }
-
-  async createWorkflow(workflow) {
-    return this.workflowRepository.createWorkflow(workflow);
-  }
-
-  async getWorkflow(id) {
-    return this.workflowRepository.findWorkflowById(id);
-  }
-
-  async listWorkflows() {
-    return this.workflowRepository.listWorkflows();
-  }
-
-  async addTask(workflowId, task) {
-    task.workflow_id = workflowId;
-    return this.workflowRepository.createTask(task);
-  }
-
-  async listTasks(workflowId) {
-    return this.workflowRepository.listTasksByWorkflowId(workflowId);
-  }
-}
-
-module.exports = WorkflowService;
-
-// packages/workflow/src/index.js
-const sqlite3 = require('sqlite3').verbose();
-const WorkflowRepository = require('./workflowRepository');
-const WorkflowService = require('./workflowService');
-
-const db = new sqlite3.Database(':memory:');
-
-db.serialize(() => {
-  db.run(`
-    CREATE TABLE workflows (
-      id INTEGER PRIMARY KEY,
-      title TEXT,
-      description TEXT,
-      status TEXT,
-      created_by TEXT,
-      created_at DATETIME,
-      updated_at DATETIME
-    )
-  `);
-  db.run(`
-    CREATE TABLE workflow_tasks (
-      id INTEGER PRIMARY KEY,
-      workflow_id INTEGER,
-      title TEXT,
-      task_type TEXT,
-      status TEXT,
-      order_index INTEGER,
-      created_at DATETIME,
-      updated_at DATETIME
-    )
-  `);
-
-  const workflowRepository = new WorkflowRepository(db);
-  const workflowService = new WorkflowService(workflowRepository);
-
-  const seedWorkflow = {
-    title: 'MUSA Full Auto Approval Workflow',
-    description: 'Workflow for requesting approval before switching MUSA-001 to full auto mode.',
-    status: 'ready',
-    created_by: 'system'
-  };
-
-  (async () => {
-    const workflowId = await workflowService.createWorkflow(seedWorkflow);
-    await workflowService.addTask(workflowId, { title: '承認リクエストの作成', task_type: 'approval', status: 'ready', order_index: 1 });
-    await workflowService.addTask(workflowId, { title: 'CEOの承認を待つ', task_type: 'human_review', status: 'waiting', order_index: 2 });
-
-    console.log('Workflow Engine: Ready');
-    const workflows = await workflowService.listWorkflows();
-    console.log('Workflow:', workflows[0].title);
-    console.log('Workflow Status:', workflows[0].status);
-
-    const tasks = await workflowService.listTasks(workflowId);
-    console.log('Tasks:', tasks.length);
-  })();
-});
+echo "# README" > README.md
+# Update README.md with current status, startup methods, development rules, and future roadmap
 ```

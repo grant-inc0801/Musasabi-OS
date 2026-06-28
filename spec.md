@@ -1,162 +1,71 @@
-# 技術指示書: S1A-002 Workflow Foundation
+以下は、Musasabi OS 引き継ぎ準備と現状整理のための技術指示書をMarkdownで作成したものです。
 
-## 概要
+```markdown
+# 技術指示書: Musasabi OS 引き継ぎ準備と現状整理
 
-この技術指示書は、Musasabi AIの最小限のワークフロー基盤を実装するためのガイドラインです。ワークフロードメインモデル、リポジトリ、サービス、シードワークフロー、デスクトップのステータス表示を含みます。ワークフローの実行はこのフェーズには含まれません。
+## 目的
+現在Codexで途中まで開発しているプロジェクトを、Musasabi OSとして引き継ぎ、今後の自動開発ループに接続できる状態へ整理することを目的とします。
 
-## スコープ
+## 実施内容
 
-以下の機能を実装します:
+1. **現在のプロジェクト構成を確認する**
+    - 使用技術
+    - ディレクトリ構成
+    - 実装済み機能
+    - 未実装機能
+    - エラー箇所
+    - 不要ファイル
+    - 重複コード
 
-- ワークフローリポジトリ
-- ワークフローサービス
-- SQLiteマイグレーション
-- ワークフローモデル
-- ワークフロータスクモデル
-- シードワークフロー
-- デスクトップUIステータス
-- ユニットテスト
+2. **docsフォルダを作成する**
 
-## 必須ファイル
+3. **docs内に以下のファイルを作成する**
+   - `PROJECT_OVERVIEW.md`: プロジェクトの概要を記載
+   - `CURRENT_CODE_AUDIT.md`: 現在のコード状況を整理
+   - `MUSASABI_OS_CONCEPT.md`: Musasabi OSの概念を記載
+   - `INTEGRATION_PLAN.md`: 既存プロジェクトをMusasabi OSへ統合する手順を記載
+   - `DEVELOPMENT_RULES.md`: 開発ルールを記載
+   - `ROADMAP.md`: 開発のロードマップを記載
+   - `CHANGELOG.md`: 変更履歴を記載
 
-以下のファイルを作成します:
+4. **CURRENT_CODE_AUDIT.md に現在のコード状況を整理する**
+   - 使用技術一覧
+   - ディレクトリ構造の詳細
+   - 実装済み機能と未実装機能の一覧
+   - 現行のエラーや不要ファイル、重複コードを明記
 
-```
-packages/workflow/src/
-- workflowRepository.js
-- workflowService.js
-- index.js
-```
+5. **INTEGRATION_PLAN.md に、既存プロジェクトをMusasabi OSへ統合する手順を書く**
+   - ステップバイステップで統合手順を記載
 
-## SQLite
+6. **ROADMAP.md に以下の開発順を記載する**
 
-### テーブル作成
+   - **Phase 1**：
+     - Musasabi OS 基盤
+     - ダッシュボード
+     - AI部署メニュー
+     - AIチャット基盤
 
-**workflows**
+   - **Phase 2**：
+     - AI CEO
+     - AI PM
+     - AI開発部
+     - GitHub Issue管理
 
-| カラム名     | タイプ   |
-| ------------ | -------- |
-| id           | INTEGER  |
-| title        | TEXT     |
-| description  | TEXT     |
-| status       | TEXT     |
-| created_by   | TEXT     |
-| created_at   | DATETIME |
-| updated_at   | DATETIME |
+   - **Phase 3**：
+     - Codex連携
+     - AIレビュー
+     - Issue自動生成
+     - AI社員による機能提案
 
-**workflow_tasks**
+7. **README.mdを更新する**
+   - 現在の状況
+   - 起動方法
+   - 開発ルール
+   - 今後のロードマップ
 
-| カラム名     | タイプ   |
-| ------------ | -------- |
-| id           | INTEGER  |
-| workflow_id  | INTEGER  |
-| title        | TEXT     |
-| task_type    | TEXT     |
-| status       | TEXT     |
-| order_index  | INTEGER  |
-| created_at   | DATETIME |
-| updated_at   | DATETIME |
-
-## シードワークフロー
-
-### 初期ワークフロー作成
-
-- **タイトル:** MUSA Full Auto Approval Workflow
-- **説明:** Workflow for requesting approval before switching MUSA-001 to full auto mode.
-- **ステータス:** ready
-
-### タスク
-
-1. 承認リクエストの作成
-   - **task_type:** approval
-   - **status:** ready
-   - **order_index:** 1
-
-2. CEOの承認を待つ
-   - **task_type:** human_review
-   - **status:** waiting
-   - **order_index:** 2
-
-## サービスメソッド
-
-- `createWorkflow()`
-- `getWorkflow()`
-- `listWorkflows()`
-- `addTask()`
-- `listTasks()`
-
-## リポジトリメソッド
-
-- `createWorkflow()`
-- `findWorkflowById()`
-- `listWorkflows()`
-- `createTask()`
-- `listTasksByWorkflowId()`
-
-## UI
-
-### 表示項目
-
-- Workflow Engine: Ready
-- Workflow: MUSA Full Auto Approval Workflow
-- Workflow Status: ready
-- Tasks: 2
-
-## テスト
-
-以下のテストを実装します:
-
-- `workflows`テーブルが存在する
-- `workflow_tasks`テーブルが存在する
-- ワークフローの作成
-- ワークフローのリスト表示
-- タスクの作成
-- タスクのリスト表示
-- シードワークフローが存在するか確認
-- デスクトップブートストラップがMusasabi OSとMUSA-001を引き続き表示するか
-
-## ドキュメント
-
-以下を更新します:
-
-- `README.md`
-- `CHANGELOG.md`
-
-## 制約
-
-以下は実装しないでください:
-
-- ワークフローの実行
-- リトライ
-- ロールバック
-- プラグイン統合
-- スケジューラー統合
-- 外部API
-
-## 受け入れ基準
-
-- WorkflowRepositoryが実装されている
-- WorkflowServiceが実装されている
-- `workflows`テーブルが存在する
-- `workflow_tasks`テーブルが存在する
-- シードワークフローが存在する
-- デスクトップUIが「Workflow Engine Ready」を表示する
-- テストが合格する
-- READMEが更新される
-- CHANGELOGが更新される
-
-## 成果物
-
-### レポート
-
-- 変更されたファイル
-- テスト結果
-- 提案されるコミットメッセージ
-
-GitHubへのプッシュは行わないでください。
-
-### 提案されるコミットメッセージ
+## 注意事項
+このIssueでは大きな機能実装は行いません。目的は、既存コードを壊さず、Musasabi OSとして引き継ぐ準備を整えることです。
 
 ```
-feat(workflow): implement workflow foundation
-```
+
+このMarkdown文書には、プロジェクトの引き継ぎに必要な各ステップと作成すべきドキュメントの詳細について説明しています。ドキュメントを作成する際には、具体的な技術や詳細なコード例を各ファイルに追記する必要があります。
