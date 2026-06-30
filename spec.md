@@ -1,226 +1,187 @@
+以下にタスク「S4-007 AutoCall Readiness & Human Approval Framework」を実装する際の技術指示書をMarkdown形式で作成しました。
+
 ```markdown
-# 技術指示書: S4-006 Sales Script Optimization Engine
-
-## 目次
-
-1. [概要](#概要)
-2. [ビジョン](#ビジョン)
-3. [必要モジュール](#必要モジュール)
-4. [データベース (SQLite)](#データベース-sqlite)
-5. [スクリプトカテゴリ](#スクリプトカテゴリ)
-6. [最適化ロジック](#最適化ロジック)
-7. [UI 要件](#ui-要件)
-8. [MUSA 推奨機能](#musa-推奨機能)
-9. [自動学習](#自動学習)
-10. [テスト](#テスト)
-11. [ドキュメント](#ドキュメント)
-12. [制約事項](#制約事項)
-13. [受け入れ基準](#受け入れ基準)
-14. [納品物](#納品物)
+# 技術指示書: S4-007 AutoCall Readiness & Human Approval Framework
 
 ## 概要
 
-### タスク
-
-S4-006 Sales Script Optimization Engine の実装。  
-MUSA は実際の通話結果、トランスクリプトの学習、異議、反論、およびアポイントメントの結果に基づいて、テレマーケティングスクリプトを継続的に改善します。  
-どのオープニング、質問、反論、クロージングが最も効果的であるかを自動的に特定することが目標です。
+このSprintでは、AutoCall機能の準備と人間による承認フレームワークを実装します。AIによる自動通話は今回実装しません。リードがAutoCallに適しているかを判断し、将来の自動通話機能の実行前に必要なすべての人間承認と安全チェックを満たすことを目的とします。
 
 ## ビジョン
 
-通話史跡  
-↓  
-セールスブレイン  
-↓  
-異議/反論の学習  
-↓  
-アポイント結果  
-↓  
-スクリプトの最適化  
-↓  
-より良いセールススクリプト  
-↓  
-高いアポイント率  
-
-## 必要モジュール
-
-構造は以下のようになります。
-
 ```
-packages/sales-script/
-
-src/
-
-- scriptRepository.js
-- scriptService.js
-- scriptOptimizer.js
-- scriptVariantGenerator.js
-- scriptPerformanceAnalyzer.js
-- scriptRecommendationService.js
-- index.js
+Sales Brain
+↓
+Lead Score
+↓
+Appointment Prediction
+↓
+Risk Evaluation
+↓
+Human Approval
+↓
+AutoCall Queue (Disabled)
 ```
 
-## データベース (SQLite)
+## 必須モジュール
 
-以下のテーブルを作成します。
+**ディレクトリ構造:**
 
-### sales_scripts
+- `packages/autocall/`
+- `src/`
+  - `readinessService.js`
+  - `readinessEvaluator.js`
+  - `approvalGate.js`
+  - `riskAssessmentService.js`
+  - `queuePreparationService.js`
+  - `campaignManager.js`
+  - `index.js`
 
-- id
-- title
-- category
-- content
-- status
-- created_at
-- updated_at
+## データベース: SQLite
 
-### sales_script_variants
+### テーブル設計
 
-- id
-- script_id
-- variant_name
-- content
-- usage_count
-- appointment_count
-- success_rate
-- confidence
-- created_at
-- updated_at
+#### autocall_campaigns
+- `id`
+- `campaign_name`
+- `status`
+- `appointment_limit`
+- `working_hours_start`
+- `working_hours_end`
+- `created_at`
+- `updated_at`
 
-### sales_script_usage_logs
+#### autocall_candidates
+- `id`
+- `lead_id`
+- `readiness_score`
+- `risk_score`
+- `approval_status`
+- `campaign_id`
+- `created_at`
 
-- id
-- script_id
-- variant_id
-- lead_id
-- transcript_id
-- call_result
-- appointment_created
-- created_at
+#### autocall_audit_logs
+- `id`
+- `lead_id`
+- `event`
+- `detail_json`
+- `created_at`
 
-## スクリプトカテゴリ
+## 機能詳細
 
-- opening
-- discovery_question
-- value_proposition
-- objection_rebuttal
-- closing
-- callback_followup
+### Readiness Score
+0〜100のスコアを生成し、以下の要素を使用します。
+- Appointment Probability
+- Lead Score
+- Transcript Quality
+- Previous Call History
+- Callback Status
+- Sales Brain Confidence
 
-## 最適化ロジック
+### Risk Evaluation
+リスクを「Low」「Medium」「High」で評価し、以下のパターンを検出します。
+- 繰り返しの未応答通話
+- 過度な通話頻度
+- 欠落した顧客情報
+- 不完全なトランスクリプト履歴
+- 不十分な学習信頼度
 
-### 分析
+### Human Approval
+AutoCallを有効にするための条件:
+- 管理者による承認
+- キャンペーンの存在
+- 設定されたアポイントメント制限
+- 設定された営業時間
+- 緊急停止が有効
 
-以下の要素を分析します。
+### Campaign Management
+管理者がキャンペーンを作成できるようにします。 
 
-- 使用回数
-- アポイントメント数
-- 成功率
-- 異議一致
-- 業界一致
-- トランスクリプトの品質
-- コール結果
+**フィールド:**
+- Campaign Name
+- Appointment Limit
+- Working Hours
+- Target Industry
+- Target Region
+- Status
 
-### スクリプトバリアントのランキング
+**ステータス:**
+- Draft
+- Ready
+- Running
+- Paused
+- Completed
+- Cancelled
 
-以下に基づいてランク付けを行います。
+### ユーザーインターフェース (UI)
+AutoCall Readinessスクリーンを作成し、以下を表示します。
+- Campaigns
+- Readiness Score
+- Risk Score
+- Approval Status
+- Candidates
+- Appointment Limit
+- Emergency Stop Status
 
-- 成功率
-- 信頼度
-- 最近のパフォーマンス
-- 使用量
-
-## UI 要件
-
-### Sales Script 画面を作成し、以下を表示します。
-
-- スクリプトリスト
-- カテゴリ
-- バリアント
-- 成功率
-- 使用回数
-- アポイントメント数
-- 推奨スクリプト
-- 成績不良スクリプト
-
-## MUSA 推奨機能
-
-Lead Detail と Sales Coach Panel に以下を表示します。
-
-- 推奨オープニング
-- 推奨発見質問
-- 推奨反論
-- 推奨クロージング
-- 理由
-- 信頼度
-
-## 自動学習
-
-通話履歴またはトランスクリプトが保存されたときに、可能であれば以下を行います。
-
-- どのスクリプト/バリアントが使用されたかを検出
-- 使用ログを作成
-- 成功率を更新
-- 推奨スクリプトのランキングを更新
+### 学習モードの互換性
+学習モードはアクティブなままで、AutoCallは無効です。以下のアクション後にReadinessが継続的に再計算されます。
+- トランスクリプトの保存
+- リードの更新
+- アポイントメント予測の更新
+- 学習の更新
 
 ## テスト
 
 以下のテストを実装します。
+- Readinessの計算
+- リスクの計算
+- 承認の検証
+- キャンペーン作成
+- アポイントメント制限の検証
+- 緊急停止の検証
+- Readinessのリフレッシュ
 
-- スクリプト作成
-- バリアント作成
-- 使用ログ記録
-- 成功率計算
-- 推奨ランキング
-- 成績不良スクリプトの検出
-
-## ドキュメント
+## ドキュメンテーション
 
 以下を更新します。
-
-- README.md
-- CHANGELOG.md
-- docs/SALES_SCRIPT_OPTIMIZATION.md
+- `README.md`
+- `CHANGELOG.md`
+- `docs/AUTOCALL_READINESS.md`
 
 ## 制約事項
 
-以下の機能を実装してはいけません。
-
-- LLMスクリプト生成
-- 自動通話
-- 音声AI
-- 外部API
-- 自動顧客呼び出し
-
-決定論的なローカルロジックのみを使用します。
+以下の実装は禁止されています。
+- 自動発信通話
+- ボイスAI
+- 音声合成
+- 顧客との会話
+- Zoom Phoneの通話実行
+- 外部のテレフォニーAPI
 
 ## 受け入れ基準
 
-- セールススクリプトを作成できる
-- スクリプトバリアントを作成できる
-- 使用記録を記録できる
-- 成功率を計算できる
-- 最適なスクリプトを推奨できる
-- 成績不良のスクリプトを検出できる
-- MUSA がスクリプト推奨を表示する
-- テストが合格する
-- ドキュメントが更新される
+- Readiness Scoreが計算されていること
+- Risk Scoreが計算されていること
+- 人間承認ワークフローが機能していること
+- キャンペーン管理が機能していること
+- ダッシュボードにReadinessが表示されていること
+- AutoCallが無効のままであること
+- テストが合格していること
+- ドキュメンテーションが更新されていること
 
-## 納品物
+## デリバラブル
 
-以下をレポートします。
-
+**レポート内容:**
 - 変更されたファイル
 - テスト結果
 - 推奨コミットメッセージ
 
-自動プッシュしないでください。
+自動プッシュは行わないでください。
 
-### 推奨コミットメッセージ
+**推奨コミットメッセージ:**
+```
+feat(autocall): implement AutoCall readiness and approval framework
+```
+```
 
-```
-feat(sales): implement sales script optimization engine
-```
-```
-
-この技術指示書に基づいて、実装プロセスを進めてください。必要に応じて、各セクションを詳細に計画し、実装およびテストフレームワークに反映させます。
+この技術指示書は、実装者が理解しやすく、必要なすべての情報を含んでいることを目的としています。
