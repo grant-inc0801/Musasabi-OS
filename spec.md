@@ -1,192 +1,82 @@
-# 技術指示書
+# 技術指示書: S2-003 GitHub Issue Auto Generator
 
-## S2-002 Zoom Phone Call Log Import
+## 目的
 
-### 目的
+GitHub Issueの自動作成を実装します。  
+現在のフローでは次の仕様を生成しますが、GitHub Issueを作成していません。このループを完全に自動化します。
 
-Musasabi AI のための Zoom Phone 通話履歴インポート機能の基盤を実装します。この機能により、テレマーケティング営業チームは Zoom Phone の通話履歴をローカルの SQLite データベースにインポートし、後で分析、コーチング、学習ができるようになります。ただし、この課題ではトランスクリプション、録音ダウンロード、自律的な発信は実装しません。
+## 現行フロー
 
----
+- Issue
+- Codex
+- Commit
+- 次のタスクを生成
+- Issueを閉じる
 
-### 範囲
+(ここで停止)
 
-以下を実装します。
+## 必要なフロー
 
-- Zoom Phone との統合モジュール
-- Zoom Phone 通話履歴のタイプ正規化
-- インポートされた通話ログのローカル SQLite ストレージ
-- 開発用の手動/モックインポートサポート
-- セールスインテリジェンス UI ディスプレイ基盤
-- テスト
-- README 更新
+- Issue
+- Codex
+- Commit
+- 次のタスクを生成
+- 次のGitHub Issueを作成
+- ラベルを付与
+- マイルストーンを設定
+- 現行Issueにコメント
+- 現行Issueを閉じる
+- 待機
 
----
+## 実装内容
 
-### 必要モジュール
+ChatGPTが次のタスクを生成した後に、自動的に以下のコマンドを実行します。
 
-以下のファイルを作成します。
+```bash
+gh issue create
+```
 
-`packages/integrations/src/zoom-phone/`
+これには`GITHUB_TOKEN`を使用します。
 
-- `zoomPhoneTypes.js`
-- `zoomPhoneClient.js`
-- `zoomPhoneService.js`
-- `index.js`
+## 要件
 
----
+### スクリプト作成
 
-### SQLite テーブル
+作成する再利用可能なスクリプト: `scripts/github/create-next-issue.js`  
+スクリプトの機能:
 
-テーブルを作成します。
+1. **ロードマップデータの読み込み**: `docs/codex/roadmap/sprint-roadmap.json` から読み込み。
+2. **現行Issueの特定**: 現行のIssueを識別。
+3. **次のIssueの特定**: 次に作成すべきIssueを識別。
+4. **GitHub Issueの生成**: 次のIssueを作成。
+5. **ラベルの付与**: Issueにラベルを追加。
+6. **マイルストーンの設定**: Issueにマイルストーンを設定。
+7. **現在のIssueにコメント**: 作成されたIssueのURLをコメントとして追加。
+8. **終了**: スクリプトの実行を完了。
 
-テーブル名: `zoom_phone_call_logs`
+### 重複防止
 
-カラム:
+新たなIssueを作成する前に、次の操作を実行します。
 
-- `id`
-- `zoom_call_id`
-- `direction`
-- `caller_number`
-- `callee_number`
-- `start_time`
-- `end_time`
-- `duration_seconds`
-- `result`
-- `recording_available`
-- `raw_json`
-- `created_at`
-- `updated_at`
+- **検索**: 現在開いているIssuesを検索。
+- **スキップ**: 既に存在するタイトルの場合、作成をスキップ。
 
----
+### ロギング
 
-### 環境変数
+以下の情報を出力します。
 
-以下の環境変数をサポートします。
+- 現在のIssue
+- 次のIssue
+- Issue番号
+- Issue URL
 
-- `ZOOM_ACCOUNT_ID`
-- `ZOOM_CLIENT_ID`
-- `ZOOM_CLIENT_SECRET`
+## 受け入れ条件
 
-ルール:
+- あるIssueを閉じることで、自動的に次のIssueが作成されること。
+- 手動でのGitHub操作を必要としないこと。
 
-- 資格情報をハードコードしない
-- 資格情報をログに記録しない
-- アプリ起動時に資格情報を必須にしない
-- 資格情報が不足している場合、統合ステータスを未構成として表示
+## 提案されるコミットメッセージ
 
----
-
-### 開発モード
-
-Zoom の資格情報がない場合は、ローカルのサンプルデータからモックインポートを許可します。
-
-サンプルデータ作成:
-
-`data/seeds/zoom-phone-sample-call-logs.json`
-
-サンプル通話履歴を3件含める。
-
----
-
-### サービスメソッド
-
-以下のメソッドを実装します。
-
-- `normalizeCallLog(raw)`
-- `importCallLogs(rawLogs)`
-- `listCallLogs()`
-- `getCallLog(id)`
-- `getIntegrationStatus()`
-
----
-
-### UI 要件
-
-セールスインテリジェンス画面を追加または更新します。
-
-表示内容:
-
-- Zoom Phone 統合: 構成済み/未構成
-- インポートされた通話: {件数}
-- 最新の通話
-- 方向
-- 電話番号
-- 持続時間
-- 結果
-- 録音の有無
-
----
-
-### テスト
-
-以下のテストを追加します。
-
-- Zoom 通話履歴の正規化
-- サンプル通話ログのインポート
-- `listCallLogs()`
-- `getCallLog()`
-- 資格情報が不足していてもアプリがクラッシュしない
-- 資格情報がログに出力されない
-- デスクトップブートストラップが通過する
-
----
-
-### ドキュメント
-
-以下を更新します。
-
-- `README.md`
-- `CHANGELOG.md`
-
-`README` には次を含めます。
-
-- Zoom Phone セットアップ
-- 必須環境変数
-- モックインポート開発モード
-- セキュリティノート
-
----
-
-### 制限事項
-
-以下を実装しないでください。
-
-- 録音のダウンロード
-- トランスクリプション
-- AI 分析
-- 自動通話
-- 緊急呼び出しの実行
-- 外部ウェブフック
-- クラウド同期
-
----
-
-### 受け入れ基準
-
-- Zoom Phone モジュールが存在する
-- SQLite テーブルが存在する
-- サンプル通話ログをインポートできる
-- インポートされた通話ログをリストできる
-- 統合ステータスが表示される
-- 資格情報が不足していてもスタートアップに影響を与えない
-- 秘密はログに出力されない
-- `npm test` が通過する
-- README が更新されている
-- CHANGELOG が更新されている
-
----
-
-### 提出物
-
-報告:
-
-- 変更されたファイル
-- テスト結果
-- エラー
-- 推奨コミットメッセージ
-
-GitHub にはプッシュしないでください。
-
-推奨コミットメッセージ:
-
-`feat(sales): add zoom phone call log import foundation`
+```
+feat(github): automate next issue creation
+```
