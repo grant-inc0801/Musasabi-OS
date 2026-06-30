@@ -1,169 +1,181 @@
-# 技術指示書: AI Pipeline Hardening
+```markdown
+# 技術指示書: S4-011 FileMaker Field Mapping Manager
 
-## 目的
-Musasabi AIの開発パイプラインを強化し、自動化された開発を安全かつ予測可能に進行させます。このイシューはGitHub Actionsのパイプラインを安定化し、不必要なロードマップの逸脱や繰り返し発生するコンフリクトを防ぎ、パイプラインエラーのデバッグを容易にします。
+## 目標
+
+FileMaker Field Mapping Managerを実装し、Musasabiの内部sales_leadsスキーマと異なるフィールド名でも実際のFileMakerスキーマを使用してリードのインポートを可能にする。
 
 ## 問題点
 
-現在のパイプラインの問題点は以下の通りです:
+FileMakerデータベースはしばしばカスタムフィールド名を使用します。Musasabiの内部sales_leadsでは次のフィールド名が期待されます：
 
-- AIが次のイシューを予期せず生成することがある
-- 共有されているspec.mdがマージコンフリクトを引き起こす
-- 次のイシューの生成が確認されていないのにイシューをクローズする
-- ログが詳細でない
-- ワークフローが壊れやすいタイトルマッチングに依存している
-- 繰り返し手動でデバッグが必要
+- company_name
+- store_name
+- phone_number
+- postal_code
+- address
+- industry_major
+- industry_minor
+- status
+- priority
+- assigned_to
 
-## 必要な変更
+しかし、FileMakerでは異なる名前が使われることがあります。
 
-### 1. パイプライン状態のバリデーション
+例:
 
-イシューをクローズする前に以下を確認します:
+- 顧客名
+- 店舗名
+- 電話番号
+- 郵便番号
+- 住所
+- 大分類
+- 小分類
 
-- 実装ステップの成功
-- テストの合格
-- 次のイシューの生成の成功またはスプリントの完了
-- 解決されていないマージコンフリクトマーカーが存在しない
+## 必要な機能
 
-コンフリクトマーカーがある場合、パイプラインを失敗させます:
+FileMakerフィールドとMusasabiフィールドの間にマッピングレイヤーを作成する。
 
-```text
-<<<<<<<
-=======
->>>>>>>
-```
+## 必須モジュール
 
-### 2. ロードマップ/スプリントの真実の源
+以下を更新または作成する:
 
-パイプラインは以下を使用する必要があります:
+- `packages/integrations/src/filemaker/fileMakerFieldMappingService.js`
+- `packages/integrations/src/filemaker/fileMakerFieldMappingRepository.js`
+- `packages/integrations/src/filemaker/fileMakerSchemaDetector.js`
 
-- docs/sprints/*.yaml
-- docs/codex/roadmap/*.json
+## SQLite
 
-OpenAIは次のイシューを自由に作成してはなりません。
+テーブル: `filemaker_field_mappings`
 
-### 3. イシューキーを用いたトラッキング
+カラム:
 
-タイトル全体ではなくイシューキーを使用します。
+- id
+- filemaker_field_name
+- musasabi_field_name
+- data_type
+- required
+- enabled
+- created_at
+- updated_at
 
-サポートする形式:
+## マッピングUI
 
-- S4-010 Title
-- [S4-010] Title
-- S4-010 — Title
-- S4-010: Title
+FileMaker Mapping画面を作成する。
 
-キーを抽出します:
+表示:
 
-- S4-010
+- FileMaker フィールド名
+- Musasabi フィールド名
+- データ型
+- 必須
+- 有効
 
-### 4. 安全なイシュークローズ
+アクション:
 
-現在のイシューをクローズするのは以下の条件が揃った後のみです:
+- マッピング追加
+- マッピング編集
+- マッピング無効化
+- サンプルデータによるマッピングテスト
 
-- コミットの完了
-- 次のイシューの作成または不要であることの確認
-- コメントの投稿
-- コンフリクトマーカーが存在しない
+## デフォルトマッピング
 
-### 5. 詳細なログ
+日本語のデフォルトマッピングをシードする:
 
-以下の情報をログに記録します:
+| FileMaker Field | Musasabi Field |
+|---|---|
+| 顧客名 | company_name |
+| 会社名 | company_name |
+| 店舗名 | store_name |
+| 電話番号 | phone_number |
+| TEL | phone_number |
+| 郵便番号 | postal_code |
+| 住所 | address |
+| 業種大分類 | industry_major |
+| 業種小分類 | industry_minor |
+| ステータス | status |
+| 優先度 | priority |
+| 担当者 | assigned_to |
 
-- 現在のイシュー番号
-- 現在のイシュータイトル
-- 抽出されたイシューキー
-- アクティブなスプリント
-- 次のタスクキー
-- 次のタスクタイトル
-- 次のイシューURL
-- コミットハッシュ
-- テスト結果
-- クローズステータス
+## インポート統合
 
-### 6. 失敗時の振る舞い
+FileMakerインポートはマッピングを使用する必要があります。
 
-必要なステップが失敗した場合:
+必須フィールドが欠けている場合:
 
-- イシューをクローズしない
-- イシューに失敗理由をコメントする
-- イシューに `needs-review` ラベルを付ける
-- ワークフローを停止する
+- クラッシュしない
+- 警告をログに記録
+- phone_number が欠けている場合はレコードをスキップ
+- 非必須フィールドが欠けている場合は部分的にレコードをインポート
 
-### 7. ワークフロー許可
+## バリデーション
 
-以下の許可を含めることを確認します:
+以下を検証する:
 
-```yaml
-permissions:
-  contents: write
-  issues: write
-  pull-requests: write
-  actions: read
-```
-
-## 必要なファイル
-
-作成または更新:
-
-- .github/workflows/ai_pipeline.yml
-- scripts/github/extract-issue-key.js
-- scripts/github/check-conflict-markers.js
-- scripts/github/create-next-issue-from-sprint.js
-- scripts/github/pipeline-state-validator.js
-- docs/AI_PIPELINE.md
+- 電話番号が存在
+- 会社名または店舗名が存在
+- 重複する電話番号の処理
+- 空のフィールド
+- 不明なフィールド
 
 ## テスト
 
-以下をテストに追加:
+以下のテストを実装する:
 
-- イシューキーの抽出
-- コンフリクトマーカーの検出
-- パイプライン状態のバリデーション
-- スプリントからの次のイシュー生成
-- 安全なクローズルール
-- 失敗ラベリングロジック
+- デフォルトのマッピングがシードされる
+- カスタムマッピングが作成できる
+- サンプルレコードがマッピングできる
+- 欠落した電話番号はスキップされる
+- 部分的なレコードのインポートが機能する
+- 重複する電話番号が処理される
 
-## ドキュメンテーション
+## ドキュメント
 
 更新:
 
-- README.md
-- CHANGELOG.md
-- docs/AI_PIPELINE.md
-- docs/SPRINT_SYSTEM.md
+- `README.md`
+- `CHANGELOG.md`
+- `docs/FILEMAKER_SYNC.md`
 
-## 受け入れ基準
+追加:
 
-- 失敗が発生した際、パイプラインはイシューをクローズしない
-- コンフリクトマーカーが存在する場合、パイプラインはイシューをクローズしない
-- パイプラインはスプリント/ロードマップからのみ次のイシューを作成する
-- パイプラインは重要な状態を明確にログに記録する
-- パイプラインは失敗したイシューを `needs-review` とラベル付けする
-- 共有spec.mdのコンフリクトを避ける
-- テストが合格する
-- ドキュメントが更新される
+- フィールドマッピングの設定方法
+- デフォルトの日本語マッピング
+- 欠落フィールドのトラブルシューティング
 
-## 制約
+## 制約条件
 
-- 関連のないプロダクト機能を実装しないこと
-- 自律的なマージを有効にしないこと
-- 自律的なデプロイを有効にしないこと
-- OpenAIがロードマップのタスクを発明しないこと
-- 歴史的なspecファイルを削除しないこと
-- 秘密情報を公開しないこと
+以下は実装しない:
 
-## 提出物
+- 破壊的なFileMaker書き戻し
+- 自動スキーマ変更
+- クラウド同期
+- 外部AI
+- AutoCall
 
-レポート:
+## 受領基準
+
+- フィールドマッピングテーブルが存在
+- デフォルトの日本語マッピングが存在
+- マッピングサービスが機能
+- FileMakerインポートがマッピングを使用
+- マッピングUIが存在
+- テスト合格
+- ドキュメントが更新
+
+## デリバラブル
+
+報告:
 
 - 変更されたファイル
 - テスト結果
-- 残りのリスク
-- 推奨されるコミットメッセージ
+- 推奨コミットメッセージ
 
-推奨コミット:
+自動でプッシュしない。
 
-```plaintext
-chore(github): harden AI development pipeline
+### 推奨コミットメッセージ
+
+```
+feat(filemaker): add field mapping manager
+```
 ```

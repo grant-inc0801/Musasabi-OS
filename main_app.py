@@ -1,121 +1,93 @@
-```yaml
-name: AI Pipeline
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
-permissions:
-  contents: write
-  issues: write
-  pull-requests: write
-  actions: read
-
-jobs:
-  validate-pipeline:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'
-
-    - name: Execute pipeline validator
-      run: node scripts/github/pipeline-state-validator.js
-
-    - name: Extract issue key
-      id: issue_key
-      run: node scripts/github/extract-issue-key.js
-      env:
-        ISSUE_TITLE: ${{ github.event.issue.title }}
-
-    - name: Detect conflict markers
-      run: node scripts/github/check-conflict-markers.js
-
-    - name: Log current state
-      run: echo "Current Issue: ${{ github.event.issue.number }}, Title: ${{ github.event.issue.title }}, Issue Key: ${{ steps.issue_key.outputs.key }}" | tee -a pipeline.log
-
-    - name: Run tests
-      run: npm test
-
-    - name: Commit and push changes
-      run: |
-        git add .
-        git commit -m "Update AI pipeline"
-        git push
-
-    - name: Create next issue from sprint
-      run: node scripts/github/create-next-issue-from-sprint.js
-
-  handle-failure:
-    runs-on: ubuntu-latest
-    if: failure()
-    steps:
-    - name: Label issue
-      run: gh issue edit ${{ github.event.issue.number }} --add-label "needs-review"
-
-    - name: Comment on issue
-      run: gh issue comment ${{ github.event.issue.number }} --body "The pipeline has failed due to the above errors. Please review."
-
-    - name: Stop workflow
-      run: exit 1
-```
-
 ```javascript
-// scripts/github/extract-issue-key.js
+// packages/integrations/src/filemaker/fileMakerFieldMappingRepository.js
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database(':memory:');
 
-const issueTitle = process.env.ISSUE_TITLE || '';
-const issueKeyMatch = issueTitle.match(/S4-\d+/);
-const issueKey = issueKeyMatch ? issueKeyMatch[0] : '';
+db.serialize(() => {
+    db.run(`CREATE TABLE IF NOT EXISTS filemaker_field_mappings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        filemaker_field_name TEXT,
+        musasabi_field_name TEXT,
+        data_type TEXT,
+        required BOOLEAN,
+        enabled BOOLEAN,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
 
-console.log(`::set-output name=key::${issueKey}`);
-```
+    const stmt = db.prepare(`INSERT INTO filemaker_field_mappings 
+        (filemaker_field_name, musasabi_field_name, data_type, required, enabled) 
+        VALUES (?, ?, ?, ?, ?)`);
+    
+    const defaultMappings = [
+        ['顧客名', 'company_name', 'TEXT', true, true],
+        ['会社名', 'company_name', 'TEXT', true, true],
+        ['店舗名', 'store_name', 'TEXT', true, true],
+        ['電話番号', 'phone_number', 'TEXT', true, true],
+        ['TEL', 'phone_number', 'TEXT', true, true],
+        ['郵便番号', 'postal_code', 'TEXT', false, true],
+        ['住所', 'address', 'TEXT', false, true],
+        ['業種大分類', 'industry_major', 'TEXT', false, true],
+        ['業種小分類', 'industry_minor', 'TEXT', false, true],
+        ['ステータス', 'status', 'TEXT', false, true],
+        ['優先度', 'priority', 'TEXT', false, true],
+        ['担当者', 'assigned_to', 'TEXT', false, true]
+    ];
 
-```javascript
-// scripts/github/check-conflict-markers.js
+    defaultMappings.forEach(mapping => stmt.run(...mapping));
+    stmt.finalize();
+});
 
-const fs = require('fs');
-const fileData = fs.readFileSync('path/to/your/file', 'utf8');
+module.exports = db;
 
-if (fileData.includes('<<<<<<<') || fileData.includes('=======') || fileData.includes('>>>>>>>')) {
-  console.error('Conflict markers detected. Failing pipeline.');
-  process.exit(1);
+// packages/integrations/src/filemaker/fileMakerFieldMappingService.js
+const db = require('./fileMakerFieldMappingRepository');
+
+class FileMakerFieldMappingService {
+    getMappings() {
+        return new Promise((resolve, reject) => {
+            db.all("SELECT * FROM filemaker_field_mappings WHERE enabled = 1", [], (err, rows) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(rows);
+                }
+            });
+        });
+    }
+
+    mapRecord(record) {
+        return this.getMappings().then(mappings => {
+            const mappedRecord = {};
+            mappings.forEach(mapping => {
+                if (record[mapping.filemaker_field_name] != null) {
+                    mappedRecord[mapping.musasabi_field_name] = record[mapping.filemaker_field_name];
+                }
+            });
+
+            if (!mappedRecord.phone_number) {
+                console.warn('Record skipped due to missing phone number:', record);
+                return null;
+            }
+
+            return mappedRecord;
+        });
+    }
 }
 
-console.log('No conflict markers found.');
-```
+module.exports = new FileMakerFieldMappingService();
 
-```javascript
-// scripts/github/pipeline-state-validator.js
+// packages/integrations/src/filemaker/fileMakerSchemaDetector.js
+const fmService = require('./fileMakerFieldMappingService');
 
-// Placeholder for actual implementation
-console.log('Validating pipeline state');
-
-// Implement state validation logic here
-
-process.exit(0); // Exit code 0 means success, non-zero value indicates failure
-```
-
-```javascript
-// scripts/github/create-next-issue-from-sprint.js
-
-const fs = require('fs');
-const yaml = require('js-yaml');
-const path = 'docs/sprints/active-sprint.yaml';
-
-try {
-  const sprint = yaml.load(fs.readFileSync(path, 'utf8'));
-  // Logic to create an issue based on sprint data
-  console.log('Next issue created from sprint.');
-} catch (e) {
-  console.error(e);
-  process.exit(1);
+class FileMakerSchemaDetector {
+    importLeadRecords(records) {
+        return Promise.all(records.map(record => fmService.mapRecord(record)))
+            .then(mappedRecords => {
+                return mappedRecords.filter(mappedRecord => mappedRecord !== null);
+            });
+    }
 }
+
+module.exports = FileMakerSchemaDetector;
 ```
