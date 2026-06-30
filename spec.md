@@ -1,147 +1,228 @@
-# 技術指示書: S5-001 Zoom Phone Real-Time Sync
+```markdown
+# 技術指示書: S5-002 FileMaker Two-Way Sync
 
 ## 概要
 
-Musasabi AI向けにZoom Phoneのリアルタイム同期を実装します。この統合は、会社の実際の電話システムでの初の本番環境導入です。Musasabi AIは、自動的に通話イベントを受信し、通話履歴を同期し、Sales Workspaceを更新し、Sales Brainに情報を提供する必要があります。本タスクでは、同期の実装のみを行います。
+本指示書は、Musasabi AIのセールスリードデータをFileMakerの顧客管理システムと同期するための基盤を実装するためのものです。安全性を考慮した制御された双方向同期を実現し、データの消去や破壊的な書き換えを防ぎながら、承認されない一括更新を行わないようにします。
 
-## 現環境
+---
 
-- **テレフォニーシステム**: Zoom Phone
-- **CRMシステム**: FileMaker
+## 現在の環境
+
+- **CRM**: FileMaker
+- **電話システム**: Zoom Phone
+
+---
 
 ## 必要モジュール
 
-ファイル構造:
-```
-packages/integrations/src/zoom-phone/
-- zoomWebhookService.js
-- zoomEventRouter.js
-- zoomCallSyncService.js
-- zoomPresenceService.js
-- zoomRealtimeClient.js
-```
+`packages/integrations/src/filemaker/` 配下に以下のモジュールを実装します。
 
-## 対応イベント
+- `fileMakerTwoWaySyncService.js`
+- `fileMakerWriteBackService.js`
+- `fileMakerConflictResolver.js`
+- `fileMakerSyncPreviewService.js`
+- `fileMakerSyncAuditService.js`
 
-同期対象:
-- call.started
-- call.connected
-- call.ended
-- missed.call
-- voicemail.created
+---
 
-イベントはローカルに保存します。
+## 同期の方向
 
-## データベース構造 (SQLite)
+1. **FileMaker → Musasabi**: ローカルのセールスリードのインポートまたは更新
+2. **Musasabi → FileMaker**: 選択された安全なフィールドのみの書き戻し
 
-### テーブル: zoom_call_events
+---
 
-- id
-- zoom_call_id
-- event_type
-- event_time
-- payload_json
-- processed
-- created_at
+## 許可された書き戻しフィールド
 
-### テーブル: call_sync_status
+以下のフィールドにのみ書き戻しを許可します。
 
-- id
-- zoom_call_id
-- sync_status
-- last_synced_at
-- error_message
+- status
+- priority
+- assigned_to
+- last_call_result
+- next_action
+- next_call_date
+- memo
 
-## Sales Workspaceの更新
+以下のフィールドには書き戻しを行いません（将来的に明示的に許可された場合を除く）。
 
-以下のイベント発生時に自動更新:
-- 通話開始
-- 通話接続
-- 通話終了
+- company_name
+- store_name
+- phone_number
+- address
+- industry fields
+- original FileMaker IDs
 
-表示項目:
-- 現在の通話ステータス
-- 現在の通話継続時間
-- 現在のリード
-- 最終同期
+---
 
-## リードマッチング
+## SQLite テーブル構造
 
-優先順位:
-- プライマリ: 電話番号
-- フォールバック: 会社名
+### `filemaker_writeback_queue`
 
-リードが見つからない場合は一時的な未マッチ通話レコードを作成。
+- `id`
+- `sales_lead_id`
+- `filemaker_record_id`
+- `field_name`
+- `old_value`
+- `new_value`
+- `status` （pending, approved, synced, failed, cancelled）
+- `created_at`
+- `updated_at`
 
-## ダッシュボード
+### `filemaker_sync_conflicts`
 
-表示内容:
-- 今日の通話
-- 現在のアクティブ通話
-- 不在着信
-- 平均通話時間
-- 同期ステータス
+- `id`
+- `sales_lead_id`
+- `filemaker_record_id`
+- `field_name`
+- `local_value`
+- `remote_value`
+- `resolution` （use_local, use_remote, manual_review, unresolved）
+- `created_at`
+- `updated_at`
 
-## リトライ機能
+### `filemaker_sync_audit_logs`
 
-失敗した同期を自動リトライします。最大3回まで試行し、毎回の試行をログファイルに記録します。
+- `id`
+- `sync_direction`
+- `action`
+- `sales_lead_id`
+- `filemaker_record_id`
+- `detail_json`
+- `created_at`
+
+---
+
+## コンフリクトルール
+
+ローカルとFileMakerの両方のレコードが変更された場合：
+
+- 自動上書きを行わない
+- コンフリクトレコードを作成する
+- 手動でのレビューを要求する
+
+---
+
+## プレビューの必要性
+
+FileMakerへの書き戻し前に以下を実行します：
+
+- プレビューの表示
+- 変更されたフィールドの表示
+- 承認の要求
+- 承認済みのキュー項目のみを書き込む
+
+---
+
+## UI要件
+
+FileMaker同期画面を作成し、以下を表示します：
+
+- Integration Status
+- Last Import
+- Last Write-Back
+- Pending Write-Back Queue
+- Conflicts
+- Sync Audit Logs
+
+アクション項目：
+
+- Preview Import
+- Import Approved Records
+- Preview Write-Back
+- Approve Write-Back
+- Cancel Write-Back
+- Resolve Conflict
+
+---
 
 ## セキュリティ
 
-以下の情報を絶対に公開しない:
-- Zoomの認証情報
-- アクセストークン
-- Webhookシークレット
+以下は決してログに記録しません：
 
-イベントを処理する前にWebhookの署名を検証します。
+- FileMakerのパスワード
+- セッショントークン
+- 認証情報
+
+顧客データを破壊的に書き換えないようにし、すべての書き戻しアクションは監査可能にします。
+
+---
 
 ## テスト
 
-以下のテストを実装:
-- Webhook検証
-- イベントパース
-- リードマッチング
-- 同期リトライ
-- ダッシュボード更新
-- 未マッチ通話作成
+以下のテストを実施します：
 
-## ドキュメント
+- インポート更新検出
+- 書き戻しキュー作成
+- 許可フィールドの検証
+- 禁止フィールドの拒否
+- コンフリクト検出
+- 手動コンフリクト解決
+- 監査ログ作成
+- 認証情報が欠如した際の安全起動
 
-以下を更新:
-- README.md
-- CHANGELOG.md
-- docs/ZOOM_PHONE_SYNC.md
+---
 
-## 制約
+## ドキュメント更新
 
-実装しない機能:
-- 録音ダウンロード
-- 音声認識
-- 音声分析
-- 自動通話
-- 外部AIサービス
+以下を更新します：
+
+- `README.md`
+- `CHANGELOG.md`
+- `docs/FILEMAKER_SYNC.md`
+
+以下を追加します：
+
+- Two-way sync setup
+- Allowed write-back fields
+- Conflict handling
+- Approval workflow
+- Safety rules
+
+---
+
+## 禁止事項
+
+以下を実装しません：
+
+- 破壊的上書き
+- 削除同期
+- 自動フィールドスキーマ変更
+- 承認なしの自動一括書き戻し
+- クラウド同期
+- AutoCall
+
+---
 
 ## 受け入れ基準
 
-- Zoom Phoneイベントが自動同期されること
-- アクティブな通話がSales Workspaceに表示されること
-- 通話が既存のリードとマッチすること
-- 未マッチの通話が安定して保存されること
-- ダッシュボードがリアルタイムで更新されること
-- リトライ機能が正常に動作すること
-- テストが全て合格すること
-- ドキュメントが更新されていること
+- 双方向同期の基盤が存在する
+- FileMakerのインポートが引き続き機能する
+- 書き戻しキューが機能する
+- 許可されたフィールドのみがキューに追加される
+- 禁止フィールドが拒否される
+- コンフリクトが検出される
+- 手動コンフリクト解決が存在する
+- 監査ログが作成される
+- テストが通過する
+- ドキュメントが更新される
 
-## 納品物
+---
 
-以下の報告を含む:
+## 成果物
+
+以下を報告します：
+
 - 変更されたファイル
 - テスト結果
-- 推奨コミット
+- 推奨コミットメッセージ
 
-自動的にプッシュしないようにします。
+自動的にプッシュしないこと。
 
-推奨コミットメッセージ:
+### 推奨コミットメッセージ
+
 ```
-feat(integration): implement Zoom Phone real-time synchronization
+feat(filemaker): implement safe two-way sync foundation
+```
 ```
