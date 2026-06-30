@@ -1,114 +1,274 @@
-# 技術指示書: S2-004 Call Transcript + Manual Notes
-
-## 目次
-1. [概要](#概要)
-2. [スコープ](#スコープ)
-3. [データベース設計 - SQLite](#データベース設計---SQLite)
-4. [UI設計](#UI設計)
-5. [MUSAサマリー](#MUSAサマリー)
-6. [検索機能](#検索機能)
-7. [テストケース](#テストケース)
-8. [ドキュメンテーション](#ドキュメンテーション)
-9. [制限事項](#制限事項)
-10. [受け入れ基準](#受け入れ基準)
-11. [提出物](#提出物)
+```markdown
+# 技術指示書: Musasabi AI Project Manager Foundation
 
 ## 概要
-Musasabi AIのためのコールトランスクリプト管理を実装します。システムは、自動トランスクリプト（将来の構想）と手動でのトランスクリプト入力（現在）の両方をサポートする必要がありますが、MVPとしては手動のトランスクリプト入力を主なワークフローとします。
 
-## スコープ
-以下の機能を実装します:
-- トランスクリプトテーブル
-- 手動トランスクリプトエディタ
-- Zoom Phoneコールへのトランスクリプトリンク
-- FileMakerリードへのトランスクリプトリンク
-- トランスクリプト検索
-- トランスクリプトタイムライン
-- MUSAトランスクリプトサマリー
+**タスク ID**: S3-001  
+**プロジェクト名**: Musasabi AI Project Manager Foundation  
+**目的**: Musasabi AI Project Manager（AI PM）の構築。AI PMは、ソフトウェア開発全体のオーケストレーションエンジンとなります。
 
-## データベース設計 - SQLite
-### テーブル: call_transcripts
+---
 
-**カラム定義:**
-- `id`: プライマリーキー
-- `call_log_id`: コールログID
-- `lead_id`: リードID
-- `transcript`: トランスクリプト内容
-- `source`: トランスクリプトのソース（デフォルト: manual）
-- `summary`: サマリー
-- `created_at`: 作成日時
-- `updated_at`: 更新日時
+## ビジョン
 
-**sourceの値:**
-- manual
-- zoom_ai
-- whisper
-- openai
+```
+CEO
+↓
+Musasabi AI PM
+↓
+GitHub
+↓
+Codex
+↓
+Tests
+↓
+Review
+↓
+Merge
+↓
+Next Issue
+```
 
-## UI設計
-### Sales Detailページ
+---
 
-- **Transcriptタブ追加**
-  - トランスクリプトの編集
-  - トランスクリプトの保存
-  - トランスクリプトの検索
-  - トランスクリプトのコピー
-  - サマリーの生成
+## 責務
 
-## MUSAサマリー
-- 決定論的なサマリーを生成
-- 表示項目:
-  - 顧客の問題
-  - 顧客のニーズ
-  - 異議
-  - 次のアクション
-  - サマリー
+AI PMは以下を実施する必要があります:
 
-## 検索機能
-トランスクリプトを以下の項目で検索できること:
-- 会社
-- 電話番号
-- キーワード
-- 日付
+1. ロードマップの読み取り
+2. 次の実行可能なタスクの決定
+3. 依存関係の確認
+4. GitHub Issueの作成
+5. 実装ステータスの監視
+6. テスト結果の確認
+7. 次のタスクの決定
+8. 開発履歴の維持
 
-## テストケース
-以下の機能のテストを実施します:
-- トランスクリプトの作成
-- トランスクリプトの更新
-- トランスクリプトの検索
-- サマリーの生成
-- リードへのトランスクリプトリンク
-- コールログへのトランスクリプトリンク
+**制約**: AI PMはロードマップを新たに作成することはありません。ロードマップは唯一の信頼できる情報のソースです。
 
-## ドキュメンテーション
-以下のドキュメントを更新:
-- README
-- CHANGELOG
+---
 
-## 制限事項
-次の項目は実装しない:
-- 音声認識
-- 録音ダウンロード
-- AIスコアリング
-- AutoCall
-- 外部API
+## 必要モジュール
+
+以下のモジュールを`packages/ai-pm/src/`に作成:
+
+- `roadmapManager.js`
+- `dependencyResolver.js`
+- `issueGenerator.js`
+- `issueTracker.js`
+- `reviewManager.js`
+- `workflowManager.js`
+- `projectState.js`
+- `index.js`
+
+---
+
+## データベース
+
+SQLiteテーブルを作成:
+
+### project_tasks
+
+- id
+- roadmap_key
+- title
+- status
+- dependency_key
+- github_issue_number
+- commit_hash
+- created_at
+- updated_at
+
+### project_events
+
+- id
+- event_type
+- task_key
+- payload_json
+- created_at
+
+### project_reviews
+
+- id
+- task_key
+- reviewer
+- result
+- comments
+- created_at
+
+---
+
+## ワークフロー
+
+```
+Roadmap
+↓
+Dependency Resolver
+↓
+Issue Generator
+↓
+GitHub Issue
+↓
+Codex
+↓
+Implementation
+↓
+Tests
+↓
+Review
+↓
+Close Issue
+↓
+Generate Next Issue
+```
+
+---
+
+## ルール
+
+次の条件が満たされたときにのみ次のIssueを作成:
+
+- 現在のIssueが完了している
+- テストが成功している
+- 必要な依存関係が完了している
+- レビューが承認されている
+
+---
+
+## 依存関係の解決
+
+サポート内容:
+
+- 連続実行
+- ブロックされたタスク
+- 任意のタスク
+- 並列タスク（将来対応）
+
+---
+
+## GitHub 統合
+
+以下を実装:
+
+- `createIssue()`
+- `updateIssue()`
+- `closeIssue()`
+- `commentIssue()`
+
+**注意**: GitHub REST APIを使用してください。トークンは公開しないこと。
+
+---
+
+## ロードマップ
+
+サポート内容:
+
+- `roadmap.json`
+
+各項目には以下が含まれる:
+
+- key
+- title
+- description
+- labels
+- milestone
+- dependencies
+- acceptance
+
+---
+
+## ダッシュボード
+
+AI PM ダッシュボードを作成し、以下を表示:
+
+- 現在のスプリント
+- 現在のタスク
+- 完了したタスク
+- ブロックされたタスク
+- 次のタスク
+- オープンなIssues
+- レビューキュー
+- パイプラインステータス
+
+---
+
+## 将来対応
+
+後に以下をサポートできるようにAI PMを設計:
+
+- Claude
+- Codex
+- OpenAI
+- 複数のリポジトリ
+- 複数のプロジェクト
+- 複数のAI従業員
+
+---
+
+## テスト
+
+以下を実装:
+
+- ロードマップの解析
+- 依存関係の解決
+- Issueの生成
+- 重複の防止
+- レビューステート管理
+- プロジェクトステートの永続化
+
+---
+
+## ドキュメント
+
+更新:
+
+- `README.md`
+- `CHANGELOG.md`
+
+新規作成:
+
+- `docs/AI_PM.md`
+
+---
+
+## 制約事項
+
+以下は実施しない:
+
+- 自律的なコーディング
+- 自律的なマージ
+- 自律的なデプロイ
+- ロードマップの生成
+
+**注記**: AI PMは開発をオーケストレートするのみです。
+
+---
 
 ## 受け入れ基準
-- トランスクリプトテーブルが存在する
-- トランスクリプトエディタが機能する
-- トランスクリプト検索が機能する
-- トランスクリプトサマリーが機能する
-- コールログにリンクされている
-- リードにリンクされている
-- 全てのテストが合格する
 
-## 提出物
-- 変更されたファイルの報告
+- AI PM パッケージが存在する
+- ロードマップの解析が動作する
+- 依存関係の解決が動作する
+- GitHub Issueの生成が可能
+- ダッシュボードがプロジェクトの状態を表示する
+- テストが通過する
+- ドキュメンテーションが完了する
+
+---
+
+## デリバラブル
+
+報告:
+
+- 変更されたファイル
 - テスト結果
-- エラー
-- 推奨されるコミット
+- 推奨されるコミットメッセージ
 
-**推奨コミットメッセージ:**
+自動でプッシュしないこと。
+
+**推奨コミットメッセージ**:
 ```
-feat(sales): add transcript management foundation
+feat(ai-pm): implement Musasabi AI Project Manager foundation
 ```
+
+---
