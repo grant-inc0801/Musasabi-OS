@@ -1,190 +1,199 @@
-# AI Sales Manager Foundation - Technical Instruction Document
+```markdown
+# 技術指示書: S4-002 Smart Lead Prioritization Engine
 
-## Objective
+## 1. タスク目的
 
-Implement the AI Sales Manager Foundation by transitioning Musasabi AI from an assistant role to a Sales Manager role, focusing on decision-making processes for daily sales tasks.
+**目的**:
+Smart Lead Prioritization Engine を実装します。
+単純なリードリストを表示する代わりに、MUSA は最も高い予約の可能性を持つリードを判断し、最適なコール順序を生成します。次に「誰に電話するか」の判断は営業担当者が行うのではなく、MUSA が決定します。
 
-## Vision
+---
 
-The system follows a sequential flow as below:
+## 2. ビジョン
 
-1. **Sales Leads**
-2. **Learning Data**
-3. **Sales Brain**
-4. **AI Sales Manager**
-5. **Today's Priority List**
-6. **Salesperson Execution**
-7. **Learning Feedback**
-8. **Sales Brain Update**
+- **FileMaker**
+- **Lead Information**
+- **Sales Brain**
+- **Learning Records**
+- **Lead Prioritization Engine**
+- **Today's Call Queue**
 
-## Directory Structure
+---
 
-Create the following directories and files:
+## 3. 必要モジュール
 
-```
-packages/ai-sales-manager/
-└── src/
-    ├── leadScoringEngine.js
-    ├── priorityEngine.js
-    ├── appointmentPredictor.js
-    ├── recommendationEngine.js
-    ├── nextActionEngine.js
-    ├── executiveDashboard.js
-    └── index.js
-```
+ディレクトリ: `packages/lead-priority/`
 
-## Database Schema
+- **src/**
+  - `leadPriorityService.js`
+  - `priorityCalculator.js`
+  - `scoringRules.js`
+  - `recommendationGenerator.js`
+  - `queueGenerator.js`
+  - `index.js`
 
-### SQLite Tables
+---
 
-Create tables as described below:
+## 4. データベース構造
 
-#### Table: `lead_scores`
+### SQLite テーブル設定
 
-- **id** - Primary key
-- **lead_id** - Lead identifier
-- **score** - Calculated lead score
-- **appointment_probability** - Probability of booking an appointment
-- **confidence** - Confidence level of the prediction
-- **calculated_at** - Timestamp of calculation
+1. **lead_priority_history**
+   - id
+   - lead_id
+   - priority_score
+   - priority_rank
+   - appointment_probability
+   - confidence
+   - reason
+   - created_at
 
-#### Table: `daily_recommendations`
+2. **daily_call_queue**
+   - id
+   - lead_id
+   - queue_order
+   - recommendation
+   - estimated_duration
+   - estimated_success_rate
+   - created_at
 
-- **id** - Primary key
-- **lead_id** - Lead identifier
-- **priority_rank** - Priority ranking of the lead
-- **recommendation** - Recommended action for the lead
-- **expected_result** - Expected outcome
-- **created_at** - Timestamp
+---
 
-#### Table: `sales_daily_summary`
+## 5. スコア計算
 
-- **id** - Primary key
-- **date** - Date of summary
-- **calls** - Number of calls made
-- **appointments** - Number of appointments set
-- **callbacks** - Number of callbacks scheduled
-- **interested** - Number of interested leads
-- **score_average** - Average score of leads contacted
+**スコアの元情報**:
+- 過去の会話
+- 折り返しの履歴
+- 未応答のコール数
+- 業界
+- 事業規模
+- 既存の知識
+- ベストトークの類似性
+- 異議の類似性
+- 最後の接触からの時間
 
-## AI Sales Manager Functionality
+**生成するもの**:
+- Priority Score: 0〜100
 
-### Daily Priority List Generation
+---
 
-Automatically generate a prioritized list each morning including:
+## 6. キュー生成
 
-- Company
-- Reason for prioritization
-- Expected Appointment Probability
-- Recommended Opening Statement
-- Expected Objection
-- Recommended Rebuttal
-- Recommended Closing
-- Next Action
+**タイミング**:
+- 毎朝生成
 
-### Lead Scoring
+**表示**:
+- 今日のコールキュー
 
-Calculate lead scores (0-100) based on:
+**並び順**:
+- 最高予想予約確率による
 
-- Call history
-- Callback history
-- Industry type
-- Previous objections
-- Learning records
-- Conversation quality
-- Appointment history
-- Recent activity
+**表示項目**:
+- 順位
+- 会社
+- 電話番号
+- 理由
+- 予想予約率
+- 予想異議
+- 推奨オープニング
+- 次のアクション
 
-### Appointment Prediction
+---
 
-Generate Expected Appointment Probability (0-100%) with a separate storage for confidence levels.
+## 7. MUSA の推奨事項
 
-## Executive Dashboard
+**例**: 
+- この会社に最初に電話をかけてください。
 
-Display the following elements:
+**理由**:
+- 最近コールバックをリクエストしました。
+- 類似企業の予約率が 78% です。
+- オープニングパターン #3 を使用。
 
-- Today's Priority Leads
-- Appointment Forecast
-- Today's Target
-- Progress Tracking
-- Best/Worst Performer
-- Lead and Industry Distribution
-- Call Queue
+---
 
-## MUSA Recommendations
+## 8. ダッシュボード
 
-Provide recommendations on:
+**表示**:
+- 今日のキュー
+- 平均確率
+- 予想予約数
+- 高優先度リード
+- 低優先度リード
+- スキップされたリード
 
-- Priority company for calls
-- Expected objections and rebuttals
-- Recommended opening and closing statements
-- Expected appointment probability
+---
 
-## Learning and Adaptation
+## 9. 自動更新
 
-Ensure that lead scores, appointment probabilities, and knowledge databases update with each completed call.
+**タイミング**:
+- コール完了後
+- トランスクリプト保存後
+- リード更新後
+- コールバック設定後
 
-## Future Compatibility
+**自動再計算**:
+- Priority Score
+- Appointment Probability
+- Queue Order
 
-Design to support future modes and features, including:
+---
 
-- Learning Mode
-- AutoCall Mode
-- Multiple AI Employees
-- Campaign Management
-- Departmental Support
+## 10. テスト
 
-## Testing
+**実装項目**:
+- 優先度計算
+- キュー生成
+- 推奨生成
+- 自動再計算
+- ダッシュボード更新
 
-Implement tests for:
+---
 
-- Lead Scoring
-- Priority Ranking
-- Appointment Prediction
-- Recommendation Generation
-- Dashboard Summary
-
-## Documentation
-
-Create documentation files:
+## 11. ドキュメントの更新
 
 - `README.md`
 - `CHANGELOG.md`
-- `docs/AI_SALES_MANAGER.md`
+- `docs/LEAD_PRIORITY.md`
 
-## Restrictions
+---
 
-Avoid implementing:
+## 12. 制限事項
 
-- Voice AI
+実装してはいけない機能:
 - AutoCall
-- Speech Recognition
+- Voice AI
+- 外部API
 - LLM reasoning
-- External APIs
 
-Emphasize deterministic logic only.
+**使用するロジック**:
+- すべて決定論的ロジック
 
-## Acceptance Criteria
+---
 
-- Successful Lead Scoring and Priority Ranking
-- Accurate Appointment Predictions
-- Functional Dashboard
-- Daily Recommendations Generated
-- All Tests Passing
-- Updated README
+## 13. 受け入れ基準
 
-## Deliverables
+- Priority Scoreの計算完了
+- デイリーキューの生成完了
+- 推奨事項が表示される
+- キューの自動更新
+- ダッシュボードの正常動作
+- テストがすべて合格
+- READMEの更新
 
-Provide a report detailing:
+---
 
-- Changed Files
-- Test Results
-- Suggested Commit Message
+## 14. 納品物
 
-*Do not push changes automatically.*
+**レポート内容**:
+- 変更ファイル
+- テスト結果
+- 推奨コミット
 
-### Suggested Commit Message
+自動プッシュは行わない
 
+**推奨コミットメッセージ**:
 ```
-feat(ai): implement AI Sales Manager foundation
+feat(sales): implement smart lead prioritization engine
+```
 ```
