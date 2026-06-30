@@ -1,181 +1,175 @@
 ```markdown
-# 技術指示書: S4-011 FileMaker Field Mapping Manager
+# 技術指示書: S4-012 Sales Import Preview & Duplicate Review
 
-## 目標
+## 目的
 
-FileMaker Field Mapping Managerを実装し、Musasabiの内部sales_leadsスキーマと異なるフィールド名でも実際のFileMakerスキーマを使用してリードのインポートを可能にする。
+FileMakerのリードをMusasabiのsales_leadsにインポートする前に、ユーザーがマッピングされたレコードのプレビュー、重複検出、警告のレビュー、インポートの承認を行えるようにします。これにより、悪いデータが営業ワークスペースに入るのを防ぎます。
 
-## 問題点
+## ビジョン
 
-FileMakerデータベースはしばしばカスタムフィールド名を使用します。Musasabiの内部sales_leadsでは次のフィールド名が期待されます：
-
-- company_name
-- store_name
-- phone_number
-- postal_code
-- address
-- industry_major
-- industry_minor
-- status
-- priority
-- assigned_to
-
-しかし、FileMakerでは異なる名前が使われることがあります。
-
-例:
-
-- 顧客名
-- 店舗名
-- 電話番号
-- 郵便番号
-- 住所
-- 大分類
-- 小分類
-
-## 必要な機能
-
-FileMakerフィールドとMusasabiフィールドの間にマッピングレイヤーを作成する。
+1. FileMaker Records
+2. Field Mapping
+3. Import Preview
+4. Duplicate Review
+5. User Approval
+6. sales_leads
 
 ## 必須モジュール
 
-以下を更新または作成する:
+次のパスでモジュールを更新または作成すること:
 
-- `packages/integrations/src/filemaker/fileMakerFieldMappingService.js`
-- `packages/integrations/src/filemaker/fileMakerFieldMappingRepository.js`
-- `packages/integrations/src/filemaker/fileMakerSchemaDetector.js`
+`packages/integrations/src/filemaker/`
+- fileMakerImportPreviewService.js
+- duplicateLeadDetector.js
+- importApprovalService.js
 
-## SQLite
+## SQLite テーブル
 
-テーブル: `filemaker_field_mappings`
+### テーブル: filemaker_import_batches
 
-カラム:
+- カラム：
+  - id
+  - status
+  - source
+  - total_records
+  - valid_records
+  - duplicate_records
+  - warning_records
+  - error_records
+  - created_at
+  - updated_at
+  
+- ステータス:
+  - preview
+  - approved
+  - imported
+  - cancelled
 
-- id
-- filemaker_field_name
-- musasabi_field_name
-- data_type
-- required
-- enabled
-- created_at
-- updated_at
+### テーブル: filemaker_import_preview_records
 
-## マッピングUI
+- カラム：
+  - id
+  - batch_id
+  - raw_record_json
+  - mapped_record_json
+  - status
+  - warning_json
+  - duplicate_lead_id
+  - created_at
+  
+- ステータス:
+  - valid
+  - duplicate
+  - warning
+  - error
+  - skipped
 
-FileMaker Mapping画面を作成する。
+## プレビュー機能のルール
 
-表示:
+インポート前に以下を行うこと:
+- フィールドマッピングを適用
+- 電話番号を正規化
+- 重複を検出
+- 必須フィールドを検証
+- レコードを分類
 
-- FileMaker フィールド名
-- Musasabi フィールド名
-- データ型
-- 必須
-- 有効
+## 重複検出
 
-アクション:
+- 主な基準: phone_number
+- フォールバック基準: company_name + address
 
-- マッピング追加
-- マッピング編集
-- マッピング無効化
-- サンプルデータによるマッピングテスト
+重複が見つかった場合:
+- プレビューのレコードを重複としてマーク
+- 自動でインポートしない
+- 既存のリードにリンクする
 
-## デフォルトマッピング
+## ユーザーインターフェース (UI)
 
-日本語のデフォルトマッピングをシードする:
+インポートプレビュー画面を作成。以下を表示すること:
 
-| FileMaker Field | Musasabi Field |
-|---|---|
-| 顧客名 | company_name |
-| 会社名 | company_name |
-| 店舗名 | store_name |
-| 電話番号 | phone_number |
-| TEL | phone_number |
-| 郵便番号 | postal_code |
-| 住所 | address |
-| 業種大分類 | industry_major |
-| 業種小分類 | industry_minor |
-| ステータス | status |
-| 優先度 | priority |
-| 担当者 | assigned_to |
+- バッチサマリー
+- 総レコード数
+- 有効レコード数
+- 重複レコード数
+- 警告レコード数
+- エラーレコード数
 
-## インポート統合
+レコードテーブルを表示:
 
-FileMakerインポートはマッピングを使用する必要があります。
+- 会社/店舗
+- 電話番号
+- 住所
+- ステータス
+- 警告
+- 重複ターゲット
 
-必須フィールドが欠けている場合:
+実行可能なアクション:
 
-- クラッシュしない
-- 警告をログに記録
-- phone_number が欠けている場合はレコードをスキップ
-- 非必須フィールドが欠けている場合は部分的にレコードをインポート
+- 有効レコードの承認
+- 重複のスキップ
+- バッチのキャンセル
+- 承認されたレコードのインポート
 
-## バリデーション
+## ユーザー承認
 
-以下を検証する:
-
-- 電話番号が存在
-- 会社名または店舗名が存在
-- 重複する電話番号の処理
-- 空のフィールド
-- 不明なフィールド
+- インポートはユーザーの承認が得られるまではsales_leadsに書き込まれない
+- ボタン追加:「インポートを承認」
 
 ## テスト
 
-以下のテストを実装する:
+以下のテストを実装:
 
-- デフォルトのマッピングがシードされる
-- カスタムマッピングが作成できる
-- サンプルレコードがマッピングできる
-- 欠落した電話番号はスキップされる
-- 部分的なレコードのインポートが機能する
-- 重複する電話番号が処理される
+- インポートプレビューバッチの作成
+- フィールドマッピングが適用されていること
+- 電話による重複の検出
+- 会社名と住所からの重複検出
+- 電話がない場合のエラーになること
+- 承認後に有効なレコードがインポートされること
+- 重複はデフォルトでスキップされること
+- キャンセルされたバッチがインポートされないこと
 
-## ドキュメント
+## ドキュメンテーション
 
-更新:
+次を更新および追加:
 
-- `README.md`
-- `CHANGELOG.md`
-- `docs/FILEMAKER_SYNC.md`
+- README.md
+- CHANGELOG.md
+- docs/FILEMAKER_SYNC.md
 
 追加:
+- インポートプレビューワークフロー
+- 重複レビューのワークフロー
+- インポート前の承認
 
-- フィールドマッピングの設定方法
-- デフォルトの日本語マッピング
-- 欠落フィールドのトラブルシューティング
-
-## 制約条件
+## 制限事項
 
 以下は実装しない:
-
-- 破壊的なFileMaker書き戻し
-- 自動スキーマ変更
+- 破壊的な上書き
+- FileMakerへの書き戻し
+- 自動スケジュールインポート
 - クラウド同期
-- 外部AI
 - AutoCall
 
-## 受領基準
+## 受け入れ基準
 
-- フィールドマッピングテーブルが存在
-- デフォルトの日本語マッピングが存在
-- マッピングサービスが機能
-- FileMakerインポートがマッピングを使用
-- マッピングUIが存在
-- テスト合格
-- ドキュメントが更新
+- インポートプレビューバッチが作成されること
+- レコードが適切に分類されること
+- 重複が検出されること
+- ユーザーがインポートを承認できること
+- 有効なレコードのみ、承認後にインポートされること
+- デフォルトで重複がスキップされること
+- テストが通ること
+- ドキュメントが更新されること
 
 ## デリバラブル
 
-報告:
-
+レポート:
 - 変更されたファイル
 - テスト結果
 - 推奨コミットメッセージ
 
-自動でプッシュしない。
+自動でプッシュしないこと。
 
-### 推奨コミットメッセージ
-
-```
-feat(filemaker): add field mapping manager
-```
+推奨コミットメッセージ:
+`feat(filemaker): add import preview and duplicate review`
 ```
