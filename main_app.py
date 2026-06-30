@@ -1,129 +1,144 @@
 ```javascript
-// fileMakerImportPreviewService.js
-class FileMakerImportPreviewService {
-  applyFieldMapping(fileMakerRecord) {
-    // Implement field mapping logic
+// packages/ai-pm/src/sprint/sprintManager.js
+class SprintManager {
+  constructor(repository, dashboardService, controlService) {
+    this.repository = repository;
+    this.dashboardService = dashboardService;
+    this.controlService = controlService;
   }
 
-  normalizePhoneNumber(phoneNumber) {
-    // Implement phone number normalization logic
+  startSprint(yamlFile) {
+    const sprintDefinition = this.parseYaml(yamlFile);
+    this.repository.createSprint(sprintDefinition);
+    this.controlService.initializeTasks(sprintDefinition.tasks);
   }
 
-  validateRequiredFields(mappedRecord) {
-    // Implement required fields validation
+  parseYaml(yamlFile) {
+    // Function to parse YAML file
   }
 
-  classifyRecord(mappedRecord, isDuplicate) {
-    if (isDuplicate) {
-      return 'duplicate';
-    }
-    if (this.validateRequiredFields(mappedRecord)) {
-      return 'valid';
-    }
-    return 'error';
-  }
-}
-
-// duplicateLeadDetector.js
-class DuplicateLeadDetector {
-  constructor(existingLeads) {
-    this.existingLeads = existingLeads;
+  pauseSprint(sprintId) {
+    this.controlService.updateSprintStatus(sprintId, 'paused');
   }
 
-  detectDuplicate(fileMakerRecord) {
-    const { phone_number, company_name, address } = fileMakerRecord;
-    return this.existingLeads.find(
-      lead => lead.phone_number === phone_number ||
-              (lead.company_name === company_name && lead.address === address)
-    );
+  resumeSprint(sprintId) {
+    this.controlService.updateSprintStatus(sprintId, 'active');
+  }
+
+  stopSprint(sprintId) {
+    this.controlService.updateSprintStatus(sprintId, 'stopped');
   }
 }
 
-// importApprovalService.js
-class ImportApprovalService {
-  constructor(dbConnection) {
-    this.dbConnection = dbConnection;
+module.exports = SprintManager;
+
+// packages/ai-pm/src/sprint/sprintRepository.js
+class SprintRepository {
+  createSprint(sprintDefinition) {
+    // Function to create sprint record in the database
+  }
+  
+  updateTaskStatus(taskKey, status) {
+    // Function to update task status in the database
   }
 
-  async approveBatch(batchId) {
-    // Implement batch approval logic
-  }
-
-  async importApprovedRecords(batchId) {
-    // Implement importing logic for approved records
+  findReadyTask(sprintId) {
+    // Function to find the next ready task
   }
 }
 
-// SQLite table creation (pseudo-code)
-const dbSchema = `
-CREATE TABLE filemaker_import_batches (
+module.exports = SprintRepository;
+
+// packages/ai-pm/src/sprint/sprintDashboardService.js
+class SprintDashboardService {
+  getActiveSprint() {
+    // Function to get and render active sprint on UI
+  }
+}
+
+module.exports = SprintDashboardService;
+
+// packages/ai-pm/src/sprint/sprintControlService.js
+class SprintControlService {
+  initializeTasks(tasks) {
+    // Function to create task records in the database
+  }
+
+  updateSprintStatus(sprintId, status) {
+    // Function to update sprint status in the database
+  }
+
+  createGitHubIssue(task) {
+    // Function to create GitHub issue from task
+  }
+}
+
+module.exports = SprintControlService;
+
+// SQLite schema updates
+// SQLite table creation for sprints, sprint_tasks, sprint_events...
+
+// Migration scripts for sprints table
+CREATE TABLE sprints (
   id INTEGER PRIMARY KEY,
+  sprint_key TEXT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
   status TEXT,
-  source TEXT,
-  total_records INTEGER,
-  valid_records INTEGER,
-  duplicate_records INTEGER,
-  warning_records INTEGER,
-  error_records INTEGER,
-  created_at DATETIME,
-  updated_at DATETIME
+  progress INTEGER,
+  started_at TIMESTAMP,
+  completed_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE filemaker_import_preview_records (
+// Migration scripts for sprint_tasks table
+CREATE TABLE sprint_tasks (
   id INTEGER PRIMARY KEY,
-  batch_id INTEGER,
-  raw_record_json TEXT,
-  mapped_record_json TEXT,
+  sprint_id INTEGER,
+  task_key TEXT NOT NULL,
+  title TEXT NOT NULL,
   status TEXT,
-  warning_json TEXT,
-  duplicate_lead_id INTEGER,
-  created_at DATETIME
+  dependency_key TEXT,
+  github_issue_number TEXT,
+  assignee TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(sprint_id) REFERENCES sprints(id)
 );
-`;
 
-// Placeholder for UI functions
-function displayBatchSummary(batch) {
-  // Implement UI batch summary display
-}
+// Migration scripts for sprint_events table
+CREATE TABLE sprint_events (
+  id INTEGER PRIMARY KEY,
+  sprint_id INTEGER,
+  event_type TEXT,
+  detail_json TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(sprint_id) REFERENCES sprints(id)
+);
 
-function displayRecordTable(records) {
-  // Implement UI record table display
-}
+// Sample Sprint Definition: docs/sprints/Sprint-005.yaml
+title: Sales Department Operational MVP
+tasks:
+  - task_key: S5-001
+    title: Zoom Phone Real-Time Sync
+    status: pending
+  - task_key: S5-002
+    title: FileMaker Two-Way Sync
+    status: pending
+  - task_key: S5-003
+    title: Voice Analysis Engine
+    status: pending
+  - task_key: S5-004
+    title: Real-Time Sales Coach Upgrade
+    status: pending
+  - task_key: S5-005
+    title: AI Sales Manager Dashboard
+    status: pending
+  - task_key: S5-006
+    title: Sales KPI Forecast
+    status: pending
 
-function onApproveButtonClicked(batchId) {
-  // Handle approve button click event
-}
-
-// Tests (pseudo-code)
-async function testImportPreviewBatchCreation() {
-  // Implement test for batch creation
-}
-
-async function testFieldMappingApplication() {
-  // Implement test for field mapping application
-}
-
-async function testDuplicateDetectionByPhone() {
-  // Implement test for duplicate detection by phone
-}
-
-async function testDuplicateDetectionByCompanyAndAddress() {
-  // Implement test for duplicate detection by company and address
-}
-
-async function testErrorOnMissingPhoneNumber() {
-  // Implement test for error on missing phone number
-}
-
-async function testApprovalLeadsToImport() {
-  // Implement test for approval leading to import
-}
-
-async function testDefaultSkipForDuplicate() {
-  // Implement test for default skip of duplicate
-}
-
-async function testCancelledBatchNotImported() {
-  // Implement test to ensure cancelled batch not imported
-}
+// Tests: Implement as per requirements in test framework...
+// Readme, Changelog, and Docs to be updated separately...
 ```

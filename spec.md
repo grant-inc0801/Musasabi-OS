@@ -1,175 +1,247 @@
-```markdown
-# 技術指示書: S4-012 Sales Import Preview & Duplicate Review
+# 技術指示書: S4-013 Sprint Manager UI
 
-## 目的
+## 概要
 
-FileMakerのリードをMusasabiのsales_leadsにインポートする前に、ユーザーがマッピングされたレコードのプレビュー、重複検出、警告のレビュー、インポートの承認を行えるようにします。これにより、悪いデータが営業ワークスペースに入るのを防ぎます。
+本ドキュメントは、Musasabi OS内で開発スプリントを開始および監視できるようにするためのSprint Manager UIの実装に関する技術指示書です。このUIによって、CEOは手動操作をせずにスプリントドリブンなワークフローを管理できるようになります。
 
 ## ビジョン
 
-1. FileMaker Records
-2. Field Mapping
-3. Import Preview
-4. Duplicate Review
-5. User Approval
-6. sales_leads
+- ユーザ: CEO
+- 流れ: CEO → Sprint Manager UI → AI PM → Sprint.yaml → GitHub Issue Generation → Codex → Review → 次の課題
 
-## 必須モジュール
+## 要件
 
-次のパスでモジュールを更新または作成すること:
+### 必須UI
 
-`packages/integrations/src/filemaker/`
-- fileMakerImportPreviewService.js
-- duplicateLeadDetector.js
-- importApprovalService.js
+Sprint Manager画面を作成します。ナビゲーション項目は以下のいずれかとします。
 
-## SQLite テーブル
+- Development
+- AI PM
 
-### テーブル: filemaker_import_batches
+### 画面セクション
 
-- カラム：
-  - id
-  - status
-  - source
-  - total_records
-  - valid_records
-  - duplicate_records
-  - warning_records
-  - error_records
-  - created_at
-  - updated_at
-  
-- ステータス:
-  - preview
-  - approved
-  - imported
-  - cancelled
+#### 1. アクティブスプリント
 
-### テーブル: filemaker_import_preview_records
+表示内容:
+- スプリントキー
+- スプリントタイトル
+- スプリントステータス
+- 進捗率
+- 現在のタスク
+- 次のタスク
+- ブロックされているタスク
 
-- カラム：
-  - id
-  - batch_id
-  - raw_record_json
-  - mapped_record_json
-  - status
-  - warning_json
-  - duplicate_lead_id
-  - created_at
-  
-- ステータス:
-  - valid
-  - duplicate
-  - warning
-  - error
-  - skipped
+#### 2. スプリントコントロール
 
-## プレビュー機能のルール
+ボタン:
+- スプリント開始
+- スプリント一時停止
+- スプリント再開
+- スプリント停止
+- 次の課題生成
+- ステータス更新
 
-インポート前に以下を行うこと:
-- フィールドマッピングを適用
-- 電話番号を正規化
-- 重複を検出
-- 必須フィールドを検証
-- レコードを分類
+#### 3. タスクリスト
 
-## 重複検出
-
-- 主な基準: phone_number
-- フォールバック基準: company_name + address
-
-重複が見つかった場合:
-- プレビューのレコードを重複としてマーク
-- 自動でインポートしない
-- 既存のリードにリンクする
-
-## ユーザーインターフェース (UI)
-
-インポートプレビュー画面を作成。以下を表示すること:
-
-- バッチサマリー
-- 総レコード数
-- 有効レコード数
-- 重複レコード数
-- 警告レコード数
-- エラーレコード数
-
-レコードテーブルを表示:
-
-- 会社/店舗
-- 電話番号
-- 住所
+表示内容:
+- タスクキー
+- タイトル
 - ステータス
-- 警告
-- 重複ターゲット
+- 依存関係
+- GitHub イシュー番号
+- 担当者
+- 更新日時
 
-実行可能なアクション:
+ステータスは以下から選択:
+- pending
+- ready
+- in_progress
+- review
+- completed
+- blocked
 
-- 有効レコードの承認
-- 重複のスキップ
-- バッチのキャンセル
-- 承認されたレコードのインポート
+#### 4. レビュキュー
 
-## ユーザー承認
+表示内容:
+- レビュー待ちのタスク
+- テスト結果
+- 変更ファイル数
+- 推奨コミット
+- 承認状況
 
-- インポートはユーザーの承認が得られるまではsales_leadsに書き込まれない
-- ボタン追加:「インポートを承認」
+#### 5. スプリントログ
+
+表示内容:
+- sprint.started
+- issue.created
+- issue.completed
+- review.requested
+- review.approved
+- sprint.completed
+
+## バックエンド
+
+既存のAI PMモジュールを利用可能であれば使用します。以下のファイルを作成または更新します。
+
+- `packages/ai-pm/src/sprint/sprintManager.js`
+- `packages/ai-pm/src/sprint/sprintRepository.js`
+- `packages/ai-pm/src/sprint/sprintDashboardService.js`
+- `packages/ai-pm/src/sprint/sprintControlService.js`
+
+## SQLite
+
+以下のテーブルを作成または更新します。
+
+### sprintsテーブル
+
+- id
+- sprint_key
+- title
+- description
+- status
+- progress
+- started_at
+- completed_at
+- created_at
+- updated_at
+
+### sprint_tasksテーブル
+
+- id
+- sprint_id
+- task_key
+- title
+- status
+- dependency_key
+- github_issue_number
+- assignee
+- created_at
+- updated_at
+
+### sprint_eventsテーブル
+
+- id
+- sprint_id
+- event_type
+- detail_json
+- created_at
+
+## スプリント定義
+
+定義は`docs/sprints/`から読み込みます。例として`docs/sprints/Sprint-005.yaml`を使用します。
+
+## 初期スプリント
+
+`docs/sprints/Sprint-005.yaml`ファイルを作成します。
+
+### タイトル
+
+Sales Department Operational MVP
+
+### タスク
+
+- S5-001 Zoom Phone Real-Time Sync
+- S5-002 FileMaker Two-Way Sync
+- S5-003 Voice Analysis Engine
+- S5-004 Real-Time Sales Coach Upgrade
+- S5-005 AI Sales Manager Dashboard
+- S5-006 Sales KPI Forecast
+
+## コントロールの挙動
+
+### スプリント開始
+
+- スプリントyamlを読み込む
+- スプリントレコードを生成
+- タスクレコードを生成
+- 初めのタスクをreadyに設定
+
+### 次の課題生成
+
+- 初めのreadyタスクを探す
+- GitHubイシューを生成
+- タスクステータスをin_progressに設定
+- GitHubイシュー番号を保存
+
+### スプリント一時停止
+
+- スプリントステータスをpausedに設定
+
+### スプリント再開
+
+- スプリントステータスをactiveに設定
+
+### スプリント停止
+
+- スプリントステータスをstoppedに設定
+
+## GitHub統合
+
+スプリントタスクからIssueを生成します。Issueタイトルフォーマットは以下としてください。
+
+- 例: S5-001 Zoom Phone Real-Time Sync
+
+ラベル:
+
+- codex-ready
+- sprint-5
+- high-priority
+
+AIによるIssueタイトルの生成は許可しません。
 
 ## テスト
 
-以下のテストを実装:
+以下のテストを実装します。
 
-- インポートプレビューバッチの作成
-- フィールドマッピングが適用されていること
-- 電話による重複の検出
-- 会社名と住所からの重複検出
-- 電話がない場合のエラーになること
-- 承認後に有効なレコードがインポートされること
-- 重複はデフォルトでスキップされること
-- キャンセルされたバッチがインポートされないこと
+- スプリントyamlパース
+- スプリント開始
+- タスクレコード生成
+- 進捗率計算
+- 次のreadyタスク検出
+- イシュージェネレーション
+- スプリント一時停止/再開/停止
+- スプリントイベントログ
 
-## ドキュメンテーション
+## ドキュメント
 
-次を更新および追加:
+以下を更新します。
 
 - README.md
 - CHANGELOG.md
-- docs/FILEMAKER_SYNC.md
+- docs/SPRINT_SYSTEM.md
+- docs/AI_PM.md
 
-追加:
-- インポートプレビューワークフロー
-- 重複レビューのワークフロー
-- インポート前の承認
+## 制約事項
 
-## 制限事項
-
-以下は実装しない:
-- 破壊的な上書き
-- FileMakerへの書き戻し
-- 自動スケジュールインポート
-- クラウド同期
-- AutoCall
+- 関連のないセールス機能は実装しません。
+- AutoCall機能は実装しません。
+- Sprintタスクの作成をOpenAIに委ねません。
+- 自動マージを許可しません。
+- 自動デプロイを許可しません。
+- GitHubトークンを公開しません。
 
 ## 受け入れ基準
 
-- インポートプレビューバッチが作成されること
-- レコードが適切に分類されること
-- 重複が検出されること
-- ユーザーがインポートを承認できること
-- 有効なレコードのみ、承認後にインポートされること
-- デフォルトで重複がスキップされること
-- テストが通ること
-- ドキュメントが更新されること
+- Sprint Manager画面が存在する
+- アクティブスプリントが表示される
+- スプリントの進捗が表示される
+- タスクリストが表示される
+- スプリント開始が機能する
+- 次の課題生成が機能する
+- 一時停止/再開/停止が機能する
+- スプリントログが保存される
+- Sprint-005.yamlが存在する
+- テストが合格する
+- ドキュメントが更新されている
 
-## デリバラブル
+## 納品物
 
-レポート:
-- 変更されたファイル
-- テスト結果
-- 推奨コミットメッセージ
+変更されたファイル、テスト結果、推奨コミットを報告してください。自動でプッシュはしないでください。
 
-自動でプッシュしないこと。
+### 推奨コミット
 
-推奨コミットメッセージ:
-`feat(filemaker): add import preview and duplicate review`
+```git
+feat(ai-pm): add Sprint Manager UI
 ```
+
+以上が、Sprint Manager UIの実装に関する詳細な技術指示書です。
