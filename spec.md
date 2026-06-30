@@ -1,239 +1,192 @@
-# 技術指示書: Telemarketing Sales MVP
+# 技術指示書
 
-## 概要
+## S2-002 Zoom Phone Call Log Import
 
-このドキュメントでは、Telemarketing Sales MVPの開発に関する技術的指示を提供します。Musasabi AIの導入を意図し、営業チームの日常業務をサポートしながら、会社の知見や営業ノウハウを蓄積します。
+### 目的
 
-## 目標
+Musasabi AI のための Zoom Phone 通話履歴インポート機能の基盤を実装します。この機能により、テレマーケティング営業チームは Zoom Phone の通話履歴をローカルの SQLite データベースにインポートし、後で分析、コーチング、学習ができるようになります。ただし、この課題ではトランスクリプション、録音ダウンロード、自律的な発信は実装しません。
 
-- 最速かつ使いやすい内部MVPを構築する。
-- Telemarketing sales部門がMusasabi AIを活用できるようにする。
+---
 
-## スコープ
+### 範囲
 
-以下の機能を持つシンプルなテレマーケティングワークスペースを実装する:
+以下を実装します。
 
-- コールリストインポート基盤
-- 顧客/リストリスト
-- リード詳細ページ
-- コール履歴
-- 聞き取りメモ
-- ステータス管理
-- 次のアクションメモ
-- MUSA営業アシスタントパネル
-- コールノーツからの知識キャプチャ
+- Zoom Phone との統合モジュール
+- Zoom Phone 通話履歴のタイプ正規化
+- インポートされた通話ログのローカル SQLite ストレージ
+- 開発用の手動/モックインポートサポート
+- セールスインテリジェンス UI ディスプレイ基盤
+- テスト
+- README 更新
 
-## ナビゲーション
+---
 
-追加項目:
+### 必要モジュール
 
-- Sales
-- Call List
-- Lead Detail
-- Call History
-- Sales Knowledge
+以下のファイルを作成します。
 
-## SQLiteテーブル設計
+`packages/integrations/src/zoom-phone/`
 
-以下のテーブルを作成します:
+- `zoomPhoneTypes.js`
+- `zoomPhoneClient.js`
+- `zoomPhoneService.js`
+- `index.js`
 
-### sales_leads テーブル
+---
 
-- id
-- company_name
-- store_name
-- phone_number
-- postal_code
-- address
-- industry_major
-- industry_minor
-- status
-- priority
-- assigned_to
-- created_at
-- updated_at
+### SQLite テーブル
 
-### call_histories テーブル
+テーブルを作成します。
 
-- id
-- lead_id
-- call_result
-- contact_person
-- memo
-- next_action
-- next_call_date
-- created_by
-- created_at
+テーブル名: `zoom_phone_call_logs`
 
-### sales_hearing_notes テーブル
+カラム:
 
-- id
-- lead_id
-- store_name
-- company_name
-- contact_person
-- phone_number
-- email
-- website_url
-- memo_1
-- memo_2
-- created_at
-- updated_at
+- `id`
+- `zoom_call_id`
+- `direction`
+- `caller_number`
+- `callee_number`
+- `start_time`
+- `end_time`
+- `duration_seconds`
+- `result`
+- `recording_available`
+- `raw_json`
+- `created_at`
+- `updated_at`
 
-## リードステータス
+---
 
-以下のステータスを使用:
+### 環境変数
 
-- new
-- calling
-- connected
-- no_answer
-- interested
-- not_interested
-- callback
-- closed
-- excluded
+以下の環境変数をサポートします。
 
-## 必要なモジュール
+- `ZOOM_ACCOUNT_ID`
+- `ZOOM_CLIENT_ID`
+- `ZOOM_CLIENT_SECRET`
 
-`packages/sales/src/` ディレクトリ内に以下のファイルを作成します:
+ルール:
 
-- salesLeadRepository.js
-- salesLeadService.js
-- callHistoryRepository.js
-- callHistoryService.js
-- hearingNoteRepository.js
-- hearingNoteService.js
-- index.js
+- 資格情報をハードコードしない
+- 資格情報をログに記録しない
+- アプリ起動時に資格情報を必須にしない
+- 資格情報が不足している場合、統合ステータスを未構成として表示
 
-## UI要件
+---
 
-### Sales Dashboard
+### 開発モード
+
+Zoom の資格情報がない場合は、ローカルのサンプルデータからモックインポートを許可します。
+
+サンプルデータ作成:
+
+`data/seeds/zoom-phone-sample-call-logs.json`
+
+サンプル通話履歴を3件含める。
+
+---
+
+### サービスメソッド
+
+以下のメソッドを実装します。
+
+- `normalizeCallLog(raw)`
+- `importCallLogs(rawLogs)`
+- `listCallLogs()`
+- `getCallLog(id)`
+- `getIntegrationStatus()`
+
+---
+
+### UI 要件
+
+セールスインテリジェンス画面を追加または更新します。
 
 表示内容:
-- トータルリード数
-- 新規リード数
-- コールバックリード数
-- 興味を持ったリード数
-- 今日のコール数
-- 最新のコール履歴
 
-### Call List
-
-表示内容:
-- 会社/店舗名
+- Zoom Phone 統合: 構成済み/未構成
+- インポートされた通話: {件数}
+- 最新の通話
+- 方向
 - 電話番号
-- 住所
-- 業界
-- ステータス
-- 優先度
+- 持続時間
+- 結果
+- 録音の有無
 
-操作:
-- 詳細を開く
-- ステータスを変更
-- コール履歴を追加
+---
 
-### Lead Detail
+### テスト
 
-左側の表示:
-- 会社/店舗名
-- 電話番号
-- 郵便番号
-- 住所
-- 主な業界
-- サブ業界
+以下のテストを追加します。
 
-右側の表示:
-- 聞き取りメモフィールド
-- コール履歴
-- 次のアクション
-- MUSA営業アシスタントパネル
+- Zoom 通話履歴の正規化
+- サンプル通話ログのインポート
+- `listCallLogs()`
+- `getCallLog()`
+- 資格情報が不足していてもアプリがクラッシュしない
+- 資格情報がログに出力されない
+- デスクトップブートストラップが通過する
 
-## MUSA営業アシスタント
+---
 
-ステータスやメモに基づいてシンプルな決定論的な提案を行います。
+### ドキュメント
 
-例:
-- ステータスがnewの場合:
-  - 提案: まずは店舗名・担当者名・現在の集客課題を確認しましょう。
-  
-## 知識キャプチャ
+以下を更新します。
 
-コール履歴や聞き取りメモを保存する際に、オプションで知識項目候補を作成します。
+- `README.md`
+- `CHANGELOG.md`
 
-例:
-- タイトル: Sales Insight: {company_name}
+`README` には次を含めます。
 
-内容:
-- コール結果
-- 顧客の問題
-- 次のアクション
-- 有用な営業ノート
+- Zoom Phone セットアップ
+- 必須環境変数
+- モックインポート開発モード
+- セキュリティノート
 
-## テスト
+---
 
-以下をテスト:
-- sales_leadsテーブルの存在
-- call_historiesテーブルの存在
-- sales_hearing_notesテーブルの存在
-- リードの作成
-- リード一覧
-- ステータス更新
-- コール履歴作成
-- 聞き取りメモ保存
-- ダッシュボード統計
-- MUSAの決定論的な営業提案
+### 制限事項
 
-## ドキュメント更新
+以下を実装しないでください。
 
-更新対象:
-- README.md
-- CHANGELOG.md
-
-READMEには以下を含める:
-- Sales Dashboardの使用方法
-- リードを追加する方法
-- コール履歴を記録する方法
-- 知識がどのように蓄積されるか
-
-## 実施しない項目
-
-以下の項目は実装しない:
-- 外部コールシステム統合
-- オートダイアリング
-- 通話録音
-- 音声認識
+- 録音のダウンロード
+- トランスクリプション
+- AI 分析
+- 自動通話
+- 緊急呼び出しの実行
+- 外部ウェブフック
 - クラウド同期
-- ユーザーアカウント管理
-- CRMインポートの自動化
-- 高度なAIスコアリング
 
-## 受け入れ基準
+---
 
-- Salesナビゲーションが存在する
-- Sales Dashboardが機能する
-- Call Listが機能する
-- Lead Detailが機能する
-- コール履歴を保存できる
-- 聞き取りメモを保存できる
-- リードステータスを更新できる
-- MUSAの営業提案が表示される
-- 営業知識候補が作成される
-- npmテストが合格する
-- READMEが更新される
-- CHANGELOGが更新される
+### 受け入れ基準
 
-## 納品物
+- Zoom Phone モジュールが存在する
+- SQLite テーブルが存在する
+- サンプル通話ログをインポートできる
+- インポートされた通話ログをリストできる
+- 統合ステータスが表示される
+- 資格情報が不足していてもスタートアップに影響を与えない
+- 秘密はログに出力されない
+- `npm test` が通過する
+- README が更新されている
+- CHANGELOG が更新されている
 
-レポート:
+---
+
+### 提出物
+
+報告:
+
 - 変更されたファイル
 - テスト結果
-- エラーの有無
+- エラー
 - 推奨コミットメッセージ
 
-コミットをGitHubにプッシュしないこと。
+GitHub にはプッシュしないでください。
 
 推奨コミットメッセージ:
-```
-feat(sales): add telemarketing sales MVP
-```
+
+`feat(sales): add zoom phone call log import foundation`

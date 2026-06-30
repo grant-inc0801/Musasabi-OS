@@ -1,157 +1,104 @@
 ```javascript
-// packages/sales/src/salesLeadRepository.js
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database(':memory:');
+// packages/integrations/src/zoom-phone/zoomPhoneTypes.js
+export const CallLogSchema = {
+  id: "INTEGER PRIMARY KEY AUTOINCREMENT",
+  zoom_call_id: "TEXT",
+  direction: "TEXT",
+  caller_number: "TEXT",
+  callee_number: "TEXT",
+  start_time: "TEXT",
+  end_time: "TEXT",
+  duration_seconds: "INTEGER",
+  result: "TEXT",
+  recording_available: "BOOLEAN",
+  raw_json: "TEXT",
+  created_at: "TEXT DEFAULT CURRENT_TIMESTAMP",
+  updated_at: "TEXT DEFAULT CURRENT_TIMESTAMP"
+};
 
-db.serialize(() => {
-  db.run(`CREATE TABLE sales_leads (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    company_name TEXT,
-    store_name TEXT,
-    phone_number TEXT,
-    postal_code TEXT,
-    address TEXT,
-    industry_major TEXT,
-    industry_minor TEXT,
-    status TEXT,
-    priority INTEGER,
-    assigned_to TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-});
+// packages/integrations/src/zoom-phone/zoomPhoneClient.js
+import axios from 'axios';
 
-module.exports = db;
+export const fetchCallLogs = async (accountId, clientId, clientSecret) => {
+  // Placeholder for actual Zoom API call
+  return [];
+};
 
-// packages/sales/src/salesLeadService.js
-const db = require('./salesLeadRepository');
+// packages/integrations/src/zoom-phone/zoomPhoneService.js
+import { CallLogSchema } from './zoomPhoneTypes';
+import { fetchCallLogs } from './zoomPhoneClient';
+import sqlite3 from 'sqlite3';
+import fs from 'fs';
 
-const createLead = (leadData) => {
-  const { company_name, store_name, phone_number, postal_code, address, industry_major, industry_minor, status, priority, assigned_to } = leadData;
-  return new Promise((resolve, reject) => {
-    db.run(`INSERT INTO sales_leads (company_name, store_name, phone_number, postal_code, address, industry_major, industry_minor, status, priority, assigned_to) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [company_name, store_name, phone_number, postal_code, address, industry_major, industry_minor, status, priority, assigned_to],
-      function(err) {
-        if (err) reject(err);
-        resolve(this.lastID);
-      });
+const db = new sqlite3.Database('./database.sqlite');
+
+export const initializeDb = () => {
+  const columnDefs = Object.entries(CallLogSchema)
+    .map(([key, type]) => `${key} ${type}`)
+    .join(', ');
+  db.run(`CREATE TABLE IF NOT EXISTS zoom_phone_call_logs (${columnDefs});`);
+};
+
+export const normalizeCallLog = (raw) => {
+  return {
+    zoom_call_id: raw.id,
+    direction: raw.direction,
+    caller_number: raw.from,
+    callee_number: raw.to,
+    start_time: raw.start_time,
+    end_time: raw.end_time,
+    duration_seconds: raw.duration,
+    result: raw.result,
+    recording_available: raw.recording === 'available',
+    raw_json: JSON.stringify(raw)
+  };
+};
+
+export const importCallLogs = async (rawLogs) => {
+  rawLogs.forEach((raw) => {
+    const normalized = normalizeCallLog(raw);
+    const placeholders = Object.keys(normalized).map(() => '?').join(', ');
+    const values = Object.values(normalized);
+    db.run(
+      `INSERT INTO zoom_phone_call_logs (${Object.keys(normalized).join(', ')}) VALUES (${placeholders})`,
+      values
+    );
   });
 };
 
-module.exports = { createLead };
-
-// packages/sales/src/callHistoryRepository.js
-const db = require('./salesLeadRepository');
-
-db.serialize(() => {
-  db.run(`CREATE TABLE call_histories (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    lead_id INTEGER,
-    call_result TEXT,
-    contact_person TEXT,
-    memo TEXT,
-    next_action TEXT,
-    next_call_date DATETIME,
-    created_by TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-});
-
-module.exports = db;
-
-// packages/sales/src/callHistoryService.js
-const db = require('./callHistoryRepository');
-
-const createCallHistory = (callHistoryData) => {
-  const { lead_id, call_result, contact_person, memo, next_action, next_call_date, created_by } = callHistoryData;
+export const listCallLogs = () => {
   return new Promise((resolve, reject) => {
-    db.run(`INSERT INTO call_histories (lead_id, call_result, contact_person, memo, next_action, next_call_date, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [lead_id, call_result, contact_person, memo, next_action, next_call_date, created_by],
-      function(err) {
-        if (err) reject(err);
-        resolve(this.lastID);
-      });
+    db.all('SELECT * FROM zoom_phone_call_logs', (err, rows) => {
+      if (err) return reject(err);
+      resolve(rows);
+    });
   });
 };
 
-module.exports = { createCallHistory };
-
-// packages/sales/src/hearingNoteRepository.js
-const db = require('./salesLeadRepository');
-
-db.serialize(() => {
-  db.run(`CREATE TABLE sales_hearing_notes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    lead_id INTEGER,
-    store_name TEXT,
-    company_name TEXT,
-    contact_person TEXT,
-    phone_number TEXT,
-    email TEXT,
-    website_url TEXT,
-    memo_1 TEXT,
-    memo_2 TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-});
-
-module.exports = db;
-
-// packages/sales/src/hearingNoteService.js
-const db = require('./hearingNoteRepository');
-
-const createHearingNote = (hearingNoteData) => {
-  const { lead_id, store_name, company_name, contact_person, phone_number, email, website_url, memo_1, memo_2 } = hearingNoteData;
+export const getCallLog = (id) => {
   return new Promise((resolve, reject) => {
-    db.run(`INSERT INTO sales_hearing_notes (lead_id, store_name, company_name, contact_person, phone_number, email, website_url, memo_1, memo_2) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [lead_id, store_name, company_name, contact_person, phone_number, email, website_url, memo_1, memo_2],
-      function(err) {
-        if (err) reject(err);
-        resolve(this.lastID);
-      });
+    db.get('SELECT * FROM zoom_phone_call_logs WHERE id = ?', [id], (err, row) => {
+      if (err) return reject(err);
+      resolve(row);
+    });
   });
 };
 
-module.exports = { createHearingNote };
+export const getIntegrationStatus = () => {
+  const configured = process.env.ZOOM_ACCOUNT_ID && process.env.ZOOM_CLIENT_ID && process.env.ZOOM_CLIENT_SECRET;
+  return configured ? 'configured' : 'not configured';
+};
 
-// packages/sales/src/index.js
-const express = require('express');
-const app = express();
-const salesLeadService = require('./salesLeadService');
-const callHistoryService = require('./callHistoryService');
-const hearingNoteService = require('./hearingNoteService');
-
-app.use(express.json());
-
-app.post('/lead', async (req, res) => {
-  try {
-    const leadId = await salesLeadService.createLead(req.body);
-    res.status(201).send({ leadId });
-  } catch (error) {
-    res.status(500).send(error);
+export const mockImportIfNeeded = () => {
+  if (!process.env.ZOOM_ACCOUNT_ID) {
+    const sampleData = JSON.parse(fs.readFileSync('./data/seeds/zoom-phone-sample-call-logs.json'));
+    importCallLogs(sampleData);
   }
-});
+};
 
-app.post('/call-history', async (req, res) => {
-  try {
-    const callHistoryId = await callHistoryService.createCallHistory(req.body);
-    res.status(201).send({ callHistoryId });
-  } catch (error) {
-    res.status(500).send(error);
-  }
-});
+// packages/integrations/src/zoom-phone/index.js
+import { initializeDb, mockImportIfNeeded } from './zoomPhoneService';
 
-app.post('/hearing-note', async (req, res) => {
-  try {
-    const hearingNoteId = await hearingNoteService.createHearingNote(req.body);
-    res.status(201).send({ hearingNoteId });
-  } catch (error) {
-    res.status(500).send(error);
-  }
-});
-
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-});
+initializeDb();
+mockImportIfNeeded();
 ```
