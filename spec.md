@@ -1,180 +1,234 @@
-# 技術指示書: Workflow Foundation Implementation
+# 技術指示書
 
 ## 概要
 
-本書は、Musasabi AI の最小限の Workflow Foundation を実装するための技術指示書です。この実装は、ワークフローデータモデル、リポジトリ、サービス、シードワークフロー、デスクトップステータス表示の構築を目的とし、ワークフローの実行は含みません。
+この技術指示書は、MUSA（Musasabi AI）の最速の内部MVPバージョンを実装するためのガイドラインを提供します。このプロジェクトでは、MUSAが以下の機能を提供できるようにします：
 
----
+- MUSA Chat
+- ローカル知識
+- 知識ベースの応答
+- タスクメモ
+- 会話履歴
+- シンプルなデスクトップナビゲーション
 
-## 対象範囲
+## 実装範囲
 
-以下のコンポーネントを実装します:
+### 主要機能の実装
 
-- ワークフローリポジトリ
-- ワークフローサービス
-- SQLite マイグレーション
-- ワークフローモデル
-- ワークフロータスクモデル
-- シードワークフロー
-- デスクトップUIのステータス表示
-- 単体テスト
+1. MUSA Chat UI
+2. 知識登録
+3. 知識検索
+4. 知識ベースに基づくMUSAの応答
+5. タスクメモ管理
+6. 会話履歴
+7. シンプルなデスクトップナビゲーション
 
----
+### デスクトップナビゲーション
 
-## 必要なファイル
+以下のナビゲーション項目を追加:
 
-以下のファイルを作成してください:
+- Home
+- MUSA Chat
+- 知識
+- タスク
+- 設定
 
-```
-packages/workflow/src/
-  - workflowRepository.js
-  - workflowService.js
-  - index.js
-```
+### SQLite テーブル構造
 
----
+次のテーブルを作成：
 
-## SQLite マイグレーション
+- knowledge_items
+  - id
+  - title
+  - category
+  - content
+  - tags_json
+  - created_at
+  - updated_at
 
-### テーブル: `workflows`
-
-- カラム:
+- tasks
   - id
   - title
   - description
   - status
-  - created_by
+  - due_date
   - created_at
   - updated_at
 
-### テーブル: `workflow_tasks`
-
-- カラム:
+- chat_messages
   - id
-  - workflow_id
-  - title
-  - task_type
-  - status
-  - order_index
+  - role
+  - content
+  - source
   - created_at
-  - updated_at
 
----
+### モジュール構成
 
-## シードワークフロー
+以下のモジュールを作成：
 
-### 初期ワークフロー
+- 知識管理：`packages/knowledge/src/`
+  - knowledgeRepository.js
+  - knowledgeService.js
+  - index.js
 
-- タイトル: MUSA Full Auto Approval Workflow
-- 説明: Workflow for requesting approval before switching MUSA-001 to full auto mode.
-- 状態: ready
+- タスク管理：`packages/tasks/src/`
+  - taskRepository.js
+  - taskService.js
+  - index.js
 
-#### タスク:
-1. 承認リクエストを作成
-   - task_type: approval
-   - status: ready
-   - order_index: 1
+- チャット管理：`packages/chat/src/`
+  - chatRepository.js
+  - chatService.js
+  - musaResponder.js
+  - index.js
 
-2. CEOの承認を待つ
-   - task_type: human_review
-   - status: waiting
-   - order_index: 2
+## MUSA チャット要件
 
----
+ユーザーがメッセージを送信した場合：
 
-## サービスメソッド
+1. ユーザーメッセージを保存
+2. ローカルのknowledge_itemsを検索
+3. 必要であれば、memory_recordsを検索
+4. MUSAの応答を生成
+5. アシスタントの応答を保存
 
-- `createWorkflow()`
-- `getWorkflow()`
-- `listWorkflows()`
-- `addTask()`
-- `listTasks()`
+## 応答フォーマット
 
----
+関連する知識が存在する場合：
 
-## リポジトリメソッド
+```
+MUSA:
 
-- `createWorkflow()`
-- `findWorkflowById()`
-- `listWorkflows()`
-- `createTask()`
-- `listTasksByWorkflowId()`
+{answer}
 
----
+参照:
 
-## UI
+- {knowledge title}
+```
 
-表示内容:
+関連する知識が存在しない場合：
 
-- Workflow Engine: Ready
-- ワークフロー: MUSA Full Auto Approval Workflow
-- ワークフローステータス: ready
-- タスク: 2
+```
+MUSA:
 
----
+まだ関連する社内ナレッジが見つかりませんでした。
+必要であればKnowledgeに情報を追加してください。
+```
+
+## オプションのOpenAI連携
+
+`OPENAI_API_KEY` がローカル環境に存在する場合：
+
+- オプションでLLMアシスト付き応答を許可
+- APIキーを公開しない
+- APIキーをログに記録しない
+- エラー時にローカル応答にフォールバック
+
+OpenAIはアプリの起動に必要であってはならない。
+
+## タスク管理
+
+タスクのフィールド：
+
+- title
+- description
+- status
+- due_date
+- created_at
+
+ステータス：
+
+- todo
+- doing
+- done
+
+ユーザーは：
+
+- タスクを作成
+- タスクリストを表示
+- タスクを完了済みにマーク
+
+## デスクトップUIの受け入れ要件
+
+アプリは次を許可する：
+
+- 知識を追加
+- 知識リストを表示
+- MUSAとチャット
+- ローカル知識に基づくMUSAの応答を見る
+- タスクを追加
+- タスクリストを見る
+- タスクを完了済みにマーク
+- 会話履歴を表示
 
 ## テスト
 
-以下のテストを実装してください:
+以下のテストを追加：
 
-- `workflows` テーブルが存在する
-- `workflow_tasks` テーブルが存在する
-- ワークフローの作成
-- ワークフローの一覧表示
+- 知識の作成
+- 知識の検索
 - タスクの作成
-- タスクの一覧表示
-- シードワークフローが存在する
-- デスクトップブートストラップが Musasabi OS と MUSA-001 を表示する
+- タスクのステータス更新
+- チャットメッセージの保存
+- MUSAのフォールバック応答
+- MUSAの知識応答
+- デスクトップのブートストラップ
 
----
+## ドキュメント
 
-## ドキュメント更新
+更新：
 
-以下を更新してください:
+- README.md
+- CHANGELOG.md
 
-- `README.md`
-- `CHANGELOG.md`
+READMEには以下を含める：
 
----
+- アプリの起動方法
+- 知識の追加方法
+- MUSAとのチャット方法
+- タスクの作成方法
+- オプションのOPENAI_API_KEYの設定方法
 
-## 制約
+## 制限事項
 
-以下の実装は行わないでください:
+以下を実装しない：
 
-- ワークフローの実行
-- リトライ
-- ロールバック
-- プラグイン統合
-- スケジューラ統合
-- 外部API
-
----
+- ユーザーアカウント
+- クラウド同期
+- Supabase
+- マルチエージェント
+- マーケットプレイス
+- プラグインストア
+- 複雑な承認
+- 高度なワークフロー
+- 外部統合
 
 ## 受け入れ基準
 
-- WorkflowRepository が実装されている
-- WorkflowService が実装されている
-- `workflows` テーブルが存在する
-- `workflow_tasks` テーブルが存在する
-- シードワークフローが存在する
-- デスクトップUIが Workflow Engine Ready を表示すること
-- テストが通過する
-- README が更新されている
-- CHANGELOG が更新されている
+- アプリが起動する
+- ユーザーが知識を追加できる
+- ユーザーが知識を閲覧できる
+- ユーザーがMUSAとチャットできる
+- MUSAがローカル知識を参照できる
+- ユーザーがタスクを作成できる
+- ユーザーがタスクを完了済みにマークできる
+- 会話履歴が保存される
+- OPENAI_API_KEYがオプションである
+- npmテストが合格する
+- READMEが更新される
+- CHANGELOGが更新される
 
----
+## 成果物
 
-## 納品物
-
-レポート内容:
+報告：
 
 - 変更されたファイル
 - テスト結果
-- 提案されるコミットメッセージ
+- 何らかのエラー
+- 提案されたコミットメッセージ
 
-GitHub へのプッシュは不要です。
+GitHubにプッシュしないこと。
 
-提案されるコミット:  
-`feat(workflow): implement workflow foundation`
+提案されたコミットメッセージ：
 
----
+`feat(mvp): add internal MUSA chat knowledge and task MVP`

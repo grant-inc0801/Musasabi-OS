@@ -1,115 +1,144 @@
 ```javascript
-// packages/workflow/src/workflowRepository.js
+// packages/knowledge/src/knowledgeRepository.js
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database(':memory:');
 
 db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS workflows (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+  db.run(`CREATE TABLE IF NOT EXISTS knowledge_items (
+    id INTEGER PRIMARY KEY,
     title TEXT,
-    description TEXT,
-    status TEXT,
-    created_by TEXT,
+    category TEXT,
+    content TEXT,
+    tags_json TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
-  
-  db.run(`CREATE TABLE IF NOT EXISTS workflow_tasks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    workflow_id INTEGER,
+});
+
+module.exports = db;
+
+// packages/knowledge/src/knowledgeService.js
+const db = require('./knowledgeRepository');
+
+function addKnowledgeItem(title, category, content, tags) {
+  const tagsJson = JSON.stringify(tags);
+  db.run(`INSERT INTO knowledge_items (title, category, content, tags_json) VALUES (?, ?, ?, ?)`, [title, category, content, tagsJson]);
+}
+
+function searchKnowledgeItems(query) {
+  return new Promise((resolve, reject) => {
+    db.all(`SELECT * FROM knowledge_items WHERE title LIKE ? OR content LIKE ?`, [`%${query}%`, `%${query}%`], (err, rows) => {
+      if (err) reject(err);
+      resolve(rows);
+    });
+  });
+}
+
+module.exports = { addKnowledgeItem, searchKnowledgeItems };
+
+// packages/knowledge/src/index.js
+const knowledgeService = require('./knowledgeService');
+
+knowledgeService.addKnowledgeItem('Sample Title', 'Category', 'This is content', ['tag1', 'tag2']);
+knowledgeService.searchKnowledgeItems('Sample').then(console.log);
+
+// packages/tasks/src/taskRepository.js
+const db = new sqlite3.Database(':memory:');
+
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY,
     title TEXT,
-    task_type TEXT,
+    description TEXT,
     status TEXT,
-    order_index INTEGER,
+    due_date DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(workflow_id) REFERENCES workflows(id)
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 });
 
-const createWorkflow = (title, description, status, createdBy) => {
-  db.run(`INSERT INTO workflows (title, description, status, created_by) VALUES (?, ?, ?, ?)`,
-    [title, description, status, createdBy]);
-};
+module.exports = db;
 
-const findWorkflowById = (id, callback) => {
-  db.get(`SELECT * FROM workflows WHERE id = ?`, [id], callback);
-};
+// packages/tasks/src/taskService.js
+const db = require('./taskRepository');
 
-const listWorkflows = (callback) => {
-  db.all(`SELECT * FROM workflows`, [], callback);
-};
+function addTask(title, description, status, dueDate) {
+  db.run(`INSERT INTO tasks (title, description, status, due_date) VALUES (?, ?, ?, ?)`, [title, description, status, dueDate]);
+}
 
-const createTask = (workflowId, title, taskType, status, orderIndex) => {
-  db.run(`INSERT INTO workflow_tasks (workflow_id, title, task_type, status, order_index) VALUES (?, ?, ?, ?, ?)`,
-    [workflowId, title, taskType, status, orderIndex]);
-};
+function updateTaskStatus(id, status) {
+  db.run(`UPDATE tasks SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [status, id]);
+}
 
-const listTasksByWorkflowId = (workflowId, callback) => {
-  db.all(`SELECT * FROM workflow_tasks WHERE workflow_id = ? ORDER BY order_index`, [workflowId], callback);
-};
+module.exports = { addTask, updateTaskStatus };
 
-module.exports = {
-  createWorkflow,
-  findWorkflowById,
-  listWorkflows,
-  createTask,
-  listTasksByWorkflowId
-};
+// packages/tasks/src/index.js
+const taskService = require('./taskService');
 
-// packages/workflow/src/workflowService.js
-const repository = require('./workflowRepository');
+taskService.addTask('Task 1', 'Task description', 'todo', new Date());
+taskService.updateTaskStatus(1, 'done');
 
-const createWorkflow = (title, description, status, createdBy) => {
-  repository.createWorkflow(title, description, status, createdBy);
-};
+// packages/chat/src/chatRepository.js
+const db = new sqlite3.Database(':memory:');
 
-const getWorkflow = (id, callback) => {
-  repository.findWorkflowById(id, callback);
-};
-
-const listWorkflows = (callback) => {
-  repository.listWorkflows(callback);
-};
-
-const addTask = (workflowId, title, taskType, status, orderIndex) => {
-  repository.createTask(workflowId, title, taskType, status, orderIndex);
-};
-
-const listTasks = (workflowId, callback) => {
-  repository.listTasksByWorkflowId(workflowId, callback);
-};
-
-module.exports = {
-  createWorkflow,
-  getWorkflow,
-  listWorkflows,
-  addTask,
-  listTasks
-};
-
-// packages/workflow/src/index.js
-const workflowService = require('./workflowService');
-
-workflowService.createWorkflow(
-  'MUSA Full Auto Approval Workflow',
-  'Workflow for requesting approval before switching MUSA-001 to full auto mode.',
-  'ready',
-  'System'
-);
-
-workflowService.getWorkflow(1, (err, workflow) => {
-  if (workflow) {
-    console.log('Workflow Engine: Ready');
-    console.log(`ワークフロー: ${workflow.title}`);
-    console.log(`ワークフローステータス: ${workflow.status}`);
-    
-    workflowService.addTask(workflow.id, '承認リクエストを作成', 'approval', 'ready', 1);
-    workflowService.addTask(workflow.id, 'CEOの承認を待つ', 'human_review', 'waiting', 2);
-
-    workflowService.listTasks(workflow.id, (err, tasks) => {
-      console.log(`タスク: ${tasks.length}`);
-    });
-  }
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS chat_messages (
+    id INTEGER PRIMARY KEY,
+    role TEXT,
+    content TEXT,
+    source TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
 });
+
+module.exports = db;
+
+// packages/chat/src/chatService.js
+const db = require('./chatRepository');
+
+function saveUserMessage(content) {
+  db.run(`INSERT INTO chat_messages (role, content, source) VALUES ('user', ?, 'local')`, [content]);
+}
+
+function saveAssistantMessage(content, source) {
+  db.run(`INSERT INTO chat_messages (role, content, source) VALUES ('assistant', ?, ?)`, [content, source]);
+}
+
+module.exports = { saveUserMessage, saveAssistantMessage };
+
+// packages/chat/src/musaResponder.js
+const knowledgeService = require('../../knowledge/src/knowledgeService');
+const chatService = require('./chatService');
+
+async function generateResponse(userMessage) {
+  chatService.saveUserMessage(userMessage);
+
+  const knowledgeItems = await knowledgeService.searchKnowledgeItems(userMessage);
+  let responseContent;
+
+  if (knowledgeItems.length > 0) {
+    const item = knowledgeItems[0];
+    responseContent = `MUSA:\n\n${item.content}\n\n参照:\n- ${item.title}`;
+  } else {
+    responseContent = `MUSA:\n\nまだ関連する社内ナレッジが見つかりませんでした。\n必要であればKnowledgeに情報を追加してください。`;
+  }
+  
+  chatService.saveAssistantMessage(responseContent, 'local');
+  return responseContent;
+}
+
+module.exports = { generateResponse };
+
+// packages/chat/src/index.js
+const { generateResponse } = require('./musaResponder');
+
+generateResponse('What is MUSA?').then(console.log);
+
+// App Initialization (example for desktop UI)
+// This is just a placeholder for organizational purposes, actual UI code would be more extensive.
+const initApp = () => {
+  console.log("App initialized with MUSA Chat, Knowledge, and Task management.");
+};
+
+initApp();
 ```
