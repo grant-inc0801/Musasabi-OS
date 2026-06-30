@@ -1,160 +1,190 @@
-以下は、上記のタスクに基づいて作成した技術指示書のMarkdown形式です。
+# AI Sales Manager Foundation - Technical Instruction Document
 
-```markdown
-# 技術指示書: S3-005 Sales Workspace MVP
+## Objective
 
-## 目的
+Implement the AI Sales Manager Foundation by transitioning Musasabi AI from an assistant role to a Sales Manager role, focusing on decision-making processes for daily sales tasks.
 
-本ドキュメントは、テレマーケティングチーム向けの初のプロダクション対応Sales Workspaceを実装するための詳細指示書です。このワークスペースは、営業担当者が日中常に使用するメイン画面となり、全ての日々の業務から得られる知見がSales Intelligence EngineとCompany Brainに入力されます。
+## Vision
 
-## ワークスペースレイアウト
+The system follows a sequential flow as below:
 
-### 左パネル: リードリスト
+1. **Sales Leads**
+2. **Learning Data**
+3. **Sales Brain**
+4. **AI Sales Manager**
+5. **Today's Priority List**
+6. **Salesperson Execution**
+7. **Learning Feedback**
+8. **Sales Brain Update**
 
-#### 表示項目
-- 会社名
-- 店舗名
-- 電話番号
-- ステータス
-- コールバック日
-- 優先度
+## Directory Structure
 
-#### フィルター
-- 新規
-- コール中
-- コールバック
-- 興味あり
-- クローズ
+Create the following directories and files:
 
-#### 検索
-- 会社
-- 店舗
-- 電話番号
-
-### 中央パネル: リード詳細
-
-#### 表示項目
-- 会社情報
-- 店舗情報
-- 電話番号
-- 住所
-- 業界
-- 担当者
-- メール
-- ウェブサイト
-- 前回の通話履歴
-- トランスクリプト
-- ヒアリングノート
-- 次のアクション
-
-### 右パネル: MUSA Sales Assistant
-
-#### 表示項目
-- 現在の顧客サマリー
-- 推奨オープニング
-- 予想される反論
-- 推奨反論
-- クロージング提案
-- 次の最適なアクション
-- 学習スコア
-- 信頼度
-
-## ショートカット
-
-以下のキーボードショートカットを実装します。
-
-- Ctrl + F: 検索
-- Ctrl + R: 前の検索へ戻る
-- Ctrl + N: 現在の検索の複製
-- Ctrl + D: フィルターを保持したまま複製
-- Ctrl + T: 選択したリードの除外
-
-## コールコントロール
-
-以下のボタンを実装します。
-
-- コール開始
-- コール終了
-- メモ保存
-- トランスクリプト保存
-- 次のリード
-- コールバック作成
-- 興味ありにマーク
-- クローズにマーク
-
-## 自動学習機能
-
-以下の条件で学習記録を自動生成します。
-
-- 通話履歴の保存
-- ヒアリングノートの保存
-- トランスクリプトの保存
-
-自動生成された学習記録は承認不要ですが、知識公開には承認が必要です。
-
-## ダッシュボード
-
-以下を表示します。
-
-- 今日の通話数
-- 今日のアポイントメント
-- 現在のコールバックキュー
-- 平均スコア
-- 知識候補
-- トップの反論
-
-## パフォーマンス
-
-ワークスペースは、100,000リードをサポートし、遅延を感じさせない設計を目指します。ページネーションと遅延読み込みを使用してください。
-
-## テスト
-
-以下の機能をテストします。
-
-- リードのフィルタリング
-- リード検索
-- キーボードショートカット
-- トランスクリプト保存
-- 学習記録の作成
-- ダッシュボードの更新
-
-## ドキュメント更新
-
-以下のドキュメントを更新します。
-
-- README.md
-- CHANGELOG.md
-- docs/SALES_WORKSPACE.md
-
-## 制約
-
-以下の機能は実装しないでください。
-
-- 自動通話
-- 音声AI
-- 音声認識
-- クラウド同期
-- マーケットプレイス
-
-## 受入基準
-
-- 営業担当者が単一画面で全てのテレマーケティングワークフローを完了できること。
-- 学習記録が自動的に作成されること。
-- ダッシュボードが正しく更新されること。
-- キーボードショートカットが機能すること。
-- テストが全て通過すること。
-- READMEが更新されていること。
-
-## 納品物
-
-- 変更ファイルの報告
-- テスト結果
-- コミットの提案
-
-自動でのプッシュは行わないこと。
-
-### 提案コミットメッセージ
 ```
-feat(sales): implement production sales workspace MVP
+packages/ai-sales-manager/
+└── src/
+    ├── leadScoringEngine.js
+    ├── priorityEngine.js
+    ├── appointmentPredictor.js
+    ├── recommendationEngine.js
+    ├── nextActionEngine.js
+    ├── executiveDashboard.js
+    └── index.js
 ```
+
+## Database Schema
+
+### SQLite Tables
+
+Create tables as described below:
+
+#### Table: `lead_scores`
+
+- **id** - Primary key
+- **lead_id** - Lead identifier
+- **score** - Calculated lead score
+- **appointment_probability** - Probability of booking an appointment
+- **confidence** - Confidence level of the prediction
+- **calculated_at** - Timestamp of calculation
+
+#### Table: `daily_recommendations`
+
+- **id** - Primary key
+- **lead_id** - Lead identifier
+- **priority_rank** - Priority ranking of the lead
+- **recommendation** - Recommended action for the lead
+- **expected_result** - Expected outcome
+- **created_at** - Timestamp
+
+#### Table: `sales_daily_summary`
+
+- **id** - Primary key
+- **date** - Date of summary
+- **calls** - Number of calls made
+- **appointments** - Number of appointments set
+- **callbacks** - Number of callbacks scheduled
+- **interested** - Number of interested leads
+- **score_average** - Average score of leads contacted
+
+## AI Sales Manager Functionality
+
+### Daily Priority List Generation
+
+Automatically generate a prioritized list each morning including:
+
+- Company
+- Reason for prioritization
+- Expected Appointment Probability
+- Recommended Opening Statement
+- Expected Objection
+- Recommended Rebuttal
+- Recommended Closing
+- Next Action
+
+### Lead Scoring
+
+Calculate lead scores (0-100) based on:
+
+- Call history
+- Callback history
+- Industry type
+- Previous objections
+- Learning records
+- Conversation quality
+- Appointment history
+- Recent activity
+
+### Appointment Prediction
+
+Generate Expected Appointment Probability (0-100%) with a separate storage for confidence levels.
+
+## Executive Dashboard
+
+Display the following elements:
+
+- Today's Priority Leads
+- Appointment Forecast
+- Today's Target
+- Progress Tracking
+- Best/Worst Performer
+- Lead and Industry Distribution
+- Call Queue
+
+## MUSA Recommendations
+
+Provide recommendations on:
+
+- Priority company for calls
+- Expected objections and rebuttals
+- Recommended opening and closing statements
+- Expected appointment probability
+
+## Learning and Adaptation
+
+Ensure that lead scores, appointment probabilities, and knowledge databases update with each completed call.
+
+## Future Compatibility
+
+Design to support future modes and features, including:
+
+- Learning Mode
+- AutoCall Mode
+- Multiple AI Employees
+- Campaign Management
+- Departmental Support
+
+## Testing
+
+Implement tests for:
+
+- Lead Scoring
+- Priority Ranking
+- Appointment Prediction
+- Recommendation Generation
+- Dashboard Summary
+
+## Documentation
+
+Create documentation files:
+
+- `README.md`
+- `CHANGELOG.md`
+- `docs/AI_SALES_MANAGER.md`
+
+## Restrictions
+
+Avoid implementing:
+
+- Voice AI
+- AutoCall
+- Speech Recognition
+- LLM reasoning
+- External APIs
+
+Emphasize deterministic logic only.
+
+## Acceptance Criteria
+
+- Successful Lead Scoring and Priority Ranking
+- Accurate Appointment Predictions
+- Functional Dashboard
+- Daily Recommendations Generated
+- All Tests Passing
+- Updated README
+
+## Deliverables
+
+Provide a report detailing:
+
+- Changed Files
+- Test Results
+- Suggested Commit Message
+
+*Do not push changes automatically.*
+
+### Suggested Commit Message
+
+```
+feat(ai): implement AI Sales Manager foundation
 ```
