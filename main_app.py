@@ -1,76 +1,203 @@
 ```javascript
-// packages/lead-priority/src/leadPriorityService.js
-const priorityCalculator = require('./priorityCalculator');
-const queueGenerator = require('./queueGenerator');
-const recommendationGenerator = require('./recommendationGenerator');
+// packages/sales-coach/index.js
 
-function calculateLeadPriority(leadData) {
-  return priorityCalculator.calculate(leadData);
-}
+const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
+const app = express();
 
-function generateCallQueue(leads) {
-  const priorities = leads.map(calculateLeadPriority);
-  return queueGenerator.generate(priorities);
-}
+const db = new sqlite3.Database(':memory:');
 
-function generateRecommendations(lead) {
-  return recommendationGenerator.generate(lead);
-}
+db.serialize(() => {
+  db.run(`CREATE TABLE live_coaching_sessions (
+    id INTEGER PRIMARY KEY,
+    lead_id INTEGER,
+    operator_id INTEGER,
+    started_at DATETIME,
+    ended_at DATETIME,
+    overall_score INTEGER,
+    result TEXT
+  )`);
 
-module.exports = {
-  calculateLeadPriority,
-  generateCallQueue,
-  generateRecommendations,
-};
-
-// packages/lead-priority/src/priorityCalculator.js
-function calculate(leadData) {
-  // Dummy score calculation implementation
-  const score = Math.random() * 100;
-  return {
-    leadId: leadData.id,
-    priorityScore: score,
-    appointmentProbability: score / 100,
-  };
-}
-
-module.exports = {
-  calculate,
-};
-
-// packages/lead-priority/src/scoringRules.js
-// Define scoring rules here - currently not used due to simple implementation
-
-// packages/lead-priority/src/recommendationGenerator.js
-function generate(lead) {
-  return `Call ${lead.companyName} first. Similar companies have a booking rate of 78%. Use opening pattern #3.`;
-}
-
-module.exports = {
-  generate,
-};
-
-// packages/lead-priority/src/queueGenerator.js
-function generate(priorities) {
-  return priorities
-    .sort((a, b) => b.priorityScore - a.priorityScore)
-    .map((priority, index) => ({
-      leadId: priority.leadId,
-      queueOrder: index + 1,
-      recommendation: `Priority rank ${index + 1}`,
-    }));
-}
-
-module.exports = {
-  generate,
-};
-
-// packages/lead-priority/src/index.js
-const service = require('./leadPriorityService');
-const leads = require('./leads.json'); // Assume this is a list of leads
-
-const callQueue = service.generateCallQueue(leads);
-callQueue.forEach((item) => {
-  console.log(`Queue Order: ${item.queueOrder}, Lead ID: ${item.leadId}, ${service.generateRecommendations(item)}`);
+  db.run(`CREATE TABLE live_recommendations (
+    id INTEGER PRIMARY KEY,
+    session_id INTEGER,
+    recommendation_type TEXT,
+    recommendation TEXT,
+    confidence REAL,
+    displayed_at DATETIME
+  )`);
 });
+
+app.get('/start-session', (req, res) => {
+  const { lead_id, operator_id } = req.query;
+  const started_at = new Date().toISOString();
+  db.run(`INSERT INTO live_coaching_sessions (lead_id, operator_id, started_at) VALUES (?, ?, ?)`,
+    [lead_id, operator_id, started_at], function(err) {
+    if (err) {
+      return res.status(500).send(err.message);
+    }
+    res.send({ session_id: this.lastID });
+  });
+});
+
+app.get('/recommendation', (req, res) => {
+  const { session_id } = req.query;
+  const recommendation = "Suggest new feature based on past success.";
+  const recommendationType = "next move";
+  const confidence = Math.random();
+  const displayed_at = new Date().toISOString();
+  
+  db.run(`INSERT INTO live_recommendations (session_id, recommendation_type, recommendation, confidence, displayed_at)
+          VALUES (?, ?, ?, ?, ?)`, [session_id, recommendationType, recommendation, confidence, displayed_at], function(err) {
+    if (err) {
+      return res.status(500).send(err.message);
+    }
+    res.send({ recommendation, confidence });
+  });
+});
+
+app.get('/end-session', (req, res) => {
+  const { session_id, overall_score, result } = req.query;
+  const ended_at = new Date().toISOString();
+
+  db.run(`UPDATE live_coaching_sessions SET ended_at = ?, overall_score = ?, result = ? WHERE id = ?`,
+    [ended_at, overall_score, result, session_id], function(err) {
+    if (err) {
+      return res.status(500).send(err.message);
+    }
+    res.send({ message: 'Session updated' });
+  });
+});
+
+app.listen(3000, () => {
+  console.log('Real-Time Sales Coach server is running on port 3000');
+});
+
+module.exports = app;
+```
+
+```javascript
+// src/coachingService.js
+
+class CoachingService {
+  constructor(db) {
+    this.db = db;
+  }
+
+  createSession(leadId, operatorId, callback) {
+    const startedAt = new Date().toISOString();
+    this.db.run(`INSERT INTO live_coaching_sessions (lead_id, operator_id, started_at) VALUES (?, ?, ?)`,
+      [leadId, operatorId, startedAt], function(err) {
+      callback(err, this ? this.lastID : null);
+    });
+  }
+
+  endSession(sessionId, overallScore, result, callback) {
+    const endedAt = new Date().toISOString();
+    this.db.run(`UPDATE live_coaching_sessions SET ended_at = ?, overall_score = ?, result = ? WHERE id = ?`,
+      [endedAt, overallScore, result, sessionId], callback);
+  }
+}
+
+module.exports = CoachingService;
+```
+
+```javascript
+// src/liveRecommendationEngine.js
+
+class LiveRecommendationEngine {
+  constructor(db) {
+    this.db = db;
+  }
+
+  generateRecommendation(sessionId, callback) {
+    const recommendation = "Suggest new feature based on past success.";
+    const recommendationType = "next move";
+    const confidence = Math.random();
+    const displayedAt = new Date().toISOString();
+
+    this.db.run(`INSERT INTO live_recommendations (session_id, recommendation_type, recommendation, confidence, displayed_at)
+                VALUES (?, ?, ?, ?, ?)`, [sessionId, recommendationType, recommendation, confidence, displayedAt], function(err) {
+      callback(err, { recommendation, confidence });
+    });
+  }
+}
+
+module.exports = LiveRecommendationEngine;
+```
+
+```javascript
+// src/objectionPredictor.js
+
+class ObjectionPredictor {
+  predictObjections() {
+    const objections = [
+      'Too expensive',
+      'Already using a competitor',
+      'Not interested right now',
+      'Need to consult with a partner',
+      'Uncertain about return on investment'
+    ];
+    return objections.slice(0, 5);
+  }
+}
+
+module.exports = ObjectionPredictor;
+```
+
+```javascript
+// src/rebuttalGenerator.js
+
+class RebuttalGenerator {
+  generateRebuttal(objections) {
+    return objections.map(objection => {
+      switch (objection) {
+        case 'Too expensive':
+          return 'Highlight cost-saving features';
+        case 'Already using a competitor':
+          return 'Discuss unique benefits';
+        case 'Not interested right now':
+          return 'Offer a free trial';
+        case 'Need to consult with a partner':
+          return 'Provide detailed reports and case studies';
+        case 'Uncertain about return on investment':
+          return 'Provide ROI projections';
+        default:
+          return 'Follow up later';
+      }
+    });
+  }
+}
+
+module.exports = RebuttalGenerator;
+```
+
+```javascript
+// src/nextActionAdvisor.js
+
+class NextActionAdvisor {
+  adviseNextActions() {
+    return [
+      'Schedule a follow-up meeting',
+      'Send a thank you email',
+      'Prepare a customized proposal',
+      'Update CRM with new information',
+      'Set a reminder for the next call'
+    ];
+  }
+}
+
+module.exports = NextActionAdvisor;
+```
+
+```javascript
+// src/confidenceCalculator.js
+
+class ConfidenceCalculator {
+  calculateConfidence(data) {
+    return Math.random() * (1 - 0.5) + 0.5;
+  }
+}
+
+module.exports = ConfidenceCalculator;
 ```
