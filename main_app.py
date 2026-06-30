@@ -1,126 +1,129 @@
 ```javascript
-// packages/appointment-forecast/src/appointmentForecastService.js
-class AppointmentForecastService {
-  calculateProbability(leadData, callHistory) {
-    let probability = 0;
-    let positiveFactors = [];
-    let negativeFactors = [];
+// packages/sales-command-center/src/commandCenterService.js
+import db from './database';
+import dailySummaryService from './dailySummaryService';
+import salesProgressService from './salesProgressService';
+import riskDetector from './riskDetector';
+import focusRecommendationService from './focusRecommendationService';
 
-    // Example logic for probability calculation
-    if (leadData.status === 'interested') {
-      probability += 20;
-      positiveFactors.push("Lead shows interest");
-    }
-    if (callHistory.some(call => call.callbackScheduled)) {
-      probability += 15;
-      positiveFactors.push("Callback is scheduled");
-    }
-    if (leadData.industry === 'successfulIndustry') {
-      probability += 10;
-      positiveFactors.push("High success rate in similar industry");
-    }
-    if (!leadData.decisionMakerConfirmed) {
-      probability -= 10;
-      negativeFactors.push("Decision maker not confirmed");
-    }
+class CommandCenterService {
+  async getDailySalesCommandCenter() {
+    const summary = await dailySummaryService.getDailySummary();
+    const progress = await salesProgressService.getProgress();
+    const risks = await riskDetector.detectRisks(progress);
+    const focusRecommendation = await focusRecommendationService.getRecommendation();
 
     return {
-      probability: Math.min(Math.max(probability, 0), 100),
-      positiveFactors,
-      negativeFactors
+      mission: {
+        goalCalls: summary.expected_calls,
+        goalAppointments: summary.expected_appointments,
+        expectedAppointments: summary.expected_appointments,
+        focusRecommendation
+      },
+      priorityCallQueue: await this.getPriorityCallQueue(),
+      currentProgress: progress,
+      riskAlert: risks,
+      musaAdvice: await this.getMusaAdvice(progress)
     };
   }
 
-  calculateConfidence(probability) {
-    return probability >= 50 ? 'High' : 'Low';
+  async getPriorityCallQueue() {
+    // Dummy data or implementation here
+    return []; 
   }
 
-  generateExplanation(probability, factors) {
-    return `Probability: ${probability}%, Positive factors: ${factors.positiveFactors.join(", ")}, Negative factors: ${factors.negativeFactors.join(", ")}`;
-  }
-}
-
-module.exports = AppointmentForecastService;
-
-// packages/appointment-forecast/src/probabilityCalculator.js
-class ProbabilityCalculator {
-  determineProbability(lead) {
-    // Just returning a static number for the sake of example
-    return Math.floor(Math.random() * 101);
+  async getMusaAdvice(progress) {
+    // Dummy data or implementation here
+    return {}; 
   }
 }
 
-module.exports = ProbabilityCalculator;
+export default new CommandCenterService();
 
-// packages/appointment-forecast/src/forecastRepository.js
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database(':memory:');
+// packages/sales-command-center/src/dailySummaryService.js
+import db from './database';
 
-class ForecastRepository {
-  constructor() {
-    this.createTable();
-  }
-
-  createTable() {
-    db.run(`CREATE TABLE appointment_forecasts (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              lead_id INTEGER,
-              probability INTEGER,
-              confidence TEXT,
-              reason TEXT,
-              positive_factors_json TEXT,
-              negative_factors_json TEXT,
-              calculated_at TEXT
-            )`);
-  }
-
-  saveForecast(forecast) {
-    db.run(`INSERT INTO appointment_forecasts 
-            (lead_id, probability, confidence, reason, positive_factors_json, negative_factors_json, calculated_at) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [forecast.lead_id, forecast.probability, forecast.confidence, forecast.reason, 
-       JSON.stringify(forecast.positiveFactors), JSON.stringify(forecast.negativeFactors), new Date().toISOString()]);
+class DailySummaryService {
+  async getDailySummary() {
+    return await db.getLatestReport(); 
   }
 }
 
-module.exports = ForecastRepository;
+export default new DailySummaryService();
 
-// packages/appointment-forecast/src/forecastExplainer.js
-class ForecastExplainer {
-  getExplanation(probabilityData) {
-    return `Probability: ${probabilityData.probability}%, Confidence: ${probabilityData.confidence}, Reason: Some reasons`;
+// packages/sales-command-center/src/salesProgressService.js
+import db from './database';
+
+class SalesProgressService {
+  async getProgress() {
+    // Compute progress here
+    return {}; 
   }
 }
 
-module.exports = ForecastExplainer;
+export default new SalesProgressService();
 
-// packages/appointment-forecast/src/index.js
-const AppointmentForecastService = require('./appointmentForecastService');
-const ForecastRepository = require('./forecastRepository');
-const ForecastExplainer = require('./forecastExplainer');
+// packages/sales-command-center/src/riskDetector.js
+class RiskDetector {
+  detectRisks(progress) {
+    const risks = [];
+    // Risk detection logic here
+    return risks;
+  }
+}
 
-const leadData = {
-  status: 'interested',
-  industry: 'successfulIndustry',
-  decisionMakerConfirmed: false
+export default new RiskDetector();
+
+// packages/sales-command-center/src/focusRecommendationService.js
+class FocusRecommendationService {
+  getRecommendation() {
+    // Provide focus recommendation
+    return 'Focus on high-value leads'; 
+  }
+}
+
+export default new FocusRecommendationService();
+
+// packages/sales-command-center/src/index.js
+import commandCenterService from './commandCenterService';
+
+(async () => {
+  const dashboardData = await commandCenterService.getDailySalesCommandCenter();
+  console.log(dashboardData);
+})();
+
+// packages/sales-command-center/src/database.js
+import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
+
+let db;
+
+(async () => {
+  db = await open({
+    filename: './db.sqlite',
+    driver: sqlite3.Database,
+  });
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS daily_sales_command_reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      report_date TEXT,
+      expected_calls INTEGER,
+      expected_appointments INTEGER,
+      current_calls INTEGER,
+      current_appointments INTEGER,
+      appointment_rate REAL,
+      risk_summary TEXT,
+      focus_recommendation TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+})();
+
+export default {
+  getLatestReport: async () => {
+    return await db.get('SELECT * FROM daily_sales_command_reports ORDER BY report_date DESC LIMIT 1');
+  },
 };
-
-const callHistory = [
-  { callbackScheduled: true }
-];
-
-const forecastService = new AppointmentForecastService();
-const repository = new ForecastRepository();
-const explainer = new ForecastExplainer();
-
-const forecast = forecastService.calculateProbability(leadData, callHistory);
-forecast.confidence = forecastService.calculateConfidence(forecast.probability);
-forecast.reason = explainer.getExplanation(forecast);
-
-repository.saveForecast({ 
-  lead_id: 123, 
-  ...forecast, 
-  positiveFactors: forecast.positiveFactors, 
-  negativeFactors: forecast.negativeFactors 
-});
 ```
