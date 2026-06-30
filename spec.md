@@ -1,247 +1,147 @@
-# 技術指示書: S4-013 Sprint Manager UI
+# 技術指示書: S5-001 Zoom Phone Real-Time Sync
 
 ## 概要
 
-本ドキュメントは、Musasabi OS内で開発スプリントを開始および監視できるようにするためのSprint Manager UIの実装に関する技術指示書です。このUIによって、CEOは手動操作をせずにスプリントドリブンなワークフローを管理できるようになります。
+Musasabi AI向けにZoom Phoneのリアルタイム同期を実装します。この統合は、会社の実際の電話システムでの初の本番環境導入です。Musasabi AIは、自動的に通話イベントを受信し、通話履歴を同期し、Sales Workspaceを更新し、Sales Brainに情報を提供する必要があります。本タスクでは、同期の実装のみを行います。
 
-## ビジョン
+## 現環境
 
-- ユーザ: CEO
-- 流れ: CEO → Sprint Manager UI → AI PM → Sprint.yaml → GitHub Issue Generation → Codex → Review → 次の課題
+- **テレフォニーシステム**: Zoom Phone
+- **CRMシステム**: FileMaker
 
-## 要件
+## 必要モジュール
 
-### 必須UI
+ファイル構造:
+```
+packages/integrations/src/zoom-phone/
+- zoomWebhookService.js
+- zoomEventRouter.js
+- zoomCallSyncService.js
+- zoomPresenceService.js
+- zoomRealtimeClient.js
+```
 
-Sprint Manager画面を作成します。ナビゲーション項目は以下のいずれかとします。
+## 対応イベント
 
-- Development
-- AI PM
+同期対象:
+- call.started
+- call.connected
+- call.ended
+- missed.call
+- voicemail.created
 
-### 画面セクション
+イベントはローカルに保存します。
 
-#### 1. アクティブスプリント
+## データベース構造 (SQLite)
 
-表示内容:
-- スプリントキー
-- スプリントタイトル
-- スプリントステータス
-- 進捗率
-- 現在のタスク
-- 次のタスク
-- ブロックされているタスク
-
-#### 2. スプリントコントロール
-
-ボタン:
-- スプリント開始
-- スプリント一時停止
-- スプリント再開
-- スプリント停止
-- 次の課題生成
-- ステータス更新
-
-#### 3. タスクリスト
-
-表示内容:
-- タスクキー
-- タイトル
-- ステータス
-- 依存関係
-- GitHub イシュー番号
-- 担当者
-- 更新日時
-
-ステータスは以下から選択:
-- pending
-- ready
-- in_progress
-- review
-- completed
-- blocked
-
-#### 4. レビュキュー
-
-表示内容:
-- レビュー待ちのタスク
-- テスト結果
-- 変更ファイル数
-- 推奨コミット
-- 承認状況
-
-#### 5. スプリントログ
-
-表示内容:
-- sprint.started
-- issue.created
-- issue.completed
-- review.requested
-- review.approved
-- sprint.completed
-
-## バックエンド
-
-既存のAI PMモジュールを利用可能であれば使用します。以下のファイルを作成または更新します。
-
-- `packages/ai-pm/src/sprint/sprintManager.js`
-- `packages/ai-pm/src/sprint/sprintRepository.js`
-- `packages/ai-pm/src/sprint/sprintDashboardService.js`
-- `packages/ai-pm/src/sprint/sprintControlService.js`
-
-## SQLite
-
-以下のテーブルを作成または更新します。
-
-### sprintsテーブル
+### テーブル: zoom_call_events
 
 - id
-- sprint_key
-- title
-- description
-- status
-- progress
-- started_at
-- completed_at
-- created_at
-- updated_at
-
-### sprint_tasksテーブル
-
-- id
-- sprint_id
-- task_key
-- title
-- status
-- dependency_key
-- github_issue_number
-- assignee
-- created_at
-- updated_at
-
-### sprint_eventsテーブル
-
-- id
-- sprint_id
+- zoom_call_id
 - event_type
-- detail_json
+- event_time
+- payload_json
+- processed
 - created_at
 
-## スプリント定義
+### テーブル: call_sync_status
 
-定義は`docs/sprints/`から読み込みます。例として`docs/sprints/Sprint-005.yaml`を使用します。
+- id
+- zoom_call_id
+- sync_status
+- last_synced_at
+- error_message
 
-## 初期スプリント
+## Sales Workspaceの更新
 
-`docs/sprints/Sprint-005.yaml`ファイルを作成します。
+以下のイベント発生時に自動更新:
+- 通話開始
+- 通話接続
+- 通話終了
 
-### タイトル
+表示項目:
+- 現在の通話ステータス
+- 現在の通話継続時間
+- 現在のリード
+- 最終同期
 
-Sales Department Operational MVP
+## リードマッチング
 
-### タスク
+優先順位:
+- プライマリ: 電話番号
+- フォールバック: 会社名
 
-- S5-001 Zoom Phone Real-Time Sync
-- S5-002 FileMaker Two-Way Sync
-- S5-003 Voice Analysis Engine
-- S5-004 Real-Time Sales Coach Upgrade
-- S5-005 AI Sales Manager Dashboard
-- S5-006 Sales KPI Forecast
+リードが見つからない場合は一時的な未マッチ通話レコードを作成。
 
-## コントロールの挙動
+## ダッシュボード
 
-### スプリント開始
+表示内容:
+- 今日の通話
+- 現在のアクティブ通話
+- 不在着信
+- 平均通話時間
+- 同期ステータス
 
-- スプリントyamlを読み込む
-- スプリントレコードを生成
-- タスクレコードを生成
-- 初めのタスクをreadyに設定
+## リトライ機能
 
-### 次の課題生成
+失敗した同期を自動リトライします。最大3回まで試行し、毎回の試行をログファイルに記録します。
 
-- 初めのreadyタスクを探す
-- GitHubイシューを生成
-- タスクステータスをin_progressに設定
-- GitHubイシュー番号を保存
+## セキュリティ
 
-### スプリント一時停止
+以下の情報を絶対に公開しない:
+- Zoomの認証情報
+- アクセストークン
+- Webhookシークレット
 
-- スプリントステータスをpausedに設定
-
-### スプリント再開
-
-- スプリントステータスをactiveに設定
-
-### スプリント停止
-
-- スプリントステータスをstoppedに設定
-
-## GitHub統合
-
-スプリントタスクからIssueを生成します。Issueタイトルフォーマットは以下としてください。
-
-- 例: S5-001 Zoom Phone Real-Time Sync
-
-ラベル:
-
-- codex-ready
-- sprint-5
-- high-priority
-
-AIによるIssueタイトルの生成は許可しません。
+イベントを処理する前にWebhookの署名を検証します。
 
 ## テスト
 
-以下のテストを実装します。
-
-- スプリントyamlパース
-- スプリント開始
-- タスクレコード生成
-- 進捗率計算
-- 次のreadyタスク検出
-- イシュージェネレーション
-- スプリント一時停止/再開/停止
-- スプリントイベントログ
+以下のテストを実装:
+- Webhook検証
+- イベントパース
+- リードマッチング
+- 同期リトライ
+- ダッシュボード更新
+- 未マッチ通話作成
 
 ## ドキュメント
 
-以下を更新します。
-
+以下を更新:
 - README.md
 - CHANGELOG.md
-- docs/SPRINT_SYSTEM.md
-- docs/AI_PM.md
+- docs/ZOOM_PHONE_SYNC.md
 
-## 制約事項
+## 制約
 
-- 関連のないセールス機能は実装しません。
-- AutoCall機能は実装しません。
-- Sprintタスクの作成をOpenAIに委ねません。
-- 自動マージを許可しません。
-- 自動デプロイを許可しません。
-- GitHubトークンを公開しません。
+実装しない機能:
+- 録音ダウンロード
+- 音声認識
+- 音声分析
+- 自動通話
+- 外部AIサービス
 
 ## 受け入れ基準
 
-- Sprint Manager画面が存在する
-- アクティブスプリントが表示される
-- スプリントの進捗が表示される
-- タスクリストが表示される
-- スプリント開始が機能する
-- 次の課題生成が機能する
-- 一時停止/再開/停止が機能する
-- スプリントログが保存される
-- Sprint-005.yamlが存在する
-- テストが合格する
-- ドキュメントが更新されている
+- Zoom Phoneイベントが自動同期されること
+- アクティブな通話がSales Workspaceに表示されること
+- 通話が既存のリードとマッチすること
+- 未マッチの通話が安定して保存されること
+- ダッシュボードがリアルタイムで更新されること
+- リトライ機能が正常に動作すること
+- テストが全て合格すること
+- ドキュメントが更新されていること
 
 ## 納品物
 
-変更されたファイル、テスト結果、推奨コミットを報告してください。自動でプッシュはしないでください。
+以下の報告を含む:
+- 変更されたファイル
+- テスト結果
+- 推奨コミット
 
-### 推奨コミット
+自動的にプッシュしないようにします。
 
-```git
-feat(ai-pm): add Sprint Manager UI
+推奨コミットメッセージ:
 ```
-
-以上が、Sprint Manager UIの実装に関する詳細な技術指示書です。
+feat(integration): implement Zoom Phone real-time synchronization
+```
