@@ -1,107 +1,92 @@
-```yaml
-# docs/sprints/Sprint-003.yaml
-sprint_key: S3
-title: Sales Learning MVP
-status: planned
-priority: critical
-owner: CEO
-maintainer: Musasabi CTO
-goals:
-  - fastest usable sales learning system for telemarketing sales department
-  - tasks for sales department:
-    - Import or manually register call information
-    - Add transcripts and notes
-    - Analyze sales calls
-    - Capture objections and rebuttals
-    - Attend MUSA coaching
-    - Accumulate sales knowledge
-tasks:
-  - id: S3-004-01
-    title: Call Transcript + Manual Notes
-    purpose: Enable user creation and editing of call transcripts.
-    dependencies: []
-    acceptance_criteria:
-      - Transcription table exists
-      - Transcription editor functions
-      - Transcript linked to lead
-      - Transcript linked to call log
-      - Transcript summary functions
-  - id: S3-004-02
-    title: Sales Call Analysis Scoring
-    purpose: Analyze transcripts to generate sales score.
-    dependencies: [S3-004-01]
-    acceptance_criteria:
-      - Tone score
-      - Reaction score
-      - Listening score
-      - Question score
-      - Closing score
-      - Overall score
-  - id: S3-004-03
-    title: Objection and Rebuttal Learning
-    purpose: Detect objections and store recommended rebuttals.
-    dependencies: [S3-004-01]
-    acceptance_criteria:
-      - Objection pattern table exists
-      - Save rebuttal records
-      - Update success/failure count
-  - id: S3-004-04
-    title: MUSA Sales Coaching Panel
-    purpose: Display coaching suggestions after each call transcription.
-    dependencies: [S3-004-02, S3-004-03]
-    acceptance_criteria:
-      - Strengths displayed
-      - Weaknesses displayed
-      - Areas for improvement displayed
-      - Recommended scripts displayed
-      - Advice for next call displayed
-  - id: S3-004-05
-    title: Sales Knowledge Candidate Creation
-    purpose: Create knowledge candidates from useful call insights.
-    dependencies: [S3-004-02, S3-004-03]
-    acceptance_criteria:
-      - Create knowledge candidate
-      - Candidate contains source transcription
-      - Human approval required before publishing
-  - id: S3-004-06
-    title: Sales Learning Dashboard
-    purpose: Display learning progress of the sales team.
-    dependencies: [S3-004-02, S3-004-03, S3-004-05]
-    acceptance_criteria:
-      - Today's call count
-      - Average score
-      - Top objections
-      - Top rebuttals
-      - Knowledge candidates
-      - Coaching sessions count
-constraints:
-  - Do not implement AutoCall
-  - Do not implement voice generation
-  - Do not implement autonomous calling
-  - Do not implement Zoom recording download
-  - Do not depend on external APIs
-  - Do not implement cloud sync
-  - This sprint is learning mode only
-document_updates:
-  - README.md
-  - CHANGELOG.md
-  - docs/SPRINT_SYSTEM.md
-tests:
-  - Parse sprint YAML
-  - Load task dependencies
-  - Detect ready tasks
-  - Calculate sprint progress
-acceptance_criteria:
-  - Sprint-003.yaml exists
-  - AI PM can parse Sprint-003.yaml
-  - AI PM can identify S3-004-01 as the first ready task
-  - Respect for dependencies
-  - All tests pass
-  - README updated
-  - CHANGELOG updated
-outputs:
-  report:
-    - Changed files
-    - Test results
-    - Recommended commit
+```python
+import tkinter as tk
+
+class SalesWorkspace:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Sales Workspace MVP")
+        
+        self.create_left_panel()
+        self.create_center_panel()
+        self.create_right_panel()
+        self.bind_shortcuts()
+
+    def create_left_panel(self):
+        self.left_panel = tk.Frame(self.root, width=200, bg='lightgrey')
+        self.left_panel.pack(side='left', fill='y')
+        self.create_lead_list_treeview()
+        self.create_filters()
+        self.create_search()
+
+    def create_lead_list_treeview(self):
+        self.lead_list = tk.Listbox(self.left_panel)
+        self.lead_list.pack(fill='both', expand=True)
+
+    def create_filters(self):
+        filters = ["New", "Calling", "Callback", "Interested", "Closed"]
+        self.filter_var = tk.StringVar(value=filters)
+        filter_listbox = tk.Listbox(self.left_panel, listvariable=self.filter_var)
+        filter_listbox.pack(fill='x')
+
+    def create_search(self):
+        self.search_entry = tk.Entry(self.left_panel)
+        self.search_entry.pack(pady=5)
+
+    def create_center_panel(self):
+        self.center_panel = tk.Frame(self.root, width=400, bg='white')
+        self.center_panel.pack(side='left', fill='both', expand=True)
+        self.create_lead_details()
+
+    def create_lead_details(self):
+        details = ["Company Info", "Store Info", "Phone", "Address", 
+                   "Industry", "Contact", "Email", "Website", 
+                   "Call History", "Transcript", "Notes", "Next Action"]
+        self.details_var = tk.StringVar(value=details)
+        details_listbox = tk.Listbox(self.center_panel, listvariable=self.details_var)
+        details_listbox.pack(fill='both', expand=True)
+
+    def create_right_panel(self):
+        self.right_panel = tk.Frame(self.root, width=200, bg='lightblue')
+        self.right_panel.pack(side='right', fill='y')
+        self.create_musa_sales_assistant()
+
+    def create_musa_sales_assistant(self):
+        assistant_entries = ["Customer Summary", "Opening", "Anticipated Objections", 
+                             "Recommended Objections", "Closing Suggestions", 
+                             "Next Best Action", "Learning Score", "Confidence"]
+        self.assistant_var = tk.StringVar(value=assistant_entries)
+        assistant_listbox = tk.Listbox(self.right_panel, listvariable=self.assistant_var)
+        assistant_listbox.pack(fill='both', expand=True)
+
+    def bind_shortcuts(self):
+        self.root.bind('<Control-f>', self.search_shortcut)
+        self.root.bind('<Control-r>', self.previous_search_shortcut)
+        self.root.bind('<Control-n>', self.new_search_shortcut)
+        self.root.bind('<Control-d>', self.duplicate_filter_shortcut)
+        self.root.bind('<Control-t>', self.exclude_lead_shortcut)
+
+    def search_shortcut(self, event):
+        # Implement search functionality
+        pass
+
+    def previous_search_shortcut(self, event):
+        # Implement previous search functionality
+        pass
+
+    def new_search_shortcut(self, event):
+        # Implement new search functionality
+        pass
+
+    def duplicate_filter_shortcut(self, event):
+        # Implement duplicate filter functionality
+        pass
+
+    def exclude_lead_shortcut(self, event):
+        # Implement exclude lead functionality
+        pass
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = SalesWorkspace(root)
+    root.mainloop()
 ```
