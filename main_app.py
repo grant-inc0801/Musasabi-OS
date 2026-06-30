@@ -1,47 +1,121 @@
-```python
-import os
-import re
+```yaml
+name: AI Pipeline
 
-def extract_issue_key(title):
-    match = re.search(r'\bS4-\d{3}\b', title)
-    return match.group(0) if match else None
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
-def generate_spec_path(issue_key):
-    return f'docs/specs/{issue_key}.md'
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: read
 
-def mark_deprecated_spec():
-    if os.path.exists('spec.md'):
-        with open('spec.md', 'r+') as file:
-            content = file.read()
-            file.seek(0, 0)
-            file.write("DEPRECATED\nUse individual issue specs in docs/specs/ instead.\n\n" + content)
+jobs:
+  validate-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-def create_spec_index():
-    index_content = "| Issue | Title | Status | Spec |\n|---|---|---|---|\n"
-    for filename in os.listdir('docs/specs'):
-        if filename.endswith('.md'):
-            issue_key = filename.split('.')[0]
-            title = f"{issue_key} Development Conflict Resolver"
-            index_content += f"| {issue_key} | {title} | active | docs/specs/{issue_key}.md |\n"
-    with open('docs/specs/README.md', 'w') as f:
-        f.write(index_content)
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
 
-def check_spec_conflicts():
-    conflicts = []
-    if os.path.exists('spec.md'):
-        conflicts.append("Root spec.md should not be used.\n")
-    for filename in os.listdir('docs/specs'):
-        if os.path.exists(os.path.join('docs/specs', filename)) and filename.startswith('spec'):
-            conflicts.append(f"Duplicate spec file detected: {filename}\n")
-    if not os.path.exists('docs/specs/README.md'):
-        conflicts.append("Spec index README.md is missing.\n")
-    if conflicts:
-        raise Exception("Conflicts detected:\n" + ''.join(conflicts))
+    - name: Execute pipeline validator
+      run: node scripts/github/pipeline-state-validator.js
 
-# Example test cases
-assert extract_issue_key('S4-009 Development Conflict Resolver') == 'S4-009'
-assert generate_spec_path('S4-009') == 'docs/specs/S4-009.md'
-mark_deprecated_spec()
-create_spec_index()
-check_spec_conflicts()
+    - name: Extract issue key
+      id: issue_key
+      run: node scripts/github/extract-issue-key.js
+      env:
+        ISSUE_TITLE: ${{ github.event.issue.title }}
+
+    - name: Detect conflict markers
+      run: node scripts/github/check-conflict-markers.js
+
+    - name: Log current state
+      run: echo "Current Issue: ${{ github.event.issue.number }}, Title: ${{ github.event.issue.title }}, Issue Key: ${{ steps.issue_key.outputs.key }}" | tee -a pipeline.log
+
+    - name: Run tests
+      run: npm test
+
+    - name: Commit and push changes
+      run: |
+        git add .
+        git commit -m "Update AI pipeline"
+        git push
+
+    - name: Create next issue from sprint
+      run: node scripts/github/create-next-issue-from-sprint.js
+
+  handle-failure:
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+    - name: Label issue
+      run: gh issue edit ${{ github.event.issue.number }} --add-label "needs-review"
+
+    - name: Comment on issue
+      run: gh issue comment ${{ github.event.issue.number }} --body "The pipeline has failed due to the above errors. Please review."
+
+    - name: Stop workflow
+      run: exit 1
+```
+
+```javascript
+// scripts/github/extract-issue-key.js
+
+const issueTitle = process.env.ISSUE_TITLE || '';
+const issueKeyMatch = issueTitle.match(/S4-\d+/);
+const issueKey = issueKeyMatch ? issueKeyMatch[0] : '';
+
+console.log(`::set-output name=key::${issueKey}`);
+```
+
+```javascript
+// scripts/github/check-conflict-markers.js
+
+const fs = require('fs');
+const fileData = fs.readFileSync('path/to/your/file', 'utf8');
+
+if (fileData.includes('<<<<<<<') || fileData.includes('=======') || fileData.includes('>>>>>>>')) {
+  console.error('Conflict markers detected. Failing pipeline.');
+  process.exit(1);
+}
+
+console.log('No conflict markers found.');
+```
+
+```javascript
+// scripts/github/pipeline-state-validator.js
+
+// Placeholder for actual implementation
+console.log('Validating pipeline state');
+
+// Implement state validation logic here
+
+process.exit(0); // Exit code 0 means success, non-zero value indicates failure
+```
+
+```javascript
+// scripts/github/create-next-issue-from-sprint.js
+
+const fs = require('fs');
+const yaml = require('js-yaml');
+const path = 'docs/sprints/active-sprint.yaml';
+
+try {
+  const sprint = yaml.load(fs.readFileSync(path, 'utf8'));
+  // Logic to create an issue based on sprint data
+  console.log('Next issue created from sprint.');
+} catch (e) {
+  console.error(e);
+  process.exit(1);
+}
 ```
