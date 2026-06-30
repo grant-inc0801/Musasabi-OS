@@ -1,197 +1,226 @@
-# 技術指示書
+```markdown
+# 技術指示書: S4-006 Sales Script Optimization Engine
 
-## タスク: S4-005 Daily Sales Command Center
+## 目次
 
-### 目的
+1. [概要](#概要)
+2. [ビジョン](#ビジョン)
+3. [必要モジュール](#必要モジュール)
+4. [データベース (SQLite)](#データベース-sqlite)
+5. [スクリプトカテゴリ](#スクリプトカテゴリ)
+6. [最適化ロジック](#最適化ロジック)
+7. [UI 要件](#ui-要件)
+8. [MUSA 推奨機能](#musa-推奨機能)
+9. [自動学習](#自動学習)
+10. [テスト](#テスト)
+11. [ドキュメント](#ドキュメント)
+12. [制約事項](#制約事項)
+13. [受け入れ基準](#受け入れ基準)
+14. [納品物](#納品物)
 
-Daily Sales Command Centerを実装します。このダッシュボードはテレマーケティング営業部門における朝の指示板となります。MUSAはチームに以下を伝えるべきです：
+## 概要
 
-- 今日のコール優先順位
-- 予想されるアポイントメント
-- 現在の進捗状況
-- リスク
-- ベストな話し方のパターン
-- コーチングの焦点
-- 次のアクション
+### タスク
 
----
+S4-006 Sales Script Optimization Engine の実装。  
+MUSA は実際の通話結果、トランスクリプトの学習、異議、反論、およびアポイントメントの結果に基づいて、テレマーケティングスクリプトを継続的に改善します。  
+どのオープニング、質問、反論、クロージングが最も効果的であるかを自動的に特定することが目標です。
 
-### ビジョン
+## ビジョン
 
-```txt
-Sales Data → Lead Priority → Appointment Forecast → Sales Brain → MUSA Sales Manager → Daily Sales Command Center
+通話史跡  
+↓  
+セールスブレイン  
+↓  
+異議/反論の学習  
+↓  
+アポイント結果  
+↓  
+スクリプトの最適化  
+↓  
+より良いセールススクリプト  
+↓  
+高いアポイント率  
+
+## 必要モジュール
+
+構造は以下のようになります。
+
+```
+packages/sales-script/
+
+src/
+
+- scriptRepository.js
+- scriptService.js
+- scriptOptimizer.js
+- scriptVariantGenerator.js
+- scriptPerformanceAnalyzer.js
+- scriptRecommendationService.js
+- index.js
 ```
 
----
+## データベース (SQLite)
 
-### 必要なモジュール
+以下のテーブルを作成します。
 
-プロジェクトディレクトリ構造は以下の通りです。
+### sales_scripts
 
-```plain
-packages/sales-command-center/
-└── src/
-    ├── commandCenterService.js
-    ├── dailySummaryService.js
-    ├── salesProgressService.js
-    ├── riskDetector.js
-    ├── focusRecommendationService.js
-    └── index.js
-```
+- id
+- title
+- category
+- content
+- status
+- created_at
+- updated_at
 
----
+### sales_script_variants
 
-### SQLite データベース
+- id
+- script_id
+- variant_name
+- content
+- usage_count
+- appointment_count
+- success_rate
+- confidence
+- created_at
+- updated_at
 
-以下の構造でテーブル `daily_sales_command_reports` を作成します。
+### sales_script_usage_logs
 
-- `id`: プライマリキー
-- `report_date`: レポートの日付
-- `expected_calls`: 予想されるコール数
-- `expected_appointments`: 予想されるアポイント数
-- `current_calls`: 現在のコール数
-- `current_appointments`: 現在のアポイント数
-- `appointment_rate`: アポイント率
-- `risk_summary`: リスク要約
-- `focus_recommendation`: 推奨される焦点
-- `created_at`: 作成日時
-- `updated_at`: 更新日時
+- id
+- script_id
+- variant_id
+- lead_id
+- transcript_id
+- call_result
+- appointment_created
+- created_at
 
----
+## スクリプトカテゴリ
 
-### ダッシュボードセクション
+- opening
+- discovery_question
+- value_proposition
+- objection_rebuttal
+- closing
+- callback_followup
 
-#### 1. 今日のミッション
+## 最適化ロジック
 
-表示項目：
-- 今日の目標コール数
-- 今日の目標アポイント数
-- 予想されるアポイント数
-- 推奨されるフォーカス
+### 分析
 
----
+以下の要素を分析します。
 
-#### 2. 優先コールキュー
+- 使用回数
+- アポイントメント数
+- 成功率
+- 異議一致
+- 業界一致
+- トランスクリプトの品質
+- コール結果
 
-表示項目：
-- ランク
-- 会社/店舗名
-- 電話番号
-- アポイントメントの確率
+### スクリプトバリアントのランキング
+
+以下に基づいてランク付けを行います。
+
+- 成功率
+- 信頼度
+- 最近のパフォーマンス
+- 使用量
+
+## UI 要件
+
+### Sales Script 画面を作成し、以下を表示します。
+
+- スクリプトリスト
+- カテゴリ
+- バリアント
+- 成功率
+- 使用回数
+- アポイントメント数
+- 推奨スクリプト
+- 成績不良スクリプト
+
+## MUSA 推奨機能
+
+Lead Detail と Sales Coach Panel に以下を表示します。
+
+- 推奨オープニング
+- 推奨発見質問
+- 推奨反論
+- 推奨クロージング
 - 理由
-- 推奨されるオープニング
-- 予想される反論
-- 推奨される反論
+- 信頼度
 
----
+## 自動学習
 
-#### 3. 現在の進捗
+通話履歴またはトランスクリプトが保存されたときに、可能であれば以下を行います。
 
-表示項目：
-- 完了したコール数
-- 獲得したアポイント数
-- コールバック数
-- 興味ありの数
-- 無応答の数
-- アポイント率
+- どのスクリプト/バリアントが使用されたかを検出
+- 使用ログを作成
+- 成功率を更新
+- 推奨スクリプトのランキングを更新
 
----
+## テスト
 
-#### 4. リスクアラート
+以下のテストを実装します。
 
-検出し表示する：
-- コール数が少なすぎる
-- アポイント率が低い
-- 無応答が多い
-- 反論が多い
-- コールバックを逃した
-- 質の低い文字起こし
+- スクリプト作成
+- バリアント作成
+- 使用ログ記録
+- 成功率計算
+- 推奨ランキング
+- 成績不良スクリプトの検出
 
----
+## ドキュメント
 
-#### 5. MUSAマネージャーの助言
+以下を更新します。
 
-生成する：
-- 次に何をすべきか
-- 次に誰がコールするべきか
-- どのスクリプトを使用するべきか
-- どの反論に備えるべきか
-- 今日の改善方法
-
----
-
-### 自動更新
-
-ダッシュボードは次の場合に更新されるべきです：
-- コール履歴が保存されたとき
-- リードのステータスが変更されたとき
-- アポイントメント予測が変更されたとき
-- デイリーキューが変更されたとき
-- 文字起こしが保存されたとき
-- コーチングの推奨が更新されたとき
-
----
-
-### テスト
-
-以下を対象にテストを実施：
-- 日次レポート生成
-- 進捗計算
-- リスク検出
-- フォーカス推奨
-- コマンドセンターダッシュボードデータ
-- 自動更新トリガー/イベント
-- UIブートストラップ
-
----
-
-### ドキュメント
-
-以下を更新：
 - README.md
 - CHANGELOG.md
-- docs/DAILY_SALES_COMMAND_CENTER.md
+- docs/SALES_SCRIPT_OPTIMIZATION.md
 
----
+## 制約事項
 
-### 制限事項
+以下の機能を実装してはいけません。
 
-実装しない機能：
-- AutoCall
+- LLMスクリプト生成
+- 自動通話
 - 音声AI
 - 外部API
-- LLM推論
-- クラウドダッシュボード
+- 自動顧客呼び出し
 
-決定論的なローカルロジックのみを使用。
+決定論的なローカルロジックのみを使用します。
 
----
+## 受け入れ基準
 
-### 受け入れ基準
+- セールススクリプトを作成できる
+- スクリプトバリアントを作成できる
+- 使用記録を記録できる
+- 成功率を計算できる
+- 最適なスクリプトを推奨できる
+- 成績不良のスクリプトを検出できる
+- MUSA がスクリプト推奨を表示する
+- テストが合格する
+- ドキュメントが更新される
 
-- Daily Sales Command Centerが利用可能であること
-- 今日のミッションが表示されること
-- 優先コールキューが表示されること
-- 現在の進捗状況が表示されること
-- リスクアラートが表示されること
-- MUSAマネージャーの助言が表示されること
-- 営業活動の後にダッシュボードが更新されること
-- テストが合格すること
-- ドキュメントが更新されていること
+## 納品物
 
----
+以下をレポートします。
 
-### 納品物
-
-報告内容：
 - 変更されたファイル
 - テスト結果
 - 推奨コミットメッセージ
 
-自動プッシュしないこと。
+自動プッシュしないでください。
 
-#### 推奨コミットメッセージ
+### 推奨コミットメッセージ
 
 ```
-feat(sales): implement daily sales command center
+feat(sales): implement sales script optimization engine
 ```
+```
+
+この技術指示書に基づいて、実装プロセスを進めてください。必要に応じて、各セクションを詳細に計画し、実装およびテストフレームワークに反映させます。
