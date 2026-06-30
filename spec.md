@@ -1,184 +1,116 @@
-# 技術指示書: S4-008 FileMaker Lead Sync Foundation
+# 技術指示書: S4-009 Development Conflict Resolver
 
 ## 目的
-Musasabi AIがFileMakerからリード/顧客データをインポートおよび正規化できるようにし、テレマーケティングチームが実際の顧客記録を使用してSales Workspace、Lead Priority、Sales Brain、およびAI Sales Managerを利用できるようにします。本タスクでは基礎となる部分の実装のみ行います。
+現在のAIパイプラインで発生するマージコンフリクトを解決するために、Development Conflict Resolverを実装します。これは、複数のAI生成の課題が同じファイル `spec.md` を変更することで発生するコンフリクトを解消することを目指しています。
 
-## 現行システム
-- 顧客管理システム: FileMaker
+## 問題点
+- すべてのAI生成の実装が `spec.md` に書き込んでいます。
+- 複数のブランチが `spec.md` を編集しています。
+- GitHub がマージコンフリクトを発生させます。
+- 人的リソースが手動で変更を選ぶ必要があります。
 
-## 必要なモジュール
-ディレクトリ: `packages/integrations/src/filemaker/`
+## 必要な変更
+- 共通の `spec.md` の使用をやめ、課題ごとのスペックファイルに置き換えます。
+- 課題ごとに以下の形式でファイルを作成します: `docs/specs/{issue_key}.md`
 
-- `fileMakerTypes.js`
-- `fileMakerClient.js`
-- `fileMakerService.js`
-- `fileMakerNormalizer.js`
-- `index.js`
+## 新しいスペックファイル構造
+- `docs/specs/` ディレクトリを作成
+- 各課題がそれぞれのファイルに書き込みます。
 
-## SQLite テーブル
-新規に以下のテーブルを作成します。
+```
+docs/specs/S4-001.md
+docs/specs/S4-002.md
+docs/specs/S4-003.md
+docs/specs/S4-004.md
+docs/specs/S4-009.md
+```
 
-### 1. filemaker_sync_logs
+## AI PM のルール
+1. タイトルから課題キーを検出します。
+2. その課題のスペックファイルのみを作成または更新します。
+3. 他の課題のスペックファイルを上書きしません。
+4. 共有 `spec.md` には書き込みません。
+5. 既存の `spec.md` がある場合は非推奨とマークします。
+6. `docs/specs/README.md` をインデックスとして維持します。
 
-| カラム名         | 型       |
-|----------------|---------|
-| id             | INTEGER |
-| sync_type      | TEXT    |
-| status         | TEXT    |
-| imported_count | INTEGER |
-| skipped_count  | INTEGER |
-| error_count    | INTEGER |
-| started_at     | DATETIME|
-| completed_at   | DATETIME|
-| detail_json    | TEXT    |
+## 非推奨ファイル
+- `spec.md` が存在する場合は削除せず、非推奨であることを示します。
+- ヘッダーに "DEPRECATED" を追加し、代わりに `docs/specs/{issue_key}.md` を使用するよう記載します。
 
-### 2. filemaker_lead_mappings
+## スペック・インデックス
+- `docs/specs/README.md` を作成し、以下をリストします。
 
-| カラム名          | 型       |
-|-----------------|---------|
-| id              | INTEGER |
-| filemaker_record_id | INTEGER |
-| sales_lead_id   | INTEGER |
-| match_key       | TEXT    |
-| created_at      | DATETIME|
-| updated_at      | DATETIME|
+```
+| Issue | Title | Status | Spec |
+|---|---|---|---|
+| S4-009 | Development Conflict Resolver | active | docs/specs/S4-009.md |
+```
 
-## 既存のテーブル
-既存の `sales_leads` テーブルを使用または拡張します。
+## コンフリクト検出
+- `scripts/github/check-spec-conflicts.js` を実装し、以下を検証します:
+  - ワークフローが `spec.md` に書き込んでいないこと
+  - 各課題がユニークなスペックファイルを持つこと
+  - `docs/specs/README.md` が存在すること
+  - 重複する課題のスペックファイルが作成されていないこと
 
-正規化された必要なフィールド:
-- company_name
-- store_name
-- phone_number
-- postal_code
-- address
-- industry_major
-- industry_minor
-- status
-- priority
-- assigned_to
+## ワークフローの更新
+- GitHub Actions / AI パイプラインを更新し、生成されたスペックが `docs/specs/{issue_key}.md` に書き込まれるようにします。
 
-## 環境変数
-サポート:
-- `FILEMAKER_BASE_URL`
-- `FILEMAKER_DATABASE`
-- `FILEMAKER_USERNAME`
-- `FILEMAKER_PASSWORD`
-- `FILEMAKER_LAYOUT`
+## 課題キー抽出
+- 以下のような課題タイトル形式をサポートし、課題キーを抽出します。
 
-ルール:
-- 認証情報はハードコードしない
-- 認証情報をログに記録しない
-- アプリ起動時に認証情報を必要としない
-- 認証情報が不足している場合、FileMaker Integrationを未設定として表示
+```
+S4-009 Development Conflict Resolver
+[S4-009] Development Conflict Resolver
+S4-009 — Development Conflict Resolver
+S4-009: Development Conflict Resolver
+```
 
-## 開発モード
-FileMakerの認証情報が不足している場合、ローカルのサンプルデータから模擬的にインポート可能。
-
-作成先:
-- `data/seeds/filemaker-sample-leads.json`
-
-サンプルリードを最低5件含むこと。
-
-## サービスメソッド
-以下のサービスメソッドを実装します。
-
-- `getIntegrationStatus()`
-- `normalizeLead(rawRecord)`
-- `importLeads(rawRecords)`
-- `listImportedLeads()`
-- `getSyncHistory()`
-- `matchLeadByPhoneNumber(phoneNumber)`
-
-## マッチングルール
-プライマリマッチ:
-- `phone_number`
-
-フォールバックマッチ:
-- `company_name + address`
-
-既存リードフィールドを自動的に上書きしない。
-
-重複が見つかった場合:
-- マッピングを作成
-- 破壊的な更新をスキップ
-- `skipped_count` をログに記録
-
-## ユーザーインターフェース (UI)
-Sales Workspace / Settingsを更新し、以下を表示：
-
-- FileMaker Integration: 設定済み / 未設定
-- インポートされたリード: {count}
-- 最後の同期ステータス
-- 最後の同期インポート数
-- 最後の同期エラー数
-
-追加ボタン:
-- サンプルFileMakerリードをインポート
-
-認証情報が設定されている場合、ボタンの準備:
-- FileMakerからインポート
+- 抽出例: `S4-009`
 
 ## テスト
-以下のテストを実装します。
-
-- FileMaker統合ステータス
-- サンプルリードインポート
-- リード正規化
-- 電話番号マッチング
-- 重複防止
-- 同期ログ作成
-- 認証情報が不足していてもアプリがクラッシュしない
-- 認証情報がログに記録されない
+以下のテストを追加します:
+- 課題キー抽出
+- スペックファイルパス生成
+- 非推奨 `spec.md` の検出
+- `docs/specs/README.md` の生成
+- `check-spec-conflicts` スクリプト
+- ルート `spec.md` 書き込み禁止ルール
 
 ## ドキュメント
-以下を更新します。
-
+更新:
 - `README.md`
 - `CHANGELOG.md`
-- `docs/FILEMAKER_SYNC.md`
+- `docs/SPRINT_SYSTEM.md`
+- `docs/AI_PM.md`
 
-`README.md` には以下を含めること：
-
-- FileMakerセットアップ
-- 必要な環境変数
-- モックインポートの開発モード
-- セキュリティノート
-- 重複処理ルール
+## 受入基準
+- `docs/specs` ディレクトリが存在すること
+- `S4-009` スペックが `docs/specs/S4-009.md` に作成されていること
+- 新しい課題に `spec.md` が使用されないこと
+- 既存の `spec.md` が存在する場合、非推奨とマークされていること
+- AI パイプラインが課題ごとのスペックファイルに書き込むこと
+- `docs/specs/README.md` インデックスが存在すること
+- コンフリクトチェッカーが存在すること
+- テストが通過すること
+- ドキュメントが更新されていること
 
 ## 制限事項
-以下を実装しないこと。
-
-- FileMakerへの書き戻し
-- 破壊的上書き
-- 自動スケジュール同期
-- クラウド同期
-- 外部AI分析
-- AutoCall
-- FileMakerスキーママイグレーション
-
-## 受け入れ基準
-- FileMakerモジュールが存在する
-- サンプルFileMakerリードをインポート可能
-- リードが `sales_leads` に正規化される
-- 重複防止が機能する
-- 同期ログが作成される
-- 統合ステータスが表示される
-- 認証情報が不足しても起動に影響しない
-- 認証情報がログに記録されない
-- テストが通過する
-- ドキュメントが更新されている
+- 過去の `spec.md` は削除しないこと
+- 関連のない課題のスペックを上書きしないこと
+- 現在のプロダクトアーキテクチャを変更しないこと
+- 関連のない営業機能を実装しないこと
+- 自動でプッシュしないこと
 
 ## 納品物
-以下を報告してください。
-
+報告:
 - 変更されたファイル
 - テスト結果
-- 推奨コミットメッセージ
+- 残るコンフリクトリスク
+- 推奨されるコミットメッセージ
 
-自動的にプッシュしないでください。
+推奨コミット:
 
-### 推奨コミットメッセージ
 ```
-feat(integration): add FileMaker lead sync foundation
+fix(github): use issue-specific specs to prevent AI merge conflicts
 ```

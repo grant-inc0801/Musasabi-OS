@@ -1,139 +1,47 @@
-```javascript
-// fileMakerTypes.js
-export const syncStatus = {
-  SUCCESS: 'SUCCESS',
-  FAILED: 'FAILED',
-  PARTIAL: 'PARTIAL',
-};
+```python
+import os
+import re
 
-// fileMakerClient.js
-import axios from 'axios';
+def extract_issue_key(title):
+    match = re.search(r'\bS4-\d{3}\b', title)
+    return match.group(0) if match else None
 
-class FileMakerClient {
-  constructor() {
-    this.baseUrl = process.env.FILEMAKER_BASE_URL;
-    this.database = process.env.FILEMAKER_DATABASE;
-    this.layout = process.env.FILEMAKER_LAYOUT;
-    this.username = process.env.FILEMAKER_USERNAME;
-    this.password = process.env.FILEMAKER_PASSWORD;
-  }
+def generate_spec_path(issue_key):
+    return f'docs/specs/{issue_key}.md'
 
-  async fetchLeads() {
-    if (!this.baseUrl || !this.database || !this.username || !this.password || !this.layout) {
-      throw new Error('FileMaker configuration is incomplete.');
-    }
-    const auth = Buffer.from(`${this.username}:${this.password}`).toString('base64');
-    const response = await axios.get(`${this.baseUrl}/databases/${this.database}/layouts/${this.layout}/records`, {
-      headers: { Authorization: `Basic ${auth}` },
-    });
-    return response.data;
-  }
-}
+def mark_deprecated_spec():
+    if os.path.exists('spec.md'):
+        with open('spec.md', 'r+') as file:
+            content = file.read()
+            file.seek(0, 0)
+            file.write("DEPRECATED\nUse individual issue specs in docs/specs/ instead.\n\n" + content)
 
-export default new FileMakerClient();
+def create_spec_index():
+    index_content = "| Issue | Title | Status | Spec |\n|---|---|---|---|\n"
+    for filename in os.listdir('docs/specs'):
+        if filename.endswith('.md'):
+            issue_key = filename.split('.')[0]
+            title = f"{issue_key} Development Conflict Resolver"
+            index_content += f"| {issue_key} | {title} | active | docs/specs/{issue_key}.md |\n"
+    with open('docs/specs/README.md', 'w') as f:
+        f.write(index_content)
 
-// fileMakerService.js
-import { syncStatus } from './fileMakerTypes';
-import fileMakerClient from './fileMakerClient';
-import { normalizeLead } from './fileMakerNormalizer';
-import db from './db';
+def check_spec_conflicts():
+    conflicts = []
+    if os.path.exists('spec.md'):
+        conflicts.append("Root spec.md should not be used.\n")
+    for filename in os.listdir('docs/specs'):
+        if os.path.exists(os.path.join('docs/specs', filename)) and filename.startswith('spec'):
+            conflicts.append(f"Duplicate spec file detected: {filename}\n")
+    if not os.path.exists('docs/specs/README.md'):
+        conflicts.append("Spec index README.md is missing.\n")
+    if conflicts:
+        raise Exception("Conflicts detected:\n" + ''.join(conflicts))
 
-export async function getIntegrationStatus() {
-  const configComplete = !!(process.env.FILEMAKER_BASE_URL && process.env.FILEMAKER_DATABASE && process.env.FILEMAKER_USERNAME && process.env.FILEMAKER_PASSWORD && process.env.FILEMAKER_LAYOUT);
-  return {
-    status: configComplete ? 'configured' : 'unconfigured',
-  };
-}
-
-export async function importLeads(rawRecords) {
-  const syncLog = {
-    sync_type: 'import',
-    status: syncStatus.SUCCESS,
-    imported_count: 0,
-    skipped_count: 0,
-    error_count: 0,
-    started_at: new Date(),
-    detail_json: JSON.stringify({}),
-  };
-
-  try {
-    const leads = rawRecords.map(normalizeLead);
-    for (const lead of leads) {
-      const existingLead = await matchLeadByPhoneNumber(lead.phone_number);
-      if (existingLead) {
-        syncLog.skipped_count++;
-        await db.filemaker_lead_mappings.insert({
-          filemaker_record_id: lead.filemaker_record_id,
-          sales_lead_id: existingLead.id,
-          match_key: lead.phone_number,
-          created_at: new Date(),
-          updated_at: new Date(),
-        });
-      } else {
-        await db.sales_leads.insert(lead);
-        syncLog.imported_count++;
-      }
-    }
-  } catch (error) {
-    syncLog.status = syncStatus.FAILED;
-    syncLog.error_count++;
-  } finally {
-    syncLog.completed_at = new Date();
-    await db.filemaker_sync_logs.insert(syncLog);
-    return syncLog;
-  }
-}
-
-export async function listImportedLeads() {
-  return db.sales_leads.findAll();
-}
-
-export async function getSyncHistory() {
-  return db.filemaker_sync_logs.findAll();
-}
-
-export async function matchLeadByPhoneNumber(phoneNumber) {
-  return db.sales_leads.findOne({ where: { phone_number: phoneNumber } });
-}
-
-// fileMakerNormalizer.js
-export function normalizeLead(rawRecord) {
-  return {
-    filemaker_record_id: rawRecord.id,
-    company_name: rawRecord.companyName,
-    store_name: rawRecord.storeName,
-    phone_number: rawRecord.phoneNumber,
-    postal_code: rawRecord.postalCode,
-    address: rawRecord.address,
-    industry_major: rawRecord.industryMajor,
-    industry_minor: rawRecord.industryMinor,
-    status: rawRecord.status,
-    priority: rawRecord.priority,
-    assigned_to: rawRecord.assignedTo,
-    created_at: new Date(),
-    updated_at: new Date(),
-  };
-}
-
-// index.js
-import { getIntegrationStatus, importLeads, listImportedLeads, getSyncHistory } from './fileMakerService';
-import fileMakerClient from './fileMakerClient';
-
-(async () => {
-  try {
-    const status = await getIntegrationStatus();
-    console.log('FileMaker Integration Status:', status);
-
-    const rawRecords = await fileMakerClient.fetchLeads();
-    await importLeads(rawRecords);
-
-    const leads = await listImportedLeads();
-    console.log('Imported Leads:', leads);
-
-    const syncHistory = await getSyncHistory();
-    console.log('Sync History:', syncHistory);
-  } catch (error) {
-    console.error('Error during FileMaker sync:', error);
-  }
-})();
+# Example test cases
+assert extract_issue_key('S4-009 Development Conflict Resolver') == 'S4-009'
+assert generate_spec_path('S4-009') == 'docs/specs/S4-009.md'
+mark_deprecated_spec()
+create_spec_index()
+check_spec_conflicts()
 ```
