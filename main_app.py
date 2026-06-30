@@ -1,57 +1,21 @@
 ```javascript
-// packages/knowledge/src/knowledgeRepository.js
+// packages/sales/src/salesLeadRepository.js
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database(':memory:');
 
 db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS knowledge_items (
-    id INTEGER PRIMARY KEY,
-    title TEXT,
-    category TEXT,
-    content TEXT,
-    tags_json TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-});
-
-module.exports = db;
-
-// packages/knowledge/src/knowledgeService.js
-const db = require('./knowledgeRepository');
-
-function addKnowledgeItem(title, category, content, tags) {
-  const tagsJson = JSON.stringify(tags);
-  db.run(`INSERT INTO knowledge_items (title, category, content, tags_json) VALUES (?, ?, ?, ?)`, [title, category, content, tagsJson]);
-}
-
-function searchKnowledgeItems(query) {
-  return new Promise((resolve, reject) => {
-    db.all(`SELECT * FROM knowledge_items WHERE title LIKE ? OR content LIKE ?`, [`%${query}%`, `%${query}%`], (err, rows) => {
-      if (err) reject(err);
-      resolve(rows);
-    });
-  });
-}
-
-module.exports = { addKnowledgeItem, searchKnowledgeItems };
-
-// packages/knowledge/src/index.js
-const knowledgeService = require('./knowledgeService');
-
-knowledgeService.addKnowledgeItem('Sample Title', 'Category', 'This is content', ['tag1', 'tag2']);
-knowledgeService.searchKnowledgeItems('Sample').then(console.log);
-
-// packages/tasks/src/taskRepository.js
-const db = new sqlite3.Database(':memory:');
-
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS tasks (
-    id INTEGER PRIMARY KEY,
-    title TEXT,
-    description TEXT,
+  db.run(`CREATE TABLE sales_leads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_name TEXT,
+    store_name TEXT,
+    phone_number TEXT,
+    postal_code TEXT,
+    address TEXT,
+    industry_major TEXT,
+    industry_minor TEXT,
     status TEXT,
-    due_date DATETIME,
+    priority INTEGER,
+    assigned_to TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
@@ -59,86 +23,135 @@ db.serialize(() => {
 
 module.exports = db;
 
-// packages/tasks/src/taskService.js
-const db = require('./taskRepository');
+// packages/sales/src/salesLeadService.js
+const db = require('./salesLeadRepository');
 
-function addTask(title, description, status, dueDate) {
-  db.run(`INSERT INTO tasks (title, description, status, due_date) VALUES (?, ?, ?, ?)`, [title, description, status, dueDate]);
-}
+const createLead = (leadData) => {
+  const { company_name, store_name, phone_number, postal_code, address, industry_major, industry_minor, status, priority, assigned_to } = leadData;
+  return new Promise((resolve, reject) => {
+    db.run(`INSERT INTO sales_leads (company_name, store_name, phone_number, postal_code, address, industry_major, industry_minor, status, priority, assigned_to) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [company_name, store_name, phone_number, postal_code, address, industry_major, industry_minor, status, priority, assigned_to],
+      function(err) {
+        if (err) reject(err);
+        resolve(this.lastID);
+      });
+  });
+};
 
-function updateTaskStatus(id, status) {
-  db.run(`UPDATE tasks SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [status, id]);
-}
+module.exports = { createLead };
 
-module.exports = { addTask, updateTaskStatus };
-
-// packages/tasks/src/index.js
-const taskService = require('./taskService');
-
-taskService.addTask('Task 1', 'Task description', 'todo', new Date());
-taskService.updateTaskStatus(1, 'done');
-
-// packages/chat/src/chatRepository.js
-const db = new sqlite3.Database(':memory:');
+// packages/sales/src/callHistoryRepository.js
+const db = require('./salesLeadRepository');
 
 db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS chat_messages (
-    id INTEGER PRIMARY KEY,
-    role TEXT,
-    content TEXT,
-    source TEXT,
+  db.run(`CREATE TABLE call_histories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lead_id INTEGER,
+    call_result TEXT,
+    contact_person TEXT,
+    memo TEXT,
+    next_action TEXT,
+    next_call_date DATETIME,
+    created_by TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 });
 
 module.exports = db;
 
-// packages/chat/src/chatService.js
-const db = require('./chatRepository');
+// packages/sales/src/callHistoryService.js
+const db = require('./callHistoryRepository');
 
-function saveUserMessage(content) {
-  db.run(`INSERT INTO chat_messages (role, content, source) VALUES ('user', ?, 'local')`, [content]);
-}
-
-function saveAssistantMessage(content, source) {
-  db.run(`INSERT INTO chat_messages (role, content, source) VALUES ('assistant', ?, ?)`, [content, source]);
-}
-
-module.exports = { saveUserMessage, saveAssistantMessage };
-
-// packages/chat/src/musaResponder.js
-const knowledgeService = require('../../knowledge/src/knowledgeService');
-const chatService = require('./chatService');
-
-async function generateResponse(userMessage) {
-  chatService.saveUserMessage(userMessage);
-
-  const knowledgeItems = await knowledgeService.searchKnowledgeItems(userMessage);
-  let responseContent;
-
-  if (knowledgeItems.length > 0) {
-    const item = knowledgeItems[0];
-    responseContent = `MUSA:\n\n${item.content}\n\n参照:\n- ${item.title}`;
-  } else {
-    responseContent = `MUSA:\n\nまだ関連する社内ナレッジが見つかりませんでした。\n必要であればKnowledgeに情報を追加してください。`;
-  }
-  
-  chatService.saveAssistantMessage(responseContent, 'local');
-  return responseContent;
-}
-
-module.exports = { generateResponse };
-
-// packages/chat/src/index.js
-const { generateResponse } = require('./musaResponder');
-
-generateResponse('What is MUSA?').then(console.log);
-
-// App Initialization (example for desktop UI)
-// This is just a placeholder for organizational purposes, actual UI code would be more extensive.
-const initApp = () => {
-  console.log("App initialized with MUSA Chat, Knowledge, and Task management.");
+const createCallHistory = (callHistoryData) => {
+  const { lead_id, call_result, contact_person, memo, next_action, next_call_date, created_by } = callHistoryData;
+  return new Promise((resolve, reject) => {
+    db.run(`INSERT INTO call_histories (lead_id, call_result, contact_person, memo, next_action, next_call_date, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [lead_id, call_result, contact_person, memo, next_action, next_call_date, created_by],
+      function(err) {
+        if (err) reject(err);
+        resolve(this.lastID);
+      });
+  });
 };
 
-initApp();
+module.exports = { createCallHistory };
+
+// packages/sales/src/hearingNoteRepository.js
+const db = require('./salesLeadRepository');
+
+db.serialize(() => {
+  db.run(`CREATE TABLE sales_hearing_notes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lead_id INTEGER,
+    store_name TEXT,
+    company_name TEXT,
+    contact_person TEXT,
+    phone_number TEXT,
+    email TEXT,
+    website_url TEXT,
+    memo_1 TEXT,
+    memo_2 TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+});
+
+module.exports = db;
+
+// packages/sales/src/hearingNoteService.js
+const db = require('./hearingNoteRepository');
+
+const createHearingNote = (hearingNoteData) => {
+  const { lead_id, store_name, company_name, contact_person, phone_number, email, website_url, memo_1, memo_2 } = hearingNoteData;
+  return new Promise((resolve, reject) => {
+    db.run(`INSERT INTO sales_hearing_notes (lead_id, store_name, company_name, contact_person, phone_number, email, website_url, memo_1, memo_2) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [lead_id, store_name, company_name, contact_person, phone_number, email, website_url, memo_1, memo_2],
+      function(err) {
+        if (err) reject(err);
+        resolve(this.lastID);
+      });
+  });
+};
+
+module.exports = { createHearingNote };
+
+// packages/sales/src/index.js
+const express = require('express');
+const app = express();
+const salesLeadService = require('./salesLeadService');
+const callHistoryService = require('./callHistoryService');
+const hearingNoteService = require('./hearingNoteService');
+
+app.use(express.json());
+
+app.post('/lead', async (req, res) => {
+  try {
+    const leadId = await salesLeadService.createLead(req.body);
+    res.status(201).send({ leadId });
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+app.post('/call-history', async (req, res) => {
+  try {
+    const callHistoryId = await callHistoryService.createCallHistory(req.body);
+    res.status(201).send({ callHistoryId });
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+app.post('/hearing-note', async (req, res) => {
+  try {
+    const hearingNoteId = await hearingNoteService.createHearingNote(req.body);
+    res.status(201).send({ hearingNoteId });
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
+});
 ```

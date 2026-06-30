@@ -1,234 +1,239 @@
-# 技術指示書
+# 技術指示書: Telemarketing Sales MVP
 
 ## 概要
 
-この技術指示書は、MUSA（Musasabi AI）の最速の内部MVPバージョンを実装するためのガイドラインを提供します。このプロジェクトでは、MUSAが以下の機能を提供できるようにします：
+このドキュメントでは、Telemarketing Sales MVPの開発に関する技術的指示を提供します。Musasabi AIの導入を意図し、営業チームの日常業務をサポートしながら、会社の知見や営業ノウハウを蓄積します。
 
-- MUSA Chat
-- ローカル知識
-- 知識ベースの応答
-- タスクメモ
-- 会話履歴
-- シンプルなデスクトップナビゲーション
+## 目標
 
-## 実装範囲
+- 最速かつ使いやすい内部MVPを構築する。
+- Telemarketing sales部門がMusasabi AIを活用できるようにする。
 
-### 主要機能の実装
+## スコープ
 
-1. MUSA Chat UI
-2. 知識登録
-3. 知識検索
-4. 知識ベースに基づくMUSAの応答
-5. タスクメモ管理
-6. 会話履歴
-7. シンプルなデスクトップナビゲーション
+以下の機能を持つシンプルなテレマーケティングワークスペースを実装する:
 
-### デスクトップナビゲーション
+- コールリストインポート基盤
+- 顧客/リストリスト
+- リード詳細ページ
+- コール履歴
+- 聞き取りメモ
+- ステータス管理
+- 次のアクションメモ
+- MUSA営業アシスタントパネル
+- コールノーツからの知識キャプチャ
 
-以下のナビゲーション項目を追加:
+## ナビゲーション
 
-- Home
-- MUSA Chat
-- 知識
-- タスク
-- 設定
+追加項目:
 
-### SQLite テーブル構造
+- Sales
+- Call List
+- Lead Detail
+- Call History
+- Sales Knowledge
 
-次のテーブルを作成：
+## SQLiteテーブル設計
 
-- knowledge_items
-  - id
-  - title
-  - category
-  - content
-  - tags_json
-  - created_at
-  - updated_at
+以下のテーブルを作成します:
 
-- tasks
-  - id
-  - title
-  - description
-  - status
-  - due_date
-  - created_at
-  - updated_at
+### sales_leads テーブル
 
-- chat_messages
-  - id
-  - role
-  - content
-  - source
-  - created_at
-
-### モジュール構成
-
-以下のモジュールを作成：
-
-- 知識管理：`packages/knowledge/src/`
-  - knowledgeRepository.js
-  - knowledgeService.js
-  - index.js
-
-- タスク管理：`packages/tasks/src/`
-  - taskRepository.js
-  - taskService.js
-  - index.js
-
-- チャット管理：`packages/chat/src/`
-  - chatRepository.js
-  - chatService.js
-  - musaResponder.js
-  - index.js
-
-## MUSA チャット要件
-
-ユーザーがメッセージを送信した場合：
-
-1. ユーザーメッセージを保存
-2. ローカルのknowledge_itemsを検索
-3. 必要であれば、memory_recordsを検索
-4. MUSAの応答を生成
-5. アシスタントの応答を保存
-
-## 応答フォーマット
-
-関連する知識が存在する場合：
-
-```
-MUSA:
-
-{answer}
-
-参照:
-
-- {knowledge title}
-```
-
-関連する知識が存在しない場合：
-
-```
-MUSA:
-
-まだ関連する社内ナレッジが見つかりませんでした。
-必要であればKnowledgeに情報を追加してください。
-```
-
-## オプションのOpenAI連携
-
-`OPENAI_API_KEY` がローカル環境に存在する場合：
-
-- オプションでLLMアシスト付き応答を許可
-- APIキーを公開しない
-- APIキーをログに記録しない
-- エラー時にローカル応答にフォールバック
-
-OpenAIはアプリの起動に必要であってはならない。
-
-## タスク管理
-
-タスクのフィールド：
-
-- title
-- description
+- id
+- company_name
+- store_name
+- phone_number
+- postal_code
+- address
+- industry_major
+- industry_minor
 - status
-- due_date
+- priority
+- assigned_to
+- created_at
+- updated_at
+
+### call_histories テーブル
+
+- id
+- lead_id
+- call_result
+- contact_person
+- memo
+- next_action
+- next_call_date
+- created_by
 - created_at
 
-ステータス：
+### sales_hearing_notes テーブル
 
-- todo
-- doing
-- done
+- id
+- lead_id
+- store_name
+- company_name
+- contact_person
+- phone_number
+- email
+- website_url
+- memo_1
+- memo_2
+- created_at
+- updated_at
 
-ユーザーは：
+## リードステータス
 
-- タスクを作成
-- タスクリストを表示
-- タスクを完了済みにマーク
+以下のステータスを使用:
 
-## デスクトップUIの受け入れ要件
+- new
+- calling
+- connected
+- no_answer
+- interested
+- not_interested
+- callback
+- closed
+- excluded
 
-アプリは次を許可する：
+## 必要なモジュール
 
-- 知識を追加
-- 知識リストを表示
-- MUSAとチャット
-- ローカル知識に基づくMUSAの応答を見る
-- タスクを追加
-- タスクリストを見る
-- タスクを完了済みにマーク
-- 会話履歴を表示
+`packages/sales/src/` ディレクトリ内に以下のファイルを作成します:
+
+- salesLeadRepository.js
+- salesLeadService.js
+- callHistoryRepository.js
+- callHistoryService.js
+- hearingNoteRepository.js
+- hearingNoteService.js
+- index.js
+
+## UI要件
+
+### Sales Dashboard
+
+表示内容:
+- トータルリード数
+- 新規リード数
+- コールバックリード数
+- 興味を持ったリード数
+- 今日のコール数
+- 最新のコール履歴
+
+### Call List
+
+表示内容:
+- 会社/店舗名
+- 電話番号
+- 住所
+- 業界
+- ステータス
+- 優先度
+
+操作:
+- 詳細を開く
+- ステータスを変更
+- コール履歴を追加
+
+### Lead Detail
+
+左側の表示:
+- 会社/店舗名
+- 電話番号
+- 郵便番号
+- 住所
+- 主な業界
+- サブ業界
+
+右側の表示:
+- 聞き取りメモフィールド
+- コール履歴
+- 次のアクション
+- MUSA営業アシスタントパネル
+
+## MUSA営業アシスタント
+
+ステータスやメモに基づいてシンプルな決定論的な提案を行います。
+
+例:
+- ステータスがnewの場合:
+  - 提案: まずは店舗名・担当者名・現在の集客課題を確認しましょう。
+  
+## 知識キャプチャ
+
+コール履歴や聞き取りメモを保存する際に、オプションで知識項目候補を作成します。
+
+例:
+- タイトル: Sales Insight: {company_name}
+
+内容:
+- コール結果
+- 顧客の問題
+- 次のアクション
+- 有用な営業ノート
 
 ## テスト
 
-以下のテストを追加：
+以下をテスト:
+- sales_leadsテーブルの存在
+- call_historiesテーブルの存在
+- sales_hearing_notesテーブルの存在
+- リードの作成
+- リード一覧
+- ステータス更新
+- コール履歴作成
+- 聞き取りメモ保存
+- ダッシュボード統計
+- MUSAの決定論的な営業提案
 
-- 知識の作成
-- 知識の検索
-- タスクの作成
-- タスクのステータス更新
-- チャットメッセージの保存
-- MUSAのフォールバック応答
-- MUSAの知識応答
-- デスクトップのブートストラップ
+## ドキュメント更新
 
-## ドキュメント
-
-更新：
-
+更新対象:
 - README.md
 - CHANGELOG.md
 
-READMEには以下を含める：
+READMEには以下を含める:
+- Sales Dashboardの使用方法
+- リードを追加する方法
+- コール履歴を記録する方法
+- 知識がどのように蓄積されるか
 
-- アプリの起動方法
-- 知識の追加方法
-- MUSAとのチャット方法
-- タスクの作成方法
-- オプションのOPENAI_API_KEYの設定方法
+## 実施しない項目
 
-## 制限事項
-
-以下を実装しない：
-
-- ユーザーアカウント
+以下の項目は実装しない:
+- 外部コールシステム統合
+- オートダイアリング
+- 通話録音
+- 音声認識
 - クラウド同期
-- Supabase
-- マルチエージェント
-- マーケットプレイス
-- プラグインストア
-- 複雑な承認
-- 高度なワークフロー
-- 外部統合
+- ユーザーアカウント管理
+- CRMインポートの自動化
+- 高度なAIスコアリング
 
 ## 受け入れ基準
 
-- アプリが起動する
-- ユーザーが知識を追加できる
-- ユーザーが知識を閲覧できる
-- ユーザーがMUSAとチャットできる
-- MUSAがローカル知識を参照できる
-- ユーザーがタスクを作成できる
-- ユーザーがタスクを完了済みにマークできる
-- 会話履歴が保存される
-- OPENAI_API_KEYがオプションである
+- Salesナビゲーションが存在する
+- Sales Dashboardが機能する
+- Call Listが機能する
+- Lead Detailが機能する
+- コール履歴を保存できる
+- 聞き取りメモを保存できる
+- リードステータスを更新できる
+- MUSAの営業提案が表示される
+- 営業知識候補が作成される
 - npmテストが合格する
 - READMEが更新される
 - CHANGELOGが更新される
 
-## 成果物
+## 納品物
 
-報告：
-
+レポート:
 - 変更されたファイル
 - テスト結果
-- 何らかのエラー
-- 提案されたコミットメッセージ
+- エラーの有無
+- 推奨コミットメッセージ
 
-GitHubにプッシュしないこと。
+コミットをGitHubにプッシュしないこと。
 
-提案されたコミットメッセージ：
-
-`feat(mvp): add internal MUSA chat knowledge and task MVP`
+推奨コミットメッセージ:
+```
+feat(sales): add telemarketing sales MVP
+```
