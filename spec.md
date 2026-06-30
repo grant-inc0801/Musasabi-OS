@@ -1,187 +1,184 @@
-以下にタスク「S4-007 AutoCall Readiness & Human Approval Framework」を実装する際の技術指示書をMarkdown形式で作成しました。
+# 技術指示書: S4-008 FileMaker Lead Sync Foundation
 
-```markdown
-# 技術指示書: S4-007 AutoCall Readiness & Human Approval Framework
+## 目的
+Musasabi AIがFileMakerからリード/顧客データをインポートおよび正規化できるようにし、テレマーケティングチームが実際の顧客記録を使用してSales Workspace、Lead Priority、Sales Brain、およびAI Sales Managerを利用できるようにします。本タスクでは基礎となる部分の実装のみ行います。
 
-## 概要
+## 現行システム
+- 顧客管理システム: FileMaker
 
-このSprintでは、AutoCall機能の準備と人間による承認フレームワークを実装します。AIによる自動通話は今回実装しません。リードがAutoCallに適しているかを判断し、将来の自動通話機能の実行前に必要なすべての人間承認と安全チェックを満たすことを目的とします。
+## 必要なモジュール
+ディレクトリ: `packages/integrations/src/filemaker/`
 
-## ビジョン
+- `fileMakerTypes.js`
+- `fileMakerClient.js`
+- `fileMakerService.js`
+- `fileMakerNormalizer.js`
+- `index.js`
 
-```
-Sales Brain
-↓
-Lead Score
-↓
-Appointment Prediction
-↓
-Risk Evaluation
-↓
-Human Approval
-↓
-AutoCall Queue (Disabled)
-```
+## SQLite テーブル
+新規に以下のテーブルを作成します。
 
-## 必須モジュール
+### 1. filemaker_sync_logs
 
-**ディレクトリ構造:**
+| カラム名         | 型       |
+|----------------|---------|
+| id             | INTEGER |
+| sync_type      | TEXT    |
+| status         | TEXT    |
+| imported_count | INTEGER |
+| skipped_count  | INTEGER |
+| error_count    | INTEGER |
+| started_at     | DATETIME|
+| completed_at   | DATETIME|
+| detail_json    | TEXT    |
 
-- `packages/autocall/`
-- `src/`
-  - `readinessService.js`
-  - `readinessEvaluator.js`
-  - `approvalGate.js`
-  - `riskAssessmentService.js`
-  - `queuePreparationService.js`
-  - `campaignManager.js`
-  - `index.js`
+### 2. filemaker_lead_mappings
 
-## データベース: SQLite
+| カラム名          | 型       |
+|-----------------|---------|
+| id              | INTEGER |
+| filemaker_record_id | INTEGER |
+| sales_lead_id   | INTEGER |
+| match_key       | TEXT    |
+| created_at      | DATETIME|
+| updated_at      | DATETIME|
 
-### テーブル設計
+## 既存のテーブル
+既存の `sales_leads` テーブルを使用または拡張します。
 
-#### autocall_campaigns
-- `id`
-- `campaign_name`
-- `status`
-- `appointment_limit`
-- `working_hours_start`
-- `working_hours_end`
-- `created_at`
-- `updated_at`
+正規化された必要なフィールド:
+- company_name
+- store_name
+- phone_number
+- postal_code
+- address
+- industry_major
+- industry_minor
+- status
+- priority
+- assigned_to
 
-#### autocall_candidates
-- `id`
-- `lead_id`
-- `readiness_score`
-- `risk_score`
-- `approval_status`
-- `campaign_id`
-- `created_at`
+## 環境変数
+サポート:
+- `FILEMAKER_BASE_URL`
+- `FILEMAKER_DATABASE`
+- `FILEMAKER_USERNAME`
+- `FILEMAKER_PASSWORD`
+- `FILEMAKER_LAYOUT`
 
-#### autocall_audit_logs
-- `id`
-- `lead_id`
-- `event`
-- `detail_json`
-- `created_at`
+ルール:
+- 認証情報はハードコードしない
+- 認証情報をログに記録しない
+- アプリ起動時に認証情報を必要としない
+- 認証情報が不足している場合、FileMaker Integrationを未設定として表示
 
-## 機能詳細
+## 開発モード
+FileMakerの認証情報が不足している場合、ローカルのサンプルデータから模擬的にインポート可能。
 
-### Readiness Score
-0〜100のスコアを生成し、以下の要素を使用します。
-- Appointment Probability
-- Lead Score
-- Transcript Quality
-- Previous Call History
-- Callback Status
-- Sales Brain Confidence
+作成先:
+- `data/seeds/filemaker-sample-leads.json`
 
-### Risk Evaluation
-リスクを「Low」「Medium」「High」で評価し、以下のパターンを検出します。
-- 繰り返しの未応答通話
-- 過度な通話頻度
-- 欠落した顧客情報
-- 不完全なトランスクリプト履歴
-- 不十分な学習信頼度
+サンプルリードを最低5件含むこと。
 
-### Human Approval
-AutoCallを有効にするための条件:
-- 管理者による承認
-- キャンペーンの存在
-- 設定されたアポイントメント制限
-- 設定された営業時間
-- 緊急停止が有効
+## サービスメソッド
+以下のサービスメソッドを実装します。
 
-### Campaign Management
-管理者がキャンペーンを作成できるようにします。 
+- `getIntegrationStatus()`
+- `normalizeLead(rawRecord)`
+- `importLeads(rawRecords)`
+- `listImportedLeads()`
+- `getSyncHistory()`
+- `matchLeadByPhoneNumber(phoneNumber)`
 
-**フィールド:**
-- Campaign Name
-- Appointment Limit
-- Working Hours
-- Target Industry
-- Target Region
-- Status
+## マッチングルール
+プライマリマッチ:
+- `phone_number`
 
-**ステータス:**
-- Draft
-- Ready
-- Running
-- Paused
-- Completed
-- Cancelled
+フォールバックマッチ:
+- `company_name + address`
 
-### ユーザーインターフェース (UI)
-AutoCall Readinessスクリーンを作成し、以下を表示します。
-- Campaigns
-- Readiness Score
-- Risk Score
-- Approval Status
-- Candidates
-- Appointment Limit
-- Emergency Stop Status
+既存リードフィールドを自動的に上書きしない。
 
-### 学習モードの互換性
-学習モードはアクティブなままで、AutoCallは無効です。以下のアクション後にReadinessが継続的に再計算されます。
-- トランスクリプトの保存
-- リードの更新
-- アポイントメント予測の更新
-- 学習の更新
+重複が見つかった場合:
+- マッピングを作成
+- 破壊的な更新をスキップ
+- `skipped_count` をログに記録
+
+## ユーザーインターフェース (UI)
+Sales Workspace / Settingsを更新し、以下を表示：
+
+- FileMaker Integration: 設定済み / 未設定
+- インポートされたリード: {count}
+- 最後の同期ステータス
+- 最後の同期インポート数
+- 最後の同期エラー数
+
+追加ボタン:
+- サンプルFileMakerリードをインポート
+
+認証情報が設定されている場合、ボタンの準備:
+- FileMakerからインポート
 
 ## テスト
-
 以下のテストを実装します。
-- Readinessの計算
-- リスクの計算
-- 承認の検証
-- キャンペーン作成
-- アポイントメント制限の検証
-- 緊急停止の検証
-- Readinessのリフレッシュ
 
-## ドキュメンテーション
+- FileMaker統合ステータス
+- サンプルリードインポート
+- リード正規化
+- 電話番号マッチング
+- 重複防止
+- 同期ログ作成
+- 認証情報が不足していてもアプリがクラッシュしない
+- 認証情報がログに記録されない
 
+## ドキュメント
 以下を更新します。
+
 - `README.md`
 - `CHANGELOG.md`
-- `docs/AUTOCALL_READINESS.md`
+- `docs/FILEMAKER_SYNC.md`
 
-## 制約事項
+`README.md` には以下を含めること：
 
-以下の実装は禁止されています。
-- 自動発信通話
-- ボイスAI
-- 音声合成
-- 顧客との会話
-- Zoom Phoneの通話実行
-- 外部のテレフォニーAPI
+- FileMakerセットアップ
+- 必要な環境変数
+- モックインポートの開発モード
+- セキュリティノート
+- 重複処理ルール
+
+## 制限事項
+以下を実装しないこと。
+
+- FileMakerへの書き戻し
+- 破壊的上書き
+- 自動スケジュール同期
+- クラウド同期
+- 外部AI分析
+- AutoCall
+- FileMakerスキーママイグレーション
 
 ## 受け入れ基準
+- FileMakerモジュールが存在する
+- サンプルFileMakerリードをインポート可能
+- リードが `sales_leads` に正規化される
+- 重複防止が機能する
+- 同期ログが作成される
+- 統合ステータスが表示される
+- 認証情報が不足しても起動に影響しない
+- 認証情報がログに記録されない
+- テストが通過する
+- ドキュメントが更新されている
 
-- Readiness Scoreが計算されていること
-- Risk Scoreが計算されていること
-- 人間承認ワークフローが機能していること
-- キャンペーン管理が機能していること
-- ダッシュボードにReadinessが表示されていること
-- AutoCallが無効のままであること
-- テストが合格していること
-- ドキュメンテーションが更新されていること
+## 納品物
+以下を報告してください。
 
-## デリバラブル
-
-**レポート内容:**
 - 変更されたファイル
 - テスト結果
 - 推奨コミットメッセージ
 
-自動プッシュは行わないでください。
+自動的にプッシュしないでください。
 
-**推奨コミットメッセージ:**
+### 推奨コミットメッセージ
 ```
-feat(autocall): implement AutoCall readiness and approval framework
+feat(integration): add FileMaker lead sync foundation
 ```
-```
-
-この技術指示書は、実装者が理解しやすく、必要なすべての情報を含んでいることを目的としています。
