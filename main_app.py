@@ -1,203 +1,126 @@
 ```javascript
-// packages/sales-coach/index.js
+// packages/appointment-forecast/src/appointmentForecastService.js
+class AppointmentForecastService {
+  calculateProbability(leadData, callHistory) {
+    let probability = 0;
+    let positiveFactors = [];
+    let negativeFactors = [];
 
-const express = require('express');
+    // Example logic for probability calculation
+    if (leadData.status === 'interested') {
+      probability += 20;
+      positiveFactors.push("Lead shows interest");
+    }
+    if (callHistory.some(call => call.callbackScheduled)) {
+      probability += 15;
+      positiveFactors.push("Callback is scheduled");
+    }
+    if (leadData.industry === 'successfulIndustry') {
+      probability += 10;
+      positiveFactors.push("High success rate in similar industry");
+    }
+    if (!leadData.decisionMakerConfirmed) {
+      probability -= 10;
+      negativeFactors.push("Decision maker not confirmed");
+    }
+
+    return {
+      probability: Math.min(Math.max(probability, 0), 100),
+      positiveFactors,
+      negativeFactors
+    };
+  }
+
+  calculateConfidence(probability) {
+    return probability >= 50 ? 'High' : 'Low';
+  }
+
+  generateExplanation(probability, factors) {
+    return `Probability: ${probability}%, Positive factors: ${factors.positiveFactors.join(", ")}, Negative factors: ${factors.negativeFactors.join(", ")}`;
+  }
+}
+
+module.exports = AppointmentForecastService;
+
+// packages/appointment-forecast/src/probabilityCalculator.js
+class ProbabilityCalculator {
+  determineProbability(lead) {
+    // Just returning a static number for the sake of example
+    return Math.floor(Math.random() * 101);
+  }
+}
+
+module.exports = ProbabilityCalculator;
+
+// packages/appointment-forecast/src/forecastRepository.js
 const sqlite3 = require('sqlite3').verbose();
-const app = express();
-
 const db = new sqlite3.Database(':memory:');
 
-db.serialize(() => {
-  db.run(`CREATE TABLE live_coaching_sessions (
-    id INTEGER PRIMARY KEY,
-    lead_id INTEGER,
-    operator_id INTEGER,
-    started_at DATETIME,
-    ended_at DATETIME,
-    overall_score INTEGER,
-    result TEXT
-  )`);
+class ForecastRepository {
+  constructor() {
+    this.createTable();
+  }
 
-  db.run(`CREATE TABLE live_recommendations (
-    id INTEGER PRIMARY KEY,
-    session_id INTEGER,
-    recommendation_type TEXT,
-    recommendation TEXT,
-    confidence REAL,
-    displayed_at DATETIME
-  )`);
+  createTable() {
+    db.run(`CREATE TABLE appointment_forecasts (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              lead_id INTEGER,
+              probability INTEGER,
+              confidence TEXT,
+              reason TEXT,
+              positive_factors_json TEXT,
+              negative_factors_json TEXT,
+              calculated_at TEXT
+            )`);
+  }
+
+  saveForecast(forecast) {
+    db.run(`INSERT INTO appointment_forecasts 
+            (lead_id, probability, confidence, reason, positive_factors_json, negative_factors_json, calculated_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [forecast.lead_id, forecast.probability, forecast.confidence, forecast.reason, 
+       JSON.stringify(forecast.positiveFactors), JSON.stringify(forecast.negativeFactors), new Date().toISOString()]);
+  }
+}
+
+module.exports = ForecastRepository;
+
+// packages/appointment-forecast/src/forecastExplainer.js
+class ForecastExplainer {
+  getExplanation(probabilityData) {
+    return `Probability: ${probabilityData.probability}%, Confidence: ${probabilityData.confidence}, Reason: Some reasons`;
+  }
+}
+
+module.exports = ForecastExplainer;
+
+// packages/appointment-forecast/src/index.js
+const AppointmentForecastService = require('./appointmentForecastService');
+const ForecastRepository = require('./forecastRepository');
+const ForecastExplainer = require('./forecastExplainer');
+
+const leadData = {
+  status: 'interested',
+  industry: 'successfulIndustry',
+  decisionMakerConfirmed: false
+};
+
+const callHistory = [
+  { callbackScheduled: true }
+];
+
+const forecastService = new AppointmentForecastService();
+const repository = new ForecastRepository();
+const explainer = new ForecastExplainer();
+
+const forecast = forecastService.calculateProbability(leadData, callHistory);
+forecast.confidence = forecastService.calculateConfidence(forecast.probability);
+forecast.reason = explainer.getExplanation(forecast);
+
+repository.saveForecast({ 
+  lead_id: 123, 
+  ...forecast, 
+  positiveFactors: forecast.positiveFactors, 
+  negativeFactors: forecast.negativeFactors 
 });
-
-app.get('/start-session', (req, res) => {
-  const { lead_id, operator_id } = req.query;
-  const started_at = new Date().toISOString();
-  db.run(`INSERT INTO live_coaching_sessions (lead_id, operator_id, started_at) VALUES (?, ?, ?)`,
-    [lead_id, operator_id, started_at], function(err) {
-    if (err) {
-      return res.status(500).send(err.message);
-    }
-    res.send({ session_id: this.lastID });
-  });
-});
-
-app.get('/recommendation', (req, res) => {
-  const { session_id } = req.query;
-  const recommendation = "Suggest new feature based on past success.";
-  const recommendationType = "next move";
-  const confidence = Math.random();
-  const displayed_at = new Date().toISOString();
-  
-  db.run(`INSERT INTO live_recommendations (session_id, recommendation_type, recommendation, confidence, displayed_at)
-          VALUES (?, ?, ?, ?, ?)`, [session_id, recommendationType, recommendation, confidence, displayed_at], function(err) {
-    if (err) {
-      return res.status(500).send(err.message);
-    }
-    res.send({ recommendation, confidence });
-  });
-});
-
-app.get('/end-session', (req, res) => {
-  const { session_id, overall_score, result } = req.query;
-  const ended_at = new Date().toISOString();
-
-  db.run(`UPDATE live_coaching_sessions SET ended_at = ?, overall_score = ?, result = ? WHERE id = ?`,
-    [ended_at, overall_score, result, session_id], function(err) {
-    if (err) {
-      return res.status(500).send(err.message);
-    }
-    res.send({ message: 'Session updated' });
-  });
-});
-
-app.listen(3000, () => {
-  console.log('Real-Time Sales Coach server is running on port 3000');
-});
-
-module.exports = app;
-```
-
-```javascript
-// src/coachingService.js
-
-class CoachingService {
-  constructor(db) {
-    this.db = db;
-  }
-
-  createSession(leadId, operatorId, callback) {
-    const startedAt = new Date().toISOString();
-    this.db.run(`INSERT INTO live_coaching_sessions (lead_id, operator_id, started_at) VALUES (?, ?, ?)`,
-      [leadId, operatorId, startedAt], function(err) {
-      callback(err, this ? this.lastID : null);
-    });
-  }
-
-  endSession(sessionId, overallScore, result, callback) {
-    const endedAt = new Date().toISOString();
-    this.db.run(`UPDATE live_coaching_sessions SET ended_at = ?, overall_score = ?, result = ? WHERE id = ?`,
-      [endedAt, overallScore, result, sessionId], callback);
-  }
-}
-
-module.exports = CoachingService;
-```
-
-```javascript
-// src/liveRecommendationEngine.js
-
-class LiveRecommendationEngine {
-  constructor(db) {
-    this.db = db;
-  }
-
-  generateRecommendation(sessionId, callback) {
-    const recommendation = "Suggest new feature based on past success.";
-    const recommendationType = "next move";
-    const confidence = Math.random();
-    const displayedAt = new Date().toISOString();
-
-    this.db.run(`INSERT INTO live_recommendations (session_id, recommendation_type, recommendation, confidence, displayed_at)
-                VALUES (?, ?, ?, ?, ?)`, [sessionId, recommendationType, recommendation, confidence, displayedAt], function(err) {
-      callback(err, { recommendation, confidence });
-    });
-  }
-}
-
-module.exports = LiveRecommendationEngine;
-```
-
-```javascript
-// src/objectionPredictor.js
-
-class ObjectionPredictor {
-  predictObjections() {
-    const objections = [
-      'Too expensive',
-      'Already using a competitor',
-      'Not interested right now',
-      'Need to consult with a partner',
-      'Uncertain about return on investment'
-    ];
-    return objections.slice(0, 5);
-  }
-}
-
-module.exports = ObjectionPredictor;
-```
-
-```javascript
-// src/rebuttalGenerator.js
-
-class RebuttalGenerator {
-  generateRebuttal(objections) {
-    return objections.map(objection => {
-      switch (objection) {
-        case 'Too expensive':
-          return 'Highlight cost-saving features';
-        case 'Already using a competitor':
-          return 'Discuss unique benefits';
-        case 'Not interested right now':
-          return 'Offer a free trial';
-        case 'Need to consult with a partner':
-          return 'Provide detailed reports and case studies';
-        case 'Uncertain about return on investment':
-          return 'Provide ROI projections';
-        default:
-          return 'Follow up later';
-      }
-    });
-  }
-}
-
-module.exports = RebuttalGenerator;
-```
-
-```javascript
-// src/nextActionAdvisor.js
-
-class NextActionAdvisor {
-  adviseNextActions() {
-    return [
-      'Schedule a follow-up meeting',
-      'Send a thank you email',
-      'Prepare a customized proposal',
-      'Update CRM with new information',
-      'Set a reminder for the next call'
-    ];
-  }
-}
-
-module.exports = NextActionAdvisor;
-```
-
-```javascript
-// src/confidenceCalculator.js
-
-class ConfidenceCalculator {
-  calculateConfidence(data) {
-    return Math.random() * (1 - 0.5) + 0.5;
-  }
-}
-
-module.exports = ConfidenceCalculator;
 ```
