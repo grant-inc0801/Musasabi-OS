@@ -1,155 +1,194 @@
 ```javascript
-// packages/sales-coach/src/realtimeCoachService.js
-class RealtimeCoachService {
-  constructor(contextBuilder, signalDetector, recommendationEngine) {
-    this.contextBuilder = contextBuilder;
-    this.signalDetector = signalDetector;
-    this.recommendationEngine = recommendationEngine;
-  }
+// scripts/github/issue-title-normalizer.js
+const fs = require('fs');
+const yaml = require('js-yaml');
 
-  async getRecommendations(data) {
-    const context = await this.contextBuilder.build(data);
-    const signals = this.signalDetector.detect(context);
-    return this.recommendationEngine.generate(signals, context);
-  }
-}
-
-module.exports = RealtimeCoachService;
-
-// packages/sales-coach/src/coachingContextBuilder.js
-class CoachingContextBuilder {
-  async build(data) {
-    // Build context from lead profile, call history, transcript, etc.
-    return {
-      leadProfile: data.leadProfile,
-      callHistory: data.callHistory,
-      transcript: data.transcript,
-      appointmentForecast: data.appointmentForecast,
-      leadPriority: data.leadPriority,
-      salesBrainInsights: data.salesBrainInsights,
-      scriptRecommendations: data.scriptRecommendations,
-      voiceAnalysis: data.voiceAnalysis,
-    };
-  }
-}
-
-module.exports = CoachingContextBuilder;
-
-// packages/sales-coach/src/coachingSignalDetector.js
-class CoachingSignalDetector {
-  detect(context) {
-    const signals = [];
-    // Detect signals based on context
-    if (context.leadProfile.isNew) signals.push('startRecommendation');
-    if (context.appointmentForecast.high) signals.push('directClose');
-    if (context.transcript.hasObjections) signals.push('refuteObjection');
-    if (context.voiceAnalysis.highOperatorTalkRatio) signals.push('askMoreQuestions');
-    return signals;
-  }
-}
-
-module.exports = CoachingSignalDetector;
-
-// packages/sales-coach/src/coachingRecommendationEngine.js
-class CoachingRecommendationEngine {
-  generate(signals, context) {
-    const recommendations = [];
-    // Generate recommendations based on detected signals
-    signals.forEach(signal => {
-      switch (signal) {
-        case 'startRecommendation':
-          recommendations.push(this.createRecommendation('start', context));
-          break;
-        case 'directClose':
-          recommendations.push(this.createRecommendation('close', context));
-          break;
-        case 'refuteObjection':
-          recommendations.push(this.createRecommendation('refute', context));
-          break;
-        case 'askMoreQuestions':
-          recommendations.push(this.createRecommendation('question', context));
-          break;
-        default:
-          break;
-      }
+function getSprintKeys() {
+    let keys = [];
+    const sprintFiles = fs.readdirSync('docs/sprints/');
+    sprintFiles.forEach(file => {
+        const content = yaml.load(fs.readFileSync(`docs/sprints/${file}`, 'utf8'));
+        keys = keys.concat(Object.keys(content));
     });
-    return recommendations;
-  }
-
-  createRecommendation(type, context) {
-    // Create recommendation based on type and context
-    return {
-      recommendationType: type,
-      recommendation: `Recommended action based on ${type}`,
-      reason: `Based on ${type} signals`,
-      confidence: 0.9,
-      priority: 1,
-    };
-  }
+    return keys;
 }
 
-module.exports = CoachingRecommendationEngine;
-
-// packages/sales-coach/src/nextBestLineGenerator.js
-class NextBestLineGenerator {
-  generate(context) {
-    // Use context to generate the next best line suggestion
-    return `Next best line based on context: ${context.transcript.latest}`;
-  }
+function normalizeIssueTitle(issueTitle, sprintKeys) {
+    const invalidPrefixes = ['[NEXT]', '【次へ】', '次へ', 'Next'];
+    if (invalidPrefixes.some(prefix => issueTitle.startsWith(prefix))) {
+        return null;
+    }
+    const titleParts = issueTitle.split(' ');
+    const sprintKey = titleParts.find(part => sprintKeys.includes(part));
+    if (!sprintKey) {
+        return null;
+    }
+    return `${sprintKey} ${titleParts.slice(1).join(' ')}`;
 }
 
-module.exports = NextBestLineGenerator;
+const sprintKeys = getSprintKeys();
+const issueTitle = process.argv[2];
+const normalizedTitle = normalizeIssueTitle(issueTitle, sprintKeys);
 
-// packages/sales-coach/src/coachingSessionRepository.js
-const sqlite3 = require('sqlite3').verbose();
+console.log(normalizedTitle || 'Invalid issue title');
+```
 
-class CoachingSessionRepository {
-  constructor(dbFilePath) {
-    this.db = new sqlite3.Database(dbFilePath, (err) => {
-      if (err) {
-        console.error('Could not connect to database', err);
-      } else {
-        console.log('Connected to database');
-      }
+```javascript
+// scripts/github/validate-issue-title.js
+const { execSync } = require('child_process');
+
+function validateTitle(issueTitle) {
+    try {
+        const result = execSync(`node scripts/github/issue-title-normalizer.js "${issueTitle}"`).toString();
+        return result.trim() !== 'Invalid issue title';
+    } catch {
+        return false;
+    }
+}
+
+const issueTitle = process.argv[2];
+const isValid = validateTitle(issueTitle);
+
+console.log(isValid ? 'Valid title' : 'Invalid title');
+```
+
+```javascript
+// scripts/github/create-next-issue-from-sprint.js
+const fs = require('fs');
+const yaml = require('js-yaml');
+
+function getSprintTasks() {
+    const sprintFiles = fs.readdirSync('docs/sprints/');
+    let tasks = [];
+    sprintFiles.forEach(file => {
+        const content = yaml.load(fs.readFileSync(`docs/sprints/${file}`, 'utf8'));
+        tasks = tasks.concat(Object.entries(content).map(([key, title]) => ({ key, title })));
     });
-  }
-
-  saveSession(session) {
-    // Save the coaching session data into the database
-    const { id, lead_id, created_at } = session;
-    this.db.run('INSERT INTO realtime_coaching_sessions (id, lead_id, created_at) VALUES (?, ?, ?)',
-      [id, lead_id, created_at]);
-  }
-
-  saveRecommendation(recommendation) {
-    // Save recommendation data into the database
-    const { session_id, recommendation, confidence, created_at } = recommendation;
-    this.db.run('INSERT INTO realtime_coaching_recommendations (session_id, recommendation, confidence, created_at) VALUES (?, ?, ?, ?)',
-      [session_id, recommendation, confidence, created_at]);
-  }
+    return tasks;
 }
 
-module.exports = CoachingSessionRepository;
-
-// packages/sales-coach/src/index.js
-const RealtimeCoachService = require('./realtimeCoachService');
-const CoachingContextBuilder = require('./coachingContextBuilder');
-const CoachingSignalDetector = require('./coachingSignalDetector');
-const CoachingRecommendationEngine = require('./coachingRecommendationEngine');
-const CoachingSessionRepository = require('./coachingSessionRepository');
-
-const contextBuilder = new CoachingContextBuilder();
-const signalDetector = new CoachingSignalDetector();
-const recommendationEngine = new CoachingRecommendationEngine();
-const sessionRepository = new CoachingSessionRepository('path/to/sqlite.db');
-
-const realtimeCoachService = new RealtimeCoachService(contextBuilder, signalDetector, recommendationEngine);
-
-async function main() {
-  const data = {}; // Assume this is populated with required data
-  const recommendations = await realtimeCoachService.getRecommendations(data);
-  recommendations.forEach(rec => sessionRepository.saveRecommendation(rec));
+function generateIssueTitle(sprintTask) {
+    return `${sprintTask.key} ${sprintTask.title}`;
 }
 
-main();
+const sprintTasks = getSprintTasks();
+console.log(sprintTasks.map(generateIssueTitle));
+```
+
+```javascript
+// scripts/github/cleanup-invalid-ai-issue-titles.js
+const { execSync } = require('child_process');
+const axios = require('axios');
+
+async function labelInvalidIssues(repo, token) {
+    const issues = await axios.get(`https://api.github.com/repos/${repo}/issues`, {
+        headers: { Authorization: `token ${token}` }
+    });
+
+    issues.data.forEach(issue => {
+        const isValid = validateTitle(issue.title);
+        if (!isValid) {
+            axios.post(`https://api.github.com/repos/${repo}/issues/${issue.number}/labels`, ['invalid-ai-title'], {
+                headers: { Authorization: `token ${token}` }
+            });
+            axios.post(`https://api.github.com/repos/${repo}/issues/${issue.number}/comments`, {
+                body: 'This issue has an invalid title prefix.'
+            }, {
+                headers: { Authorization: `token ${token}` }
+            });
+        }
+    });
+}
+
+labelInvalidIssues(process.argv[2], process.argv[3]);
+```
+
+```markdown
+<!-- docs/AI_PIPELINE.md -->
+# AI Pipeline Documentation
+
+## Issue Title Standardization
+
+To ensure consistency in AI-generated GitHub issue titles, we follow a standardized format using Sprint keys extracted from YAML and JSON files located in specific directories.
+
+- **Format**: `S{number}-{task_number} Title`
+- **Invalid Prefixes**: Titles starting with `[NEXT]`, `【次へ】`, `次へ`, or `Next` are not allowed.
+
+Scripts provided:
+- **Normalization**: Identify and normalize issue titles ensuring compliance with the format.
+- **Validation**: Pre-check titles before GitHub issue creation.
+- **Cleanup**: Manage existing issues with invalid titles by labeling them and providing comments.
+
+## Scripts
+
+- **issue-title-normalizer.js**: Normalizes and validates issue titles.
+- **validate-issue-title.js**: Validates title format before issue creation.
+- **create-next-issue-from-sprint.js**: Generates new issue titles based on Sprint tasks.
+- **cleanup-invalid-ai-issue-titles.js**: Tags and comments on issues with invalid prefixes.
+
+Ensure all issue titles conform to the Sprint key format to streamline the tracking process. Invalid titles are rejected or labeled appropriately.
+```
+
+```markdown
+<!-- README.md -->
+# Repository README
+
+## GitHub Issue Management
+
+This repository includes scripts for managing GitHub issue titles standardized around Sprint keys, ensuring easier sprint tracking.
+
+- **Scripts**: Access scripts in the `scripts/github` directory for normalizing and validating issue titles.
+- **Sprint Tasks**: Titles generated must follow a set format located in specified sprint definition files.
+
+Refer to `docs/AI_PIPELINE.md` for a detailed overview of the implemented scripts and procedures.
+
+## How to Run
+
+1. **Normalization**: Run `node scripts/github/issue-title-normalizer.js "Your Issue Title"`.
+2. **Validation**: Confirm titles by running `node scripts/github/validate-issue-title.js "Your Issue Title"`.
+3. **Generate Titles**: Execute `node scripts/github/create-next-issue-from-sprint.js`.
+4. **Cleanup**: Use `node scripts/github/cleanup-invalid-ai-issue-titles.js REPO_NAME GITHUB_TOKEN` for managing invalid existing titles.
+```
+
+```markdown
+<!-- CHANGELOG.md -->
+# Changelog
+
+## [Unreleased]
+
+### Added
+- Script to normalize and validate AI-generated GitHub issue titles.
+- Script for creating issue titles from Sprint tasks.
+- Cleanup script for managing existing issues with invalid titles.
+- Documentation on issue title standardization and associated scripts in `docs/AI_PIPELINE.md`.
+
+### Changed
+- README.md updated to include instructions for running scripts.
+
+### Removed
+- None
+
+---
+
+Ensure GitHub issue titles adhere to the Sprint key format `S{number}-{task_number} Title` with no invalid prefixes.
+```
+
+```markdown
+<!-- docs/SPRINT_SYSTEM.md -->
+# Sprint System Overview
+
+## Sprint Task Management
+
+Sprint tasks and associated issue titles must follow a standardized format for consistency across the repository's issues.
+
+- **Key Format**: S{number}-{task_number}
+- **Title Requirements**: Titles cannot start with `[NEXT]`, `【次へ】`, `次へ`, or `Next`.
+
+Scripts in the repository enforce these requirements and handle both pre- and post-issue creation processes.
+
+Refer to specific scripts under `scripts/github` for title normalization, validation, and cleanup processes to maintain consistent sprint tracking.
+
+---
+
+For documentation and examples, review the `docs/AI_PIPELINE.md`.
 ```

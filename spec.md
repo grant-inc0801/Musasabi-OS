@@ -1,191 +1,91 @@
-# 技術指示書: S5-004 Real-Time Sales Coach Upgrade
+```markdown
+# 技術指示書: S5-006 AI Pipeline Issue Title Standardization
 
-## 概要
+## 目的
 
-本書は、「S5-004 Real-Time Sales Coach Upgrade」タスクの実装に必要な技術的指示を提供します。本タスクの目的は、営業担当者が通話中にMUSA（アップグレードされたリアルタイム売上コーチングシステム）を使用し、リードデータ、通話履歴、アポイントメント予測、Sales Brain、スクリプトパフォーマンス、音声分析を基にコーチングを受けられるようにすることです。実装は決定論的コーチングロジックに焦点を当てます。
+AIが生成するGitHub Issueのタイトルを標準化することで、現在のパイプラインでのタイトルの不整合を解消し、Sprintの追跡を容易にします。
 
-## ビジョン
+## 必要な動作
 
-```
-Lead
-↓
-Call History
-↓
-Sales Brain
-↓
-Script Optimization
-↓
-Appointment Forecast
-↓
-Voice Analysis
-↓
-MUSA Real-Time Coach
-↓
-Sales Representative
-```
+全てのAIが生成する開発課題はSprintキー形式を用いる必要があります。
 
-## 必要モジュール
+形式: `S{number}-{task_number} Title`
 
-以下のパッケージを更新または作成してください:
+### 例:
+- S5-001 Zoom Phone Real-Time Sync
+- S5-002 FileMaker Two-Way Sync
+- S5-003 Voice Analysis Engine
 
-`packages/sales-coach/src/`
+## 遵守すべきルール
 
-- `realtimeCoachService.js`
-- `coachingContextBuilder.js`
-- `coachingSignalDetector.js`
-- `coachingRecommendationEngine.js`
-- `nextBestLineGenerator.js`
-- `coachingSessionRepository.js`
-- `index.js`
+### タイトルの開始禁止文字列:
+- `[NEXT]`
+- `【次へ】`
+- `次へ`
+- `Next`
 
-## データベース (SQLite)
+### ルール:
+- AIにIssueキーを新たに作成させてはいけません。
+- Issueキーは以下の場所から取得する必要があります:
+  - `docs/sprints/*.yaml`
+  - `docs/codex/roadmap/*.json`
 
-### テーブル: `realtime_coaching_sessions`
+## 必要なファイルの作成または更新
 
-- `id`
-- `lead_id`
-- `call_log_id`
-- `transcript_id`
-- `status`
-- `started_at`
-- `ended_at`
-- `created_at`
-- `updated_at`
+- `scripts/github/issue-title-normalizer.js`
+- `scripts/github/validate-issue-title.js`
+- `scripts/github/create-next-issue-from-sprint.js`
+- `docs/AI_PIPELINE.md`
 
-### テーブル: `realtime_coaching_recommendations`
+## バリデーション
 
-- `id`
-- `session_id`
-- `recommendation_type`
-- `recommendation`
-- `reason`
-- `confidence`
-- `priority`
-- `created_at`
+新規にIssueを作成する前に:
+1. Sprint定義からタスクキーを抽出
+2. タスクキーとタスクタイトルを利用してタイトルを生成
+3. タイトル形式を検証
+4. 無効な生成タイトルを拒否
+5. バリデーション結果をログに記録
 
-## コーチングコンテキスト
+## 既存のオープンなIssueのクリーンアップ
 
-以下の要素からコンテキストを構築:
+### スクリプト作成:
+- `scripts/github/cleanup-invalid-ai-issue-titles.js`
 
-- リードプロファイル
-- 通話履歴
-- トランスクリプト
-- 聴取ノーツ
-- アポイントメント予測
-- リード優先度
-- Sales Brain
-- スクリプト推薦
-- 音声分析
-
-## 推薦タイプ
-
-サポート:
-
-- 開始
-- 質問
-- 反論
-- クローズ
-- 次のアクション
-- 警告
-- コーチングティップ
-
-## コーチングルール
-
-- リードが新しい場合: 開始スクリプトを推奨
-- アポイント確率が高い場合: ダイレクトクローズを推奨
-- 想定される異議が存在する場合: 反論を推奨
-- 顧客の反応が弱い場合: 質問を推奨
-- 音声分析でオペレーターの話す割合が高い場合: 質問を増やすことを推奨
-- 前回のコールバックが存在する場合: 前回の会話を参照することを推奨
-
-## ユーザーインターフェース (UI)
-
-Sales Workspaceの右パネルを更新。
-
-表示:
-
-- MUSA Real-Time Coach
-
-セクション:
-
-- 推奨される次の行
-- 想定される異議
-- 推奨される反論
-- クローズの提案
-- 警告
-- 信頼性
-- 理由
-
-アクション:
-
-- 有用をマーク
-- 無用をマーク
-- スクリプトをコピー
-- ベストトークとして保存
-
-## 学習
-
-ユーザーが推奨を有用または無用とマークしたとき:
-
-- フィードバックを保存
-- 推奨の信頼性を更新
-- Sales Brainの学習履歴を更新
+このスクリプトは無効なタイトル接頭辞を持つオープンなAI生成課題を特定し、以下のいずれかを行います:
+- ラベル追加: `invalid-ai-title`
+- タイトルが無効であることをコメント
+- 完了していない限り自動でクローズしない
 
 ## テスト
 
-以下の内容でテストを実施:
+以下のテストを追加:
+- 有効なSprintタイトル
+- 無効な`[NEXT]`タイトル
+- 無効な`【次へ】`タイトル
+- Sprintタスクから生成されたタイトル
+- Sprintキー不足による拒否
+- 無効なタイトルの検出とクリーンアップ
 
-- コーチングコンテキストの構築
-- 推薦の生成
-- 想定異議の処理
-- 次の行の生成
-- 音声分析信号の処理
-- フィードバックの保存
-- 信頼性の更新
-
-## ドキュメンテーション
-
-以下を更新:
+## ドキュメンテーションの更新
 
 - `README.md`
 - `CHANGELOG.md`
-- `docs/REALTIME_SALES_COACH.md`
-
-## 制限
-
-以下の実装は行わないこと:
-
-- リアルタイムトランスクリプション
-- 音声生成
-- AutoCall
-- 外部コールの実行
-- 外部AI API
-- 自律的顧客会話
+- `docs/AI_PIPELINE.md`
+- `docs/SPRINT_SYSTEM.md`
 
 ## 受け入れ基準
 
-- リアルタイムコーチがリードコンテキストを使用する
-- 推薦がSales Workspaceに表示される
-- 次の行の推薦が機能する
-- 異議/反論の推薦が機能する
-- クローズの提案が機能する
-- ユーザーのフィードバックが保存可能
-- Sales Brainがフィードバックから学習する
-- テストがすべてパスする
-- ドキュメントが更新される
+- 新規IssueはSprintキー形式のみを使用
+- `[NEXT]`タイトルは拒否
+- `【次へ】`タイトルは拒否
+- IssueタイトルはSprintファイルから生成
+- 無効な既存のAI Issueにはラベルが付く
+- テストは全て合格
+- ドキュメントは更新済み
 
-## デリバラブル
-
-提供するもの:
-
-- 変更されたファイル
-- テスト結果
-- 提案されたコミット
-
-自動プッシュは行わないこと。
-
-提案されたコミット:
+## 推奨コミットメッセージ
 
 ```
-feat(sales): upgrade real-time sales coach
+fix(github): standardize AI-generated issue titles
+```
 ```
