@@ -1,109 +1,155 @@
 ```javascript
-// scripts/github/close-stale-ai-issues.js
+// packages/sales-coach/src/realtimeCoachService.js
+class RealtimeCoachService {
+  constructor(contextBuilder, signalDetector, recommendationEngine) {
+    this.contextBuilder = contextBuilder;
+    this.signalDetector = signalDetector;
+    this.recommendationEngine = recommendationEngine;
+  }
 
-const { Octokit } = require("@octokit/rest");
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-
-async function closeStaleAIIssues() {
-    const owner = "your-repo-owner";
-    const repo = "your-repo-name";
-
-    const { data: issues } = await octokit.issues.listForRepo({
-        owner,
-        repo,
-        labels: "AIタスク,ムササビオス,ai-task,musasabi-os",
-        state: "open"
-    });
-
-    for (const issue of issues) {
-        const { data: comments } = await octokit.issues.listComments({
-            owner,
-            repo,
-            issue_number: issue.number
-        });
-        
-        const completedComment = comments.find(comment =>
-            comment.body.includes("ワークフロー完了")
-        );
-
-        if (completedComment && !issue.labels.some(l => l.name === "needs-review")) {
-            await octokit.issues.createComment({
-                owner,
-                repo,
-                issue_number: issue.number,
-                body: "このAIタスクは完了していると思われるため、クリーンアップによってクローズされます。"
-            });
-
-            await octokit.issues.update({
-                owner,
-                repo,
-                issue_number: issue.number,
-                state: "closed",
-                labels: [...issue.labels.map(l => l.name), "completed"]
-            });
-        }
-    }
+  async getRecommendations(data) {
+    const context = await this.contextBuilder.build(data);
+    const signals = this.signalDetector.detect(context);
+    return this.recommendationEngine.generate(signals, context);
+  }
 }
 
-closeStaleAIIssues().catch(err => console.error(err));
-```
+module.exports = RealtimeCoachService;
 
-```yaml
-# .github/workflows/ai-pipeline.yml
+// packages/sales-coach/src/coachingContextBuilder.js
+class CoachingContextBuilder {
+  async build(data) {
+    // Build context from lead profile, call history, transcript, etc.
+    return {
+      leadProfile: data.leadProfile,
+      callHistory: data.callHistory,
+      transcript: data.transcript,
+      appointmentForecast: data.appointmentForecast,
+      leadPriority: data.leadPriority,
+      salesBrainInsights: data.salesBrainInsights,
+      scriptRecommendations: data.scriptRecommendations,
+      voiceAnalysis: data.voiceAnalysis,
+    };
+  }
+}
 
-name: AI Pipeline
+module.exports = CoachingContextBuilder;
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+// packages/sales-coach/src/coachingSignalDetector.js
+class CoachingSignalDetector {
+  detect(context) {
+    const signals = [];
+    // Detect signals based on context
+    if (context.leadProfile.isNew) signals.push('startRecommendation');
+    if (context.appointmentForecast.high) signals.push('directClose');
+    if (context.transcript.hasObjections) signals.push('refuteObjection');
+    if (context.voiceAnalysis.highOperatorTalkRatio) signals.push('askMoreQuestions');
+    return signals;
+  }
+}
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+module.exports = CoachingSignalDetector;
 
-      - name: Run AI Task
-        run: ./run-ai-task.sh
+// packages/sales-coach/src/coachingRecommendationEngine.js
+class CoachingRecommendationEngine {
+  generate(signals, context) {
+    const recommendations = [];
+    // Generate recommendations based on detected signals
+    signals.forEach(signal => {
+      switch (signal) {
+        case 'startRecommendation':
+          recommendations.push(this.createRecommendation('start', context));
+          break;
+        case 'directClose':
+          recommendations.push(this.createRecommendation('close', context));
+          break;
+        case 'refuteObjection':
+          recommendations.push(this.createRecommendation('refute', context));
+          break;
+        case 'askMoreQuestions':
+          recommendations.push(this.createRecommendation('question', context));
+          break;
+        default:
+          break;
+      }
+    });
+    return recommendations;
+  }
 
-      - name: Test
-        run: npm test
+  createRecommendation(type, context) {
+    // Create recommendation based on type and context
+    return {
+      recommendationType: type,
+      recommendation: `Recommended action based on ${type}`,
+      reason: `Based on ${type} signals`,
+      confidence: 0.9,
+      priority: 1,
+    };
+  }
+}
 
-      - name: Close Completed AI Issue
-        if: success()
-        run: |
-          ISSUE_NUMBER=$(jq -r '.issue.number' $GITHUB_EVENT_PATH)
-          LABELS=$(jq -r '.issue.labels | map(.name) | join(",")' $GITHUB_EVENT_PATH)
+module.exports = CoachingRecommendationEngine;
 
-          if [[ $LABELS != *"needs-review"* ]]; then
-            gh issue comment $ISSUE_NUMBER --body 'Successfully completed. Closing issue.'
-            gh issue edit $ISSUE_NUMBER --state closed --add-label 'completed'
-          fi
+// packages/sales-coach/src/nextBestLineGenerator.js
+class NextBestLineGenerator {
+  generate(context) {
+    // Use context to generate the next best line suggestion
+    return `Next best line based on context: ${context.transcript.latest}`;
+  }
+}
 
-      - name: Handle Failure
-        if: failure()
-        run: |
-          ISSUE_NUMBER=$(jq -r '.issue.number' $GITHUB_EVENT_PATH)
-          gh issue comment $ISSUE_NUMBER --body 'Task failed. Needs review.'
-          gh issue edit $ISSUE_NUMBER --add-label 'needs-review'
-```
+module.exports = NextBestLineGenerator;
 
-```markdown
-# README.md
-## AI Pipeline Automation
+// packages/sales-coach/src/coachingSessionRepository.js
+const sqlite3 = require('sqlite3').verbose();
 
-This project includes a GitHub Actions workflow to automatically close issues for completed AI tasks.
+class CoachingSessionRepository {
+  constructor(dbFilePath) {
+    this.db = new sqlite3.Database(dbFilePath, (err) => {
+      if (err) {
+        console.error('Could not connect to database', err);
+      } else {
+        console.log('Connected to database');
+      }
+    });
+  }
 
-# CHANGELOG.md
-## [Unreleased]
-### Fixed
-- Automatically close completed AI issues in the AI pipeline.
+  saveSession(session) {
+    // Save the coaching session data into the database
+    const { id, lead_id, created_at } = session;
+    this.db.run('INSERT INTO realtime_coaching_sessions (id, lead_id, created_at) VALUES (?, ?, ?)',
+      [id, lead_id, created_at]);
+  }
 
-# docs/AI_PIPELINE.md
-## Pipeline Automation
+  saveRecommendation(recommendation) {
+    // Save recommendation data into the database
+    const { session_id, recommendation, confidence, created_at } = recommendation;
+    this.db.run('INSERT INTO realtime_coaching_recommendations (session_id, recommendation, confidence, created_at) VALUES (?, ?, ?, ?)',
+      [session_id, recommendation, confidence, created_at]);
+  }
+}
 
-The AI pipeline ensures completed tasks are automatically closed to manage issue backlog efficiently. It uses GitHub Actions to achieve this automation.
+module.exports = CoachingSessionRepository;
+
+// packages/sales-coach/src/index.js
+const RealtimeCoachService = require('./realtimeCoachService');
+const CoachingContextBuilder = require('./coachingContextBuilder');
+const CoachingSignalDetector = require('./coachingSignalDetector');
+const CoachingRecommendationEngine = require('./coachingRecommendationEngine');
+const CoachingSessionRepository = require('./coachingSessionRepository');
+
+const contextBuilder = new CoachingContextBuilder();
+const signalDetector = new CoachingSignalDetector();
+const recommendationEngine = new CoachingRecommendationEngine();
+const sessionRepository = new CoachingSessionRepository('path/to/sqlite.db');
+
+const realtimeCoachService = new RealtimeCoachService(contextBuilder, signalDetector, recommendationEngine);
+
+async function main() {
+  const data = {}; // Assume this is populated with required data
+  const recommendations = await realtimeCoachService.getRecommendations(data);
+  recommendations.forEach(rec => sessionRepository.saveRecommendation(rec));
+}
+
+main();
 ```
