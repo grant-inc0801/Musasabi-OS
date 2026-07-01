@@ -1,194 +1,69 @@
-```javascript
-// scripts/github/issue-title-normalizer.js
-const fs = require('fs');
-const yaml = require('js-yaml');
+```python
+import git
+import os
+import subprocess
+import smtplib
+from email.mime.text import MIMEText
+from crontab import CronTab
 
-function getSprintKeys() {
-    let keys = [];
-    const sprintFiles = fs.readdirSync('docs/sprints/');
-    sprintFiles.forEach(file => {
-        const content = yaml.load(fs.readFileSync(`docs/sprints/${file}`, 'utf8'));
-        keys = keys.concat(Object.keys(content));
-    });
-    return keys;
-}
+# Clone the repository for version management
+def clone_repo(repo_url, clone_dir):
+    if not os.path.exists(clone_dir):
+        git.Repo.clone_from(repo_url, clone_dir)
 
-function normalizeIssueTitle(issueTitle, sprintKeys) {
-    const invalidPrefixes = ['[NEXT]', '【次へ】', '次へ', 'Next'];
-    if (invalidPrefixes.some(prefix => issueTitle.startsWith(prefix))) {
-        return null;
-    }
-    const titleParts = issueTitle.split(' ');
-    const sprintKey = titleParts.find(part => sprintKeys.includes(part));
-    if (!sprintKey) {
-        return null;
-    }
-    return `${sprintKey} ${titleParts.slice(1).join(' ')}`;
-}
+# Function to log changes and manage versions using Git
+def commit_changes(repo_dir, message):
+    repo = git.Repo(repo_dir)
+    repo.git.add(A=True)
+    repo.index.commit(message)
 
-const sprintKeys = getSprintKeys();
-const issueTitle = process.argv[2];
-const normalizedTitle = normalizeIssueTitle(issueTitle, sprintKeys);
+# Data integrity check script
+def check_data_integrity(data_source_path):
+    # Implement data checks (placeholder logic)
+    # return True if data is valid, False otherwise
+    return True
 
-console.log(normalizedTitle || 'Invalid issue title');
-```
+# Send notification email about data integrity issues
+def send_notification(subject, body, to_emails):
+    from_email = "your_email@example.com"
+    password = "your_email_password"
 
-```javascript
-// scripts/github/validate-issue-title.js
-const { execSync } = require('child_process');
+    msg = MIMEText(body)
+    msg['Subject'] = subject
+    msg['From'] = from_email
+    msg['To'] = ', '.join(to_emails)
 
-function validateTitle(issueTitle) {
-    try {
-        const result = execSync(`node scripts/github/issue-title-normalizer.js "${issueTitle}"`).toString();
-        return result.trim() !== 'Invalid issue title';
-    } catch {
-        return false;
-    }
-}
+    server = smtplib.SMTP_SSL('smtp.example.com', 465)
+    server.login(from_email, password)
+    server.sendmail(from_email, to_emails, msg.as_string())
+    server.quit()
 
-const issueTitle = process.argv[2];
-const isValid = validateTitle(issueTitle);
+# Set up a cron job for automated data integrity checks
+def schedule_integrity_checks(script_path):
+    cron = CronTab(user='your_username')
+    job = cron.new(command=f'python {script_path}', comment='Data integrity check')
+    job.minute.every(10)  # run every 10 minutes
+    cron.write()
 
-console.log(isValid ? 'Valid title' : 'Invalid title');
-```
+# Main function
+def main():
+    repo_url = 'https://github.com/your-repo.git'
+    clone_dir = '/path/to/clone_dir'
+    data_source_path = '/path/to/data/source'
 
-```javascript
-// scripts/github/create-next-issue-from-sprint.js
-const fs = require('fs');
-const yaml = require('js-yaml');
+    clone_repo(repo_url, clone_dir)
 
-function getSprintTasks() {
-    const sprintFiles = fs.readdirSync('docs/sprints/');
-    let tasks = [];
-    sprintFiles.forEach(file => {
-        const content = yaml.load(fs.readFileSync(`docs/sprints/${file}`, 'utf8'));
-        tasks = tasks.concat(Object.entries(content).map(([key, title]) => ({ key, title })));
-    });
-    return tasks;
-}
+    if not check_data_integrity(data_source_path):
+        send_notification(
+            'Data Integrity Alert',
+            'Data integrity check failed. Please investigate.',
+            ['recipient@example.com']
+        )
+    else:
+        commit_changes(clone_dir, 'Automated data integrity check passed.')
 
-function generateIssueTitle(sprintTask) {
-    return `${sprintTask.key} ${sprintTask.title}`;
-}
+    schedule_integrity_checks('/path/to/this_script.py')
 
-const sprintTasks = getSprintTasks();
-console.log(sprintTasks.map(generateIssueTitle));
-```
-
-```javascript
-// scripts/github/cleanup-invalid-ai-issue-titles.js
-const { execSync } = require('child_process');
-const axios = require('axios');
-
-async function labelInvalidIssues(repo, token) {
-    const issues = await axios.get(`https://api.github.com/repos/${repo}/issues`, {
-        headers: { Authorization: `token ${token}` }
-    });
-
-    issues.data.forEach(issue => {
-        const isValid = validateTitle(issue.title);
-        if (!isValid) {
-            axios.post(`https://api.github.com/repos/${repo}/issues/${issue.number}/labels`, ['invalid-ai-title'], {
-                headers: { Authorization: `token ${token}` }
-            });
-            axios.post(`https://api.github.com/repos/${repo}/issues/${issue.number}/comments`, {
-                body: 'This issue has an invalid title prefix.'
-            }, {
-                headers: { Authorization: `token ${token}` }
-            });
-        }
-    });
-}
-
-labelInvalidIssues(process.argv[2], process.argv[3]);
-```
-
-```markdown
-<!-- docs/AI_PIPELINE.md -->
-# AI Pipeline Documentation
-
-## Issue Title Standardization
-
-To ensure consistency in AI-generated GitHub issue titles, we follow a standardized format using Sprint keys extracted from YAML and JSON files located in specific directories.
-
-- **Format**: `S{number}-{task_number} Title`
-- **Invalid Prefixes**: Titles starting with `[NEXT]`, `【次へ】`, `次へ`, or `Next` are not allowed.
-
-Scripts provided:
-- **Normalization**: Identify and normalize issue titles ensuring compliance with the format.
-- **Validation**: Pre-check titles before GitHub issue creation.
-- **Cleanup**: Manage existing issues with invalid titles by labeling them and providing comments.
-
-## Scripts
-
-- **issue-title-normalizer.js**: Normalizes and validates issue titles.
-- **validate-issue-title.js**: Validates title format before issue creation.
-- **create-next-issue-from-sprint.js**: Generates new issue titles based on Sprint tasks.
-- **cleanup-invalid-ai-issue-titles.js**: Tags and comments on issues with invalid prefixes.
-
-Ensure all issue titles conform to the Sprint key format to streamline the tracking process. Invalid titles are rejected or labeled appropriately.
-```
-
-```markdown
-<!-- README.md -->
-# Repository README
-
-## GitHub Issue Management
-
-This repository includes scripts for managing GitHub issue titles standardized around Sprint keys, ensuring easier sprint tracking.
-
-- **Scripts**: Access scripts in the `scripts/github` directory for normalizing and validating issue titles.
-- **Sprint Tasks**: Titles generated must follow a set format located in specified sprint definition files.
-
-Refer to `docs/AI_PIPELINE.md` for a detailed overview of the implemented scripts and procedures.
-
-## How to Run
-
-1. **Normalization**: Run `node scripts/github/issue-title-normalizer.js "Your Issue Title"`.
-2. **Validation**: Confirm titles by running `node scripts/github/validate-issue-title.js "Your Issue Title"`.
-3. **Generate Titles**: Execute `node scripts/github/create-next-issue-from-sprint.js`.
-4. **Cleanup**: Use `node scripts/github/cleanup-invalid-ai-issue-titles.js REPO_NAME GITHUB_TOKEN` for managing invalid existing titles.
-```
-
-```markdown
-<!-- CHANGELOG.md -->
-# Changelog
-
-## [Unreleased]
-
-### Added
-- Script to normalize and validate AI-generated GitHub issue titles.
-- Script for creating issue titles from Sprint tasks.
-- Cleanup script for managing existing issues with invalid titles.
-- Documentation on issue title standardization and associated scripts in `docs/AI_PIPELINE.md`.
-
-### Changed
-- README.md updated to include instructions for running scripts.
-
-### Removed
-- None
-
----
-
-Ensure GitHub issue titles adhere to the Sprint key format `S{number}-{task_number} Title` with no invalid prefixes.
-```
-
-```markdown
-<!-- docs/SPRINT_SYSTEM.md -->
-# Sprint System Overview
-
-## Sprint Task Management
-
-Sprint tasks and associated issue titles must follow a standardized format for consistency across the repository's issues.
-
-- **Key Format**: S{number}-{task_number}
-- **Title Requirements**: Titles cannot start with `[NEXT]`, `【次へ】`, `次へ`, or `Next`.
-
-Scripts in the repository enforce these requirements and handle both pre- and post-issue creation processes.
-
-Refer to specific scripts under `scripts/github` for title normalization, validation, and cleanup processes to maintain consistent sprint tracking.
-
----
-
-For documentation and examples, review the `docs/AI_PIPELINE.md`.
+if __name__ == "__main__":
+    main()
 ```
