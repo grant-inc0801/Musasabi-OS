@@ -1,86 +1,131 @@
 ```typescript
-// File: apps/desktop/src/avatar/design/avatarDesignTokens.ts
-export const designTokens = {
-  size: {
-    small: '32px',
-    medium: '64px',
-    large: '128px',
-  },
-  scale: 1.0,
-  colors: {
-    primary: '#FFD700',
-    secondary: '#FFD123',
-  },
-  borderRadius: '8px',
-  shadows: '0 4px 8px rgba(0, 0, 0, 0.1)',
-  motionSpeed: '0.5s',
-  bubbleSpacing: '12px',
-  emotionalAccents: {
-    idle: '#B0BEC5',
-    happy: '#FFF176',
-    thinking: '#FF8A65',
+// apps/desktop/src/avatar/emotion/EmotionEngine.ts
+class EmotionEngine {
+  private currentState: string;
+
+  constructor() {
+    this.currentState = 'Idle';
   }
-};
 
-// File: apps/desktop/src/avatar/design/avatarPalette.ts
-export const avatarPalette = {
-  body: '#FFD700',
-  eyes: '#000000',
-  mouth: '#333333',
-  membrane: '#FFD123',
-  tail: '#FFBB33',
-  ears: '#FFCC44',
-};
+  public transitionTo(newState: string) {
+    // Implement smooth transition logic here
+  }
 
-// File: apps/desktop/src/avatar/design/avatarEmotionMap.ts
-export const avatarEmotionMap = {
-  idle: {
-    face: 'neutral',
-    eyes: 'open',
-    mouth: 'closed',
-    pose: 'standing',
-    motionSpeed: '0.5s',
-    bubbleTone: '#B0BEC5',
-  },
-  happy: {
-    face: 'smile',
-    eyes: 'open',
-    mouth: 'wide',
-    pose: 'jumping',
-    motionSpeed: '0.8s',
-    bubbleTone: '#FFF176',
-  },
-  // Definitions for other emotions...
-};
+  public getCurrentState() {
+    return this.currentState;
+  }
+}
 
-// File: apps/desktop/src/avatar/design/avatarPoseMap.ts
-export const avatarPoseMap = {
-  standing: {
-    glidingMembrane: 'neutral',
-  },
-  jumping: {
-    glidingMembrane: 'extended',
-  },
-  // Definitions for other poses...
-};
+export default EmotionEngine;
 
-// File: apps/desktop/src/avatar/design/avatarTheme.ts
-export const avatarTheme = {
-  businessFriendly: {
-    demeanor: 'calm and inviting',
-  },
-  approachable: {
-    demeanor: 'friendly and casual',
-  },
-};
+// apps/desktop/src/avatar/emotion/EmotionState.ts
+export enum EmotionState {
+  Idle,
+  Happy,
+  Excited,
+  Thinking,
+  Learning,
+  Working,
+  Calling,
+  Listening,
+  Celebrating,
+  Sleeping,
+  Warning,
+  Error,
+}
 
-// Tests and Documentation placeholders...
+// apps/desktop/src/avatar/emotion/EmotionTransition.ts
+import { EmotionState } from './EmotionState';
 
-// File: apps/desktop/assets/avatar/musasabi/idle.svg
-// Placeholder SVG content
+class EmotionTransition {
+  public static transitionRules: {[key: string]: EmotionState[]} = {
+    [EmotionState.Idle]: [
+      EmotionState.Happy,
+      EmotionState.Thinking,
+      EmotionState.Learning,
+    ],
+    // Add other rules
+  };
 
-// File: apps/desktop/assets/avatar/musasabi/happy.svg
-// Placeholder SVG content
+  public static canTransition(current: EmotionState, target: EmotionState): boolean {
+    return this.transitionRules[current]?.includes(target) || false;
+  }
+}
 
-// Additional SVG files for other emotions and modes...
+export default EmotionTransition;
+
+// apps/desktop/src/avatar/emotion/AnimationController.ts
+class AnimationController {
+  public playAnimation(state: EmotionState) {
+    switch(state) {
+      case EmotionState.Happy:
+        this.playHappyAnimation();
+        break;
+      case EmotionState.Thinking:
+        this.playThinkingAnimation();
+        break;
+      // Add other cases
+    }
+  }
+
+  private playHappyAnimation() {
+    // Implement happy animation sequence
+  }
+
+  private playThinkingAnimation() {
+    // Implement thinking animation sequence
+  }
+}
+
+export default AnimationController;
+
+// apps/desktop/src/avatar/emotion/AnimationScheduler.ts
+import EmotionEngine from './EmotionEngine';
+
+class AnimationScheduler {
+  private engine: EmotionEngine;
+  private queue: any[] = [];
+
+  constructor(engine: EmotionEngine) {
+    this.engine = engine;
+  }
+
+  public addAnimationToQueue(animation: string) {
+    this.queue.push(animation);
+    // Maintain prioritization here
+  }
+
+  public executeQueue() {
+    while(this.queue.length > 0) {
+      const animation = this.queue.shift();
+      // Execute animation
+    }
+  }
+}
+
+export default AnimationScheduler;
+
+// apps/desktop/src/avatar/emotion/IdleController.ts
+class IdleController {
+  public performRandomIdleAction() {
+    const actions = [
+      () => this.blink(),
+      () => this.breathe(),
+      // Add other idle actions
+    ];
+
+    const randomAction = actions[Math.floor(Math.random() * actions.length)];
+    randomAction();
+  }
+
+  private blink() {
+    // Blink animation code
+  }
+
+  private breathe() {
+    // Breathe animation code
+  }
+}
+
+export default IdleController;
 ```

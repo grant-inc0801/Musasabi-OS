@@ -1,129 +1,290 @@
-Here's a detailed technical specification document for implementing the Musasabi Avatar Visual Design System in Markdown format:
+# 技術指示書: AV-003 Musasabi Emotion & Animation Engine
 
-```markdown
-# Musasabi Avatar Visual Design System Technical Specification
+---
 
-## Objective
+## 目次
 
-Establish the Musasabi Avatar Visual Design System to define the official visual identity, emotion assets, avatar states, and design tokens for the Musasabi desktop avatar. This builds on the foundation laid by AV-001.
+1. [目的](#目的)
+2. [ビジョン](#ビジョン)
+3. [必要なモジュール](#必要なモジュール)
+4. [感情状態](#感情状態)
+5. [感情の優先順位](#感情の優先順位)
+6. [遷移ルール](#遷移ルール)
+7. [アイドル時の振る舞い](#アイドル時の振る舞い)
+8. [アニメーション](#アニメーション)
+   - [ハッピー アニメーション](#ハッピー-アニメーション)
+   - [考え中 アニメーション](#考え中-アニメーション)
+   - [学習中 アニメーション](#学習中-アニメーション)
+   - [作業中 アニメーション](#作業中-アニメーション)
+   - [通話中 アニメーション](#通話中-アニメーション)
+   - [睡眠中 アニメーション](#睡眠中-アニメーション)
+   - [警告 アニメーション](#警告-アニメーション)
+   - [エラー アニメーション](#エラー-アニメーション)
+9. [アニメーションタイミング](#アニメーションタイミング)
+10. [設定](#設定)
+11. [UI](#ui)
+12. [テスト](#テスト)
+13. [ドキュメント](#ドキュメント)
+14. [制限事項](#制限事項)
+15. [受入基準](#受入基準)
+16. [作成物](#作成物)
 
-## Vision
+---
 
-The avatar embodies the visible personality of Musasabi AI and is not merely a mascot. It must primarily represent a Musasabi and not a Tanuki.
+## 目的
 
-## Character Direction
+Musasabi Emotion & Animation Engineを実装し、アバターに生命感を持たせます。Musasabiの表情、アニメーション、姿勢、振る舞いはシステムイベントによって変化する必要があります。これはMusasabi AIの感情レイヤーとなります。
 
-**Default Avatar Specifications:**
-- **Form**: Cute musasabi with a 2.5–3 head-to-body ratio.
-- **Features**: 
-  - Soft rounded shape
-  - Big eyes
-  - Slightly sleepy yet friendly expression
-  - Large gliding membrane
-  - Fluffy tail
-  - Small ears
-- **Aesthetic**: Business-friendly yet approachable demeanor.
+---
 
-## Required Files
+## ビジョン
 
-**File Paths and Purposes:**
+AIの状態
+↓
+Emotion Engine
+↓
+Animation Engine
+↓
+アバター
+↓
+ユーザー
 
-- `apps/desktop/src/avatar/design/`
-  - `avatarDesignTokens.ts`: Design tokens for size, scale, colors, etc.
-  - `avatarPalette.ts`: Color palette definitions.
-  - `avatarEmotionMap.ts`: Mapping of emotions to visual settings.
-  - `avatarPoseMap.ts`: Mapping of poses corresponding to emotions.
-  - `avatarTheme.ts`: Theme settings for consistent aesthetics.
+ユーザーはテキストを読むことなくMusasabiの現在の状態を理解できるべきです。
 
-- `docs/AVATAR_VISUAL_DESIGN.md`: Documentation on visual design principles and specifications.
+---
 
-## Avatar Design Tokens
-
-Define design tokens encompassing:
-- Physical dimensions (size, scale)
-- Aesthetic properties (colors, shadows, and border radii)
-- Interaction dynamics (motion speed, bubble spacing)
-- Emotional and mode color accents
-
-## Emotions
-
-Define visual settings for each emotional state:
-- Emotions: `idle`, `happy`, `thinking`, `learning`, `working`, `sleeping`, `celebrating`, `calling`, `error`.
-- Each emotion includes:
-  - Face configuration
-  - Eye and mouth styles
-  - Body pose specifics
-  - Motion speed settings
-  - Bubble tones and accent color tokens
-
-## Modes
-
-Define indicators for various mode states:
-- Modes: `Learning`, `Work`, `Sales`, `AutoCall`, `Sleep`, `Error`.
-- AutoCall Mode: Must visually emphasize sensitivity/control, avoiding a playful appearance.
-
-## UI Integration
-
-Avatar UI must display:
-- Current mode and emotion
-- Status indicator
-- Speech bubble with relevant text
-
-## Asset Placeholder System
-
-Placeholder SVG assets located at `apps/desktop/assets/avatar/musasabi/`:
-- SVG files: `idle.svg`, `happy.svg`, `thinking.svg`, `learning.svg`, `working.svg`, `sleeping.svg`, `celebrating.svg`, `calling.svg`, `error.svg`.
-- Temporary placeholders can be used where actual art is absent.
-
-## Important Rule
-
-Exclusion of Tanuki Assets:
-- Avoid any references or terms associated with Tanuki.
-- Permitted terms include Musasabi, MUSA, Musasabi Avatar.
-
-## Tests
-
-Implement tests for:
-- Design token exports
-- Completeness of emotion and mode maps
-- Asset placeholders existence
-- Assurance of no Tanuki references
-
-## Documentation
-
-Update and maintain the following documents:
-- `README.md`
-- `CHANGELOG.md`
-- `docs/AVATAR_ENGINE.md`
-- `docs/AVATAR_VISUAL_DESIGN.md`
-
-## Restrictions
-
-Avoid implementation of:
-- Live2D, 3D capabilities
-- Lip sync, voice interaction
-- Physical dynamics (physics)
-
-The focus is strictly on the visual design foundation.
-
-## Acceptance Criteria
-
-- Establishment of Musasabi avatar design system
-- Completion of emotion and mode mappings
-- Existence of placeholder asset files
-- Usage of Musasabi terminology in UI
-- Elimination of Tanuki references
-- Passing of all implemented tests
-- Updated documentation
-
-## Deliverables
-
-Report containing:
-- Details of changed files
-- Test results summary
-- Screenshots (if available)
-- Suggested commit: `feat(avatar): add musasabi visual design system`
+## 必要なモジュール
 
 ```
+apps/desktop/src/avatar/emotion/
+- EmotionEngine.ts
+- EmotionState.ts
+- EmotionTransition.ts
+- AnimationController.ts
+- AnimationScheduler.ts
+- IdleController.ts
+```
 
-This document outlines all necessary steps and considerations for implementing the Musasabi Avatar Visual Design System based on your provided task instructions.
+---
+
+## 感情状態
+
+サポートする状態:
+- Idle
+- Happy
+- Excited
+- Thinking
+- Learning
+- Working
+- Calling
+- Listening
+- Celebrating
+- Sleeping
+- Warning
+- Error
+
+---
+
+## 感情の優先順位
+
+例:
+1. Error
+2. Warning
+3. Calling
+4. Working
+5. Learning
+6. Thinking
+7. Happy
+8. Idle
+
+---
+
+## 遷移ルール
+
+スムーズな遷移のみをサポートします。即座の切り替えは禁止です。以下の遷移をサポートします:
+- フェード
+- 拡大縮小
+- 目の遷移
+- 体の遷移
+- 尻尾の遷移
+
+---
+
+## アイドル時の振る舞い
+
+ランダムに実行
+- まばたき
+- 呼吸
+- しっぽの振り
+- 耳の動き
+- ストレッチ
+- 見回す
+- あくび
+- 頭を掻く
+
+ランダム間隔: 3〜15秒
+
+---
+
+## アニメーション
+
+### ハッピー アニメーション
+
+対象イベント
+- タスク完了
+- 約束の取得
+- スプリント完了
+
+再生するアニメーション
+- ジャンプ
+- しっぽ振り
+- 微笑み
+- きらめき効果
+
+### 考え中 アニメーション
+
+再生するアニメーション
+- 頭を傾ける
+- まばたき
+- 上方を見る
+- ゆっくりとした尻尾の動き
+
+### 学習中 アニメーション
+
+再生するアニメーション
+- ノートブックの出現
+- タイピングアニメーション
+- 読書アニメーション
+
+### 作業中 アニメーション
+
+再生するアニメーション
+- ラップトップの出現
+- タイピング
+- 集中している顔
+
+### 通話中 アニメーション
+
+再生するアニメーション
+- ヘッドセットの出現
+- 会話のポーズ
+- 聞いているポーズ
+- メモ取り
+
+### 睡眠中 アニメーション
+
+再生するアニメーション
+- 目を閉じる
+- 呼吸
+- "Z" アイコンの浮遊
+- しっぽが巻かれる
+
+### 警告 アニメーション
+
+再生するアニメーション
+- オレンジ色のアクセント
+- 心配している顔
+- ゆっくりとした動き
+
+### エラー アニメーション
+
+再生するアニメーション
+- 赤いアクセント
+- 困惑した顔
+- 通知バブル
+
+---
+
+## アニメーションタイミング
+
+ターゲット: 60FPS
+
+サポート:
+- アニメーションキュー
+- 中断可能なアニメーション
+- 優先アニメーション
+
+---
+
+## 設定
+
+許可:
+- アニメーション速度
+- アイドル頻度
+- アニメーションの有効化
+- 減少モーションモード
+
+---
+
+## UI
+
+内部的に現在の感情を表示。
+
+開発者オーバーレイに表示する項目:
+- 感情
+- 現在のアニメーション
+- FPS
+- キューの長さ
+- 遷移状態
+
+---
+
+## テスト
+
+実装すべき項目:
+- 状態遷移
+- アニメーションスケジューリング
+- アイドルのランダム化
+- 優先インタラプション
+- 減少モーションモード
+- 開発者オーバーレイ
+
+---
+
+## ドキュメント
+
+作成:
+- `docs/AVATAR_EMOTION_ENGINE.md`
+
+更新:
+- `README`
+- `CHANGELOG`
+- `docs/AVATAR_ENGINE.md`
+
+---
+
+## 制限事項
+
+実装してはいけない項目:
+- ボイス
+- リップシンク
+- 3D
+- 物理演算
+- AI推論
+
+これらは後のアバタースプリントでの対応となります。
+
+---
+
+## 受入基準
+
+- 感情エンジンが動作すること
+- アニメーションキューが動作すること
+- アイドル動作がランダムに実行されること
+- スムーズな遷移が実装されていること
+- 優先システムが動作すること
+- 開発者オーバーレイが動作すること
+- テストが合格すること
+- ドキュメントが更新されていること
+
+---
+
+## 作成物
+
+レポート内容:
+- 変更されたファイル
+- テスト結果
+- アニメーションのスクリーンショット/GIF(可能な場合)
+- 推奨コミット
+
+推奨コミット: `feat(avatar): implement Musasabi emotion and animation engine`
