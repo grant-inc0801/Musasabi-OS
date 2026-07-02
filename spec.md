@@ -1,208 +1,75 @@
+以下に、指定されたタスク「S5-010 Fix Auto Commit Push Rejection」のための技術指示書をMarkdown形式で作成しました。
+
 ```markdown
-# 技術指示書: AV-005 Musasabi 3D Avatar Foundation (VRM)
+# 技術指示書: S5-010 Fix Auto Commit Push Rejection
 
-## 目的
+## 概要
 
-VRM標準を使用してMusasabiアバターの3D基盤を実装します。このスプリントでは、既存のアバターエンジン、感情エンジン、Live2Dモーションシステムとの互換性を維持しつつ、完全にインタラクティブな3Dアバターを初めて導入します。このアバターはMusasabi OSの恒久的な顔となります。
+GitHub Actionsによる自動コミットのプッシュが、リモートのmainブランチに新しいコミットがある場合に拒否される問題を修正します。
 
-## ビジョン
+## 問題の詳細
 
-- Musasabi AI
-- Avatar Engine
-- Emotion Engine
-- VRM Runtime
-- 3D Musasabi
-- Desktop Overlay
-
-## 技術スタック
-
-### Desktop
-
-- Tauri
-- React
-- TypeScript
-
-### 3D
-
-- Three.js
-- @pixiv/three-vrm
-
-## 必須モジュール
-
-`apps/desktop/src/avatar/vrm/` 以下のモジュールを実装します。
-
-- `VRMAvatar.ts`
-- `VRMLoader.ts`
-- `VRMAnimationController.ts`
-- `VRMEmotionController.ts`
-- `VRMCameraController.ts`
-- `VRMPhysicsController.ts`
-- `VRMStateMachine.ts`
-- `index.ts`
-
-## アセット構造
-
-アセットは以下のディレクトリに配置されます。
-
-`apps/desktop/assets/avatar/musasabi/`
-
-- `vrm/`
-  - `musasabi.vrm`
-- `motions/`
-  - `idle.fbx`
-  - `happy.fbx`
-  - `thinking.fbx`
-  - `learning.fbx`
-  - `working.fbx`
-  - `sleeping.fbx`
-  - `celebrating.fbx`
-  - `calling.fbx`
-- `textures/`
-- `icons/`
-
-## 初期アバターの外観
-
-- 飛び鼠（ムササビ）
-- 3頭身のかわいい比率
-- 大きく表現力豊かな目
-- 柔らかく丸い体
-- 大きなグライディング用膜
-- ふわふわの尾
-- 中庸なビジネススタイルの外観
-- タヌキのアセットは使用しない
-
-## モーションコントローラー
-
-以下のモーションをサポート:
-
-- Idle
-- Walk
-- Glide
-- Wave
-- Thinking
-- Typing
-- Reading
-- Sleeping
-- Celebrating
-- Calling
-- Stretch
-
-## カメラ
-
-以下のカメラ機能をサポート:
-
-- Front
-- 45°
-- Side
-- Zoom
-- Auto Focus
-
-## 感情統合
-
-Emotion Engineからのイベントを受け取り、以下の感情をサポート:
-
-- Idle
-- Happy
-- Thinking
-- Learning
-- Working
-- Calling
-- Sleeping
-- Celebrating
-- Warning
-- Error
-
-## アニメーションブレンディング
-
-以下をサポート：
-
-- クロスフェード
-- レイヤー化されたアニメーション
-- 中断可能なアニメーション
-- 優先アニメーション
-
-## パフォーマンス目標
-
-- ターゲット: 60 FPS
-- CPU使用率: <5%
-- メモリ使用量: <250MB
-
-## 設定
-
-以下の設定項目を許可:
-
-- アバタースケール
-- アニメーション速度
-- シャドウ
-- アウトライン
-- 品質
-- モーションの有効化
-- 物理演算の有効化
-
-## 開発者モード
-
-以下を表示:
-
-- 現在のアニメーション
-- 現在の感情
-- FPS
-- トライアングル数
-- ドローコール数
-- メモリ使用量
-
-## テスト
-
-以下のテストを実施:
-
-- VRMのロード
-- アニメーションの再生
-- アニメーションブレンディング
-- 感情の同期
-- カメラコントロール
-- 物理演算の有効化/無効化
-- パフォーマンスベンチマーク
-
-## ドキュメント
-
-以下を作成・更新:
-
-- `docs/VRM_AVATAR.md`
-- `README`
-- `CHANGELOG`
-- `docs/AVATAR_ENGINE.md`
-
-## 制約
-
-以下の機能は実装しない:
-
-- 音声認識
-- 音声合成
-- リップシンク
-- AI対話
-- デスクトップ自動化
-
-## 受け入れ基準
-
-- VRMアバターが正常にロードされる
-- アバターが正しくレンダリングされる
-- アニメーションがスムーズに再生される
-- 感情エンジンがアバターを更新する
-- カメラコントロールが機能する
-- パフォーマンス目標を達成する
-- テストが通過する
-- ドキュメントが更新される
-
-## 納品物
-
-- 変更されたファイルのリスト
-- テスト結果
-- パフォーマンスベンチマーク
-- スクリーンショット / GIF
-- 推奨コミットメッセージ
-
-推奨コミットメッセージ:
+現在のAIパイプラインはコミットには成功しますが、次のエラーによりプッシュに失敗します。
 
 ```
-feat(avatar): implement VRM-based 3D Musasabi avatar foundation
+remote contains work that you do not have locally
 ```
+
+このエラーは、リモートブランチに存在する新しいコミットをローカルに取得していないことが原因です。
+
+## 必須修正
+
+プッシュを実行する前に、ワークフローはリモートの最新のmainブランチをフェッチしてリベースする必要があります。
+
+## 技術的詳細
+
+### ワークフローの更新
+
+GitHub Actionsの自動コミットステップを以下のフローに基づいて更新します。
+
+#### 推奨フロー
+
+```bash
+git fetch origin main
+git rebase origin/main
+git push origin main
 ```
+
+### 手順
+
+1. **Git Fetch**: リモートの最新のmainブランチをフェッチします。
+   ```bash
+   git fetch origin main
+   ```
+   
+2. **Git Rebase**: リモートのmainブランチに基づいてリベースを実施します。
+   ```bash
+   git rebase origin/main
+   ```
+
+3. **Git Push**: 自動コミットをプッシュします。
+   ```bash
+   git push origin main
+   ```
+
+### 更新対象ファイル
+
+- `.github/workflows/your-github-actions-file.yml` (適切なGitHub Actionsワークフローファイルを指定してください)
+
+### 変更に伴う検証
+
+修正後、以下の観点で動作検証を行います。
+
+- リモートブランチに新しいコミットがあった場合でも、自動コミットが問題なくプッシュされること。
+- 全体のワークフローが予期せぬエラーなく完了すること。
+
+## 終了条件
+
+- 問題の再発が防止され、GitHub Actions内で自動コミットのプッシュが正常に行われることが確認できた状態。
+
+---
+
+この技術指示書に基づき、問題の修正とワークフローの更新を実施してください。質問や不明点がありましたら、プロジェクト管理者までお問い合わせください。
+```
+
+この指示書は、問題の詳細、修正のための具体的な手順、および確認すべき点を含む包括的な資料として設計されています。この文書を元に実装を進めてください。
