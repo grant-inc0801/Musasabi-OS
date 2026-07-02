@@ -1,131 +1,84 @@
 ```typescript
-// apps/desktop/src/avatar/emotion/EmotionEngine.ts
-class EmotionEngine {
-  private currentState: string;
+// apps/desktop/src/avatar/AvatarManager.ts
+export class AvatarManager {
+  position = { x: window.innerWidth - 100, y: window.innerHeight - 100 };
+  topMost = true;
 
-  constructor() {
-    this.currentState = 'Idle';
+  load() {
+    // Load saved position and settings
   }
 
-  public transitionTo(newState: string) {
-    // Implement smooth transition logic here
+  drag(position) {
+    this.position = position;
+    // Save position
   }
 
-  public getCurrentState() {
-    return this.currentState;
+  saveSettings() {
+    // Save settings locally
   }
 }
 
-export default EmotionEngine;
-
-// apps/desktop/src/avatar/emotion/EmotionState.ts
-export enum EmotionState {
+// apps/desktop/src/avatar/AvatarState.ts
+export enum AvatarState {
   Idle,
-  Happy,
-  Excited,
   Thinking,
   Learning,
   Working,
-  Calling,
-  Listening,
-  Celebrating,
-  Sleeping,
+  Happy,
   Warning,
-  Error,
+  Sleeping,
 }
 
-// apps/desktop/src/avatar/emotion/EmotionTransition.ts
-import { EmotionState } from './EmotionState';
+// apps/desktop/src/avatar/AvatarAnimation.ts
+export class AvatarAnimation {
+  play(state: AvatarState) {
+    // Play corresponding animation for the state
+  }
 
-class EmotionTransition {
-  public static transitionRules: {[key: string]: EmotionState[]} = {
-    [EmotionState.Idle]: [
-      EmotionState.Happy,
-      EmotionState.Thinking,
-      EmotionState.Learning,
-    ],
-    // Add other rules
-  };
-
-  public static canTransition(current: EmotionState, target: EmotionState): boolean {
-    return this.transitionRules[current]?.includes(target) || false;
+  loopAnimation(animation) {
+    // Loop the animation naturally
   }
 }
 
-export default EmotionTransition;
+// apps/desktop/src/avatar/AvatarController.ts
+export class AvatarController {
+  state: AvatarState = AvatarState.Idle;
 
-// apps/desktop/src/avatar/emotion/AnimationController.ts
-class AnimationController {
-  public playAnimation(state: EmotionState) {
-    switch(state) {
-      case EmotionState.Happy:
-        this.playHappyAnimation();
-        break;
-      case EmotionState.Thinking:
-        this.playThinkingAnimation();
-        break;
-      // Add other cases
-    }
-  }
-
-  private playHappyAnimation() {
-    // Implement happy animation sequence
-  }
-
-  private playThinkingAnimation() {
-    // Implement thinking animation sequence
+  setState(newState: AvatarState) {
+    this.state = newState;
+    // Trigger animation and speech bubble change
   }
 }
 
-export default AnimationController;
-
-// apps/desktop/src/avatar/emotion/AnimationScheduler.ts
-import EmotionEngine from './EmotionEngine';
-
-class AnimationScheduler {
-  private engine: EmotionEngine;
-  private queue: any[] = [];
-
-  constructor(engine: EmotionEngine) {
-    this.engine = engine;
+// apps/desktop/src/avatar/AvatarSpeechBubble.ts
+export class AvatarSpeechBubble {
+  displayMessage(message: string) {
+    // Show message in speech bubble
   }
 
-  public addAnimationToQueue(animation: string) {
-    this.queue.push(animation);
-    // Maintain prioritization here
-  }
-
-  public executeQueue() {
-    while(this.queue.length > 0) {
-      const animation = this.queue.shift();
-      // Execute animation
-    }
+  hide() {
+    // Auto-hide bubble after certain time
   }
 }
 
-export default AnimationScheduler;
-
-// apps/desktop/src/avatar/emotion/IdleController.ts
-class IdleController {
-  public performRandomIdleAction() {
-    const actions = [
-      () => this.blink(),
-      () => this.breathe(),
-      // Add other idle actions
-    ];
-
-    const randomAction = actions[Math.floor(Math.random() * actions.length)];
-    randomAction();
-  }
-
-  private blink() {
-    // Blink animation code
-  }
-
-  private breathe() {
-    // Breathe animation code
+// apps/desktop/src/avatar/AvatarNotification.ts
+export class AvatarNotification {
+  trigger(event: string) {
+    // Handle notification trigger based on event
   }
 }
 
-export default IdleController;
+// apps/desktop/src/avatar/AvatarSettings.ts
+export class AvatarSettings {
+  size: number = 100;
+  opacity: number = 1.0;
+  animationSpeed: number = 1.0;
+  speechBubbleOn: boolean = true;
+  topMost: boolean = true;
+  clickThrough: boolean = false;
+
+  persist() {
+    // Save settings locally
+  }
+}
 ```
