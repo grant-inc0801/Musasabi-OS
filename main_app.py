@@ -1,69 +1,117 @@
-```python
-import git
-import os
-import subprocess
-import smtplib
-from email.mime.text import MIMEText
-from crontab import CronTab
+```typescript
+// apps/desktop/src/avatar/Avatar.tsx
+import React, { useState, useEffect } from 'react';
+import { AvatarOverlay } from './AvatarOverlay';
+import { AvatarController } from './AvatarController';
+import { AvatarState, Emotion } from './AvatarState';
 
-# Clone the repository for version management
-def clone_repo(repo_url, clone_dir):
-    if not os.path.exists(clone_dir):
-        git.Repo.clone_from(repo_url, clone_dir)
+const Avatar: React.FC = () => {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [emotion, setEmotion] = useState<Emotion>('idle');
 
-# Function to log changes and manage versions using Git
-def commit_changes(repo_dir, message):
-    repo = git.Repo(repo_dir)
-    repo.git.add(A=True)
-    repo.index.commit(message)
+  useEffect(() => {
+    // Load and persist position, emotion, etc.
+  }, []);
 
-# Data integrity check script
-def check_data_integrity(data_source_path):
-    # Implement data checks (placeholder logic)
-    # return True if data is valid, False otherwise
-    return True
+  return (
+    <AvatarOverlay position={position} onDrag={setPosition}>
+      <AvatarController emotion={emotion} onEmotionChange={setEmotion} />
+    </AvatarOverlay>
+  );
+};
 
-# Send notification email about data integrity issues
-def send_notification(subject, body, to_emails):
-    from_email = "your_email@example.com"
-    password = "your_email_password"
+export default Avatar;
 
-    msg = MIMEText(body)
-    msg['Subject'] = subject
-    msg['From'] = from_email
-    msg['To'] = ', '.join(to_emails)
+// apps/desktop/src/avatar/AvatarBubble.tsx
+import React from 'react';
 
-    server = smtplib.SMTP_SSL('smtp.example.com', 465)
-    server.login(from_email, password)
-    server.sendmail(from_email, to_emails, msg.as_string())
-    server.quit()
+const AvatarBubble: React.FC<{ message: string }> = ({ message }) => {
+  return <div className="avatar-bubble">{message}</div>;
+};
 
-# Set up a cron job for automated data integrity checks
-def schedule_integrity_checks(script_path):
-    cron = CronTab(user='your_username')
-    job = cron.new(command=f'python {script_path}', comment='Data integrity check')
-    job.minute.every(10)  # run every 10 minutes
-    cron.write()
+export default AvatarBubble;
 
-# Main function
-def main():
-    repo_url = 'https://github.com/your-repo.git'
-    clone_dir = '/path/to/clone_dir'
-    data_source_path = '/path/to/data/source'
+// apps/desktop/src/avatar/AvatarState.ts
+type Emotion = 'idle' | 'happy' | 'thinking' | 'working' | 'sleeping' | 'celebrating' | 'loading' | 'error';
 
-    clone_repo(repo_url, clone_dir)
+interface AvatarStateOptions {
+  position: { x: number; y: number };
+  scale: number;
+  transparency: number;
+  currentEmotion: Emotion;
+  animationEnabled: boolean;
+}
 
-    if not check_data_integrity(data_source_path):
-        send_notification(
-            'Data Integrity Alert',
-            'Data integrity check failed. Please investigate.',
-            ['recipient@example.com']
-        )
-    else:
-        commit_changes(clone_dir, 'Automated data integrity check passed.')
+class AvatarState {
+  options: AvatarStateOptions;
 
-    schedule_integrity_checks('/path/to/this_script.py')
+  constructor(options: AvatarStateOptions) {
+    this.options = options;
+  }
+}
 
-if __name__ == "__main__":
-    main()
+export { AvatarState, Emotion };
+
+// apps/desktop/src/avatar/AvatarEmotion.ts
+import { Emotion } from './AvatarState';
+
+class AvatarEmotion {
+  currentEmotion: Emotion;
+
+  constructor(initialEmotion: Emotion = 'idle') {
+    this.currentEmotion = initialEmotion;
+  }
+
+  transitionTo(emotion: Emotion) {
+    this.currentEmotion = emotion;
+  }
+}
+
+export default AvatarEmotion;
+
+// apps/desktop/src/avatar/AvatarController.ts
+import React, { useState } from 'react';
+import AvatarBubble from './AvatarBubble';
+import { Emotion } from './AvatarState';
+
+const AvatarController: React.FC<{ emotion: Emotion, onEmotionChange: (emotion: Emotion) => void }> = ({ emotion, onEmotionChange }) => {
+  const [isBubbleOpen, setBubbleOpen] = useState(false);
+
+  const handleClick = () => setBubbleOpen(!isBubbleOpen);
+  const handleDoubleClick = () => {/* Open Dashboard */};
+  const handleRightClick = () => {/* Open context menu */};
+
+  return (
+    <div 
+      className="avatar-controller" 
+      onClick={handleClick} 
+      onDoubleClick={handleDoubleClick} 
+      onContextMenu={handleRightClick}>
+      {isBubbleOpen && <AvatarBubble message={`Current emotion: ${emotion}`} />}
+    </div>
+  );
+};
+
+export { AvatarController };
+
+// apps/desktop/src/avatar/AvatarOverlay.tsx
+import React from 'react';
+
+const AvatarOverlay: React.FC<{ position: { x: number, y: number }, onDrag: (position: { x: number, y: number }) => void }> = ({ children, position, onDrag }) => {
+  const handleDrag = (event: React.DragEvent) => {
+    onDrag({ x: event.clientX, y: event.clientY });
+  };
+
+  return (
+    <div 
+      className="avatar-overlay" 
+      style={{ left: position.x, top: position.y }} 
+      draggable 
+      onDragEnd={handleDrag}>
+      {children}
+    </div>
+  );
+};
+
+export { AvatarOverlay };
 ```

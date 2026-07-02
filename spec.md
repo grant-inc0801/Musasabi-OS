@@ -1,78 +1,124 @@
-以下に、タスク「S5-007 AI Pipeline Sprint Source of Truth Enforcement」の技術指示書の例をMarkdown形式で作成しました。この指示書は、プロジェクトの目標、技術的な詳細、実装手順、テスト方法、注意事項などを明確にすることを目的としています。
-
 ```markdown
-# 技術指示書: S5-007 AI Pipeline Sprint Source of Truth Enforcement
+# Musasabi Avatar Engine Foundation Technical Specification
 
-## 概要
+## Overview
 
-**タスク名**: S5-007 AI Pipeline Sprint Source of Truth Enforcement
+This document details the technical requirements and implementation guidelines for creating the first desktop avatar for Musasabi OS. The avatar will serve as the visual identity of Musasabi AI and will appear as an always-on-top transparent desktop overlay.
 
-**目的**: このタスクの目的は、AIパイプラインにおいて信頼できるデータの一貫性を保つために、データの「Source of Truth（真正の情報源）」を確立し、それを強制的に維持する仕組みを実装することです。
+## Tasks
+- Develop the Musasabi Avatar as a foundation for the Musasabi Avatar Engine.
+- Implement core functionalities to meet the MVP requirements.
 
-## 対象範囲
+## Technology Stack
+- **Desktop Framework**: Tauri
+- **UI Library**: React
+- **Programming Language**: TypeScript
 
-この実装では、次の範囲が対象となります。
+## Avatar Features
 
-- AIパイプラインによるデータ処理フロー全体
-- データのバージョン管理
-- データ整合性確認の自動化
+### Required Modules
+The following modules are required for the avatar implementation:
+- `apps/desktop/src/avatar/Avatar.tsx`
+- `apps/desktop/src/avatar/AvatarBubble.tsx`
+- `apps/desktop/src/avatar/AvatarState.ts`
+- `apps/desktop/src/avatar/AvatarEmotion.ts`
+- `apps/desktop/src/avatar/AvatarController.ts`
+- `apps/desktop/src/avatar/AvatarOverlay.tsx`
 
-## 技術的要件
+### Avatar States and Behaviors
+The avatar must support the following states:
+- Idle
+- Happy
+- Thinking
+- Learning
+- Working
+- Sleeping
+- Celebrating
+- Loading
+- Error
 
-### 1. データの「Source of Truth」確立
+#### Requirements:
+- **Positioning**: Default at bottom right, draggable, and remembers last position. Must be compatible with multiple monitors.
+- **Desktop Overlay**: Must have a transparent background, enable mouse interaction, and not appear on the taskbar or have window borders.
+- **Speech Bubble**: Displays AI responses, notifications, learning, and sales statuses. Disappears automatically after a timeout.
+- **Idle Animations**: Implement blinking, breathing, tail, and ear movements. Animations should loop every 3-8 seconds and randomize.
 
-- データの信頼できる唯一の情報源を明確にします。
-- データレイク、データベース、スプレッドシートなどを含むすべてのデータソースをレビューして、真正性を保証します。
+### Mouse Interaction
+- **Single Click**: Opens the speech bubble.
+- **Double Click**: Opens the Musasabi Dashboard.
+- **Drag**: Moves the avatar around the screen.
+- **Right Click**: Opens a context menu with options such as Learning Mode, Work Mode, Sleep Mode, Settings, Hide, and Exit.
 
-### 2. バージョン管理の実装
+### Emotion Engine
+- Implement an internal state machine to manage smooth transitions between emotions:
+  - Idle → Thinking → Working → Happy → Idle
+  
+### Asset Structure
+Place avatar assets in the following structure:
+```
+apps/desktop/assets/avatar/
+  - emotion/
+      - idle/
+      - happy/
+      - thinking/
+      - working/
+      - sleeping/
+      - celebrating/
+```
 
-- Gitを使用したデータのバージョン管理
-- 過去のデータに対する変更履歴の追跡
+### Settings
+Persist the following settings:
+- Position
+- Scale
+- Transparency
+- Current emotion
+- Animation enabled status
 
-### 3. 整合性チェック
+### Performance Goals
+- CPU usage: < 2%
+- Memory usage: < 100MB
+- Frame rate: 60FPS target
 
-- 定期的なデータ整合性チェックを自動化するためのスクリプトを作成
-- エラーや不整合が検出された場合の通知システムの実装
+### Testing
+Implement tests for:
+- Rendering the avatar
+- Avatar dragging
+- Position persistence
+- Speech bubble rendering
+- State transitions
+- Emotion transitions
 
-## 実装手順
+## Documentation
+Maintain the following documents:
+- Create `docs/AVATAR_ENGINE.md` for detailed engine documentation.
+- Update `README` with the latest information.
+- Update `CHANGELOG` with changes and updates.
 
-1. **データフロー図の作成**
-   - 現行のデータフローを図示し、「Source of Truth」を明確にする
+## Restrictions
+- No implementation of voice, speech recognition, lip-sync, 3D modeling, or physics at this stage.
 
-2. **データ統合ポイントの特定**
-   - どのようなデータが統合されるべきかを確認し、それに基づいたスクリプトを配置
+## Acceptance Criteria
+- Avatar appears in the bottom-right of the desktop.
+- Transparent overlay functions correctly.
+- Avatar dragging feature operates seamlessly.
+- Avatar position persists across sessions.
+- Speech bubble displays correctly.
+- Idle animations function as expected.
+- Emotion state changes occur smoothly.
+- All tests pass successfully.
+- Documentation is complete and up-to-date.
 
-3. **バージョン管理システムのセットアップ**
-   - Gitを用いて適切なリポジトリを作成し、そこにデータバージョン履歴を保存
+## Deliverables
+Submit a report detailing:
+- All changed files
+- Test results
+- Relevant screenshots
+- Suggested commit message
 
-4. **自動整合性チェックシステムの導入**
-   - Pythonまたは別のスクリプト言語で整合性チェックを行うスクリプトを開発
-   - CRONジョブやCI/CDツールによって自動化
-
-5. **通知システムの実装**
-   - 整合性チェックの結果として得られたエラーを通知するため、メールやチャットシステムと統合
-
-## テスト
-
-- ユニットテストおよび統合テストを通じて、各ステップの機能を検証
-- 本番稼働前にテスト環境で整合性を確認し、通知システムの動作を確認
-
-## 注意事項
-
-- 個人情報や機密情報の取り扱いには十分配慮すること
-- 変更点は適切にドキュメント化すること
-- 作業中は必ずバージョン管理システムを通じて変更を追跡すること
-
-## 結果のドキュメント化
-
-- 設計図、技術文書、テストレポートを含むプロジェクトの完全ドキュメントを作成する
-- 成果物は必ず組織のナレッジベースに保存
-
-## サポート
-
-- 追加支援が必要な場合、プロジェクト管理者またはチームメンバーと相談してください。
+### Suggested Commit Message
+```
+feat(avatar): implement Musasabi Avatar Engine foundation
+```
 
 ---
 ```
-
-特定のプロジェクトやチームの要件に応じて、この指示書をカスタマイズすることができます。
