@@ -1,124 +1,129 @@
+Here's a detailed technical specification document for implementing the Musasabi Avatar Visual Design System in Markdown format:
+
 ```markdown
-# Musasabi Avatar Engine Foundation Technical Specification
+# Musasabi Avatar Visual Design System Technical Specification
 
-## Overview
+## Objective
 
-This document details the technical requirements and implementation guidelines for creating the first desktop avatar for Musasabi OS. The avatar will serve as the visual identity of Musasabi AI and will appear as an always-on-top transparent desktop overlay.
+Establish the Musasabi Avatar Visual Design System to define the official visual identity, emotion assets, avatar states, and design tokens for the Musasabi desktop avatar. This builds on the foundation laid by AV-001.
 
-## Tasks
-- Develop the Musasabi Avatar as a foundation for the Musasabi Avatar Engine.
-- Implement core functionalities to meet the MVP requirements.
+## Vision
 
-## Technology Stack
-- **Desktop Framework**: Tauri
-- **UI Library**: React
-- **Programming Language**: TypeScript
+The avatar embodies the visible personality of Musasabi AI and is not merely a mascot. It must primarily represent a Musasabi and not a Tanuki.
 
-## Avatar Features
+## Character Direction
 
-### Required Modules
-The following modules are required for the avatar implementation:
-- `apps/desktop/src/avatar/Avatar.tsx`
-- `apps/desktop/src/avatar/AvatarBubble.tsx`
-- `apps/desktop/src/avatar/AvatarState.ts`
-- `apps/desktop/src/avatar/AvatarEmotion.ts`
-- `apps/desktop/src/avatar/AvatarController.ts`
-- `apps/desktop/src/avatar/AvatarOverlay.tsx`
+**Default Avatar Specifications:**
+- **Form**: Cute musasabi with a 2.5–3 head-to-body ratio.
+- **Features**: 
+  - Soft rounded shape
+  - Big eyes
+  - Slightly sleepy yet friendly expression
+  - Large gliding membrane
+  - Fluffy tail
+  - Small ears
+- **Aesthetic**: Business-friendly yet approachable demeanor.
 
-### Avatar States and Behaviors
-The avatar must support the following states:
-- Idle
-- Happy
-- Thinking
-- Learning
-- Working
-- Sleeping
-- Celebrating
-- Loading
-- Error
+## Required Files
 
-#### Requirements:
-- **Positioning**: Default at bottom right, draggable, and remembers last position. Must be compatible with multiple monitors.
-- **Desktop Overlay**: Must have a transparent background, enable mouse interaction, and not appear on the taskbar or have window borders.
-- **Speech Bubble**: Displays AI responses, notifications, learning, and sales statuses. Disappears automatically after a timeout.
-- **Idle Animations**: Implement blinking, breathing, tail, and ear movements. Animations should loop every 3-8 seconds and randomize.
+**File Paths and Purposes:**
 
-### Mouse Interaction
-- **Single Click**: Opens the speech bubble.
-- **Double Click**: Opens the Musasabi Dashboard.
-- **Drag**: Moves the avatar around the screen.
-- **Right Click**: Opens a context menu with options such as Learning Mode, Work Mode, Sleep Mode, Settings, Hide, and Exit.
+- `apps/desktop/src/avatar/design/`
+  - `avatarDesignTokens.ts`: Design tokens for size, scale, colors, etc.
+  - `avatarPalette.ts`: Color palette definitions.
+  - `avatarEmotionMap.ts`: Mapping of emotions to visual settings.
+  - `avatarPoseMap.ts`: Mapping of poses corresponding to emotions.
+  - `avatarTheme.ts`: Theme settings for consistent aesthetics.
 
-### Emotion Engine
-- Implement an internal state machine to manage smooth transitions between emotions:
-  - Idle → Thinking → Working → Happy → Idle
-  
-### Asset Structure
-Place avatar assets in the following structure:
-```
-apps/desktop/assets/avatar/
-  - emotion/
-      - idle/
-      - happy/
-      - thinking/
-      - working/
-      - sleeping/
-      - celebrating/
-```
+- `docs/AVATAR_VISUAL_DESIGN.md`: Documentation on visual design principles and specifications.
 
-### Settings
-Persist the following settings:
-- Position
-- Scale
-- Transparency
-- Current emotion
-- Animation enabled status
+## Avatar Design Tokens
 
-### Performance Goals
-- CPU usage: < 2%
-- Memory usage: < 100MB
-- Frame rate: 60FPS target
+Define design tokens encompassing:
+- Physical dimensions (size, scale)
+- Aesthetic properties (colors, shadows, and border radii)
+- Interaction dynamics (motion speed, bubble spacing)
+- Emotional and mode color accents
 
-### Testing
+## Emotions
+
+Define visual settings for each emotional state:
+- Emotions: `idle`, `happy`, `thinking`, `learning`, `working`, `sleeping`, `celebrating`, `calling`, `error`.
+- Each emotion includes:
+  - Face configuration
+  - Eye and mouth styles
+  - Body pose specifics
+  - Motion speed settings
+  - Bubble tones and accent color tokens
+
+## Modes
+
+Define indicators for various mode states:
+- Modes: `Learning`, `Work`, `Sales`, `AutoCall`, `Sleep`, `Error`.
+- AutoCall Mode: Must visually emphasize sensitivity/control, avoiding a playful appearance.
+
+## UI Integration
+
+Avatar UI must display:
+- Current mode and emotion
+- Status indicator
+- Speech bubble with relevant text
+
+## Asset Placeholder System
+
+Placeholder SVG assets located at `apps/desktop/assets/avatar/musasabi/`:
+- SVG files: `idle.svg`, `happy.svg`, `thinking.svg`, `learning.svg`, `working.svg`, `sleeping.svg`, `celebrating.svg`, `calling.svg`, `error.svg`.
+- Temporary placeholders can be used where actual art is absent.
+
+## Important Rule
+
+Exclusion of Tanuki Assets:
+- Avoid any references or terms associated with Tanuki.
+- Permitted terms include Musasabi, MUSA, Musasabi Avatar.
+
+## Tests
+
 Implement tests for:
-- Rendering the avatar
-- Avatar dragging
-- Position persistence
-- Speech bubble rendering
-- State transitions
-- Emotion transitions
+- Design token exports
+- Completeness of emotion and mode maps
+- Asset placeholders existence
+- Assurance of no Tanuki references
 
 ## Documentation
-Maintain the following documents:
-- Create `docs/AVATAR_ENGINE.md` for detailed engine documentation.
-- Update `README` with the latest information.
-- Update `CHANGELOG` with changes and updates.
+
+Update and maintain the following documents:
+- `README.md`
+- `CHANGELOG.md`
+- `docs/AVATAR_ENGINE.md`
+- `docs/AVATAR_VISUAL_DESIGN.md`
 
 ## Restrictions
-- No implementation of voice, speech recognition, lip-sync, 3D modeling, or physics at this stage.
+
+Avoid implementation of:
+- Live2D, 3D capabilities
+- Lip sync, voice interaction
+- Physical dynamics (physics)
+
+The focus is strictly on the visual design foundation.
 
 ## Acceptance Criteria
-- Avatar appears in the bottom-right of the desktop.
-- Transparent overlay functions correctly.
-- Avatar dragging feature operates seamlessly.
-- Avatar position persists across sessions.
-- Speech bubble displays correctly.
-- Idle animations function as expected.
-- Emotion state changes occur smoothly.
-- All tests pass successfully.
-- Documentation is complete and up-to-date.
+
+- Establishment of Musasabi avatar design system
+- Completion of emotion and mode mappings
+- Existence of placeholder asset files
+- Usage of Musasabi terminology in UI
+- Elimination of Tanuki references
+- Passing of all implemented tests
+- Updated documentation
 
 ## Deliverables
-Submit a report detailing:
-- All changed files
-- Test results
-- Relevant screenshots
-- Suggested commit message
 
-### Suggested Commit Message
-```
-feat(avatar): implement Musasabi Avatar Engine foundation
+Report containing:
+- Details of changed files
+- Test results summary
+- Screenshots (if available)
+- Suggested commit: `feat(avatar): add musasabi visual design system`
+
 ```
 
----
-```
+This document outlines all necessary steps and considerations for implementing the Musasabi Avatar Visual Design System based on your provided task instructions.
