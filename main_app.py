@@ -1,84 +1,67 @@
 ```typescript
-// apps/desktop/src/avatar/AvatarManager.ts
-export class AvatarManager {
-  position = { x: window.innerWidth - 100, y: window.innerHeight - 100 };
-  topMost = true;
-
-  load() {
-    // Load saved position and settings
-  }
-
-  drag(position) {
-    this.position = position;
-    // Save position
-  }
-
-  saveSettings() {
-    // Save settings locally
+// File: apps/desktop/src/avatar/live2d/Live2DController.ts
+export class Live2DController {
+  // Implementation for controlling Live2D avatar
+  start() {
+    // Start the Live2D animations
   }
 }
 
-// apps/desktop/src/avatar/AvatarState.ts
-export enum AvatarState {
-  Idle,
-  Thinking,
-  Learning,
-  Working,
-  Happy,
-  Warning,
-  Sleeping,
-}
-
-// apps/desktop/src/avatar/AvatarAnimation.ts
-export class AvatarAnimation {
-  play(state: AvatarState) {
-    // Play corresponding animation for the state
-  }
-
-  loopAnimation(animation) {
-    // Loop the animation naturally
+// File: apps/desktop/src/avatar/live2d/MotionController.ts
+export class MotionController {
+  queueMotion(motion: string, priority: number) {
+    // Queue a motion with specified priority
   }
 }
 
-// apps/desktop/src/avatar/AvatarController.ts
-export class AvatarController {
-  state: AvatarState = AvatarState.Idle;
-
-  setState(newState: AvatarState) {
-    this.state = newState;
-    // Trigger animation and speech bubble change
+// File: apps/desktop/src/avatar/live2d/MotionScheduler.ts
+export class MotionScheduler {
+  scheduleIdleMotions() {
+    // Schedule idle motions at random intervals
   }
 }
 
-// apps/desktop/src/avatar/AvatarSpeechBubble.ts
-export class AvatarSpeechBubble {
-  displayMessage(message: string) {
-    // Show message in speech bubble
-  }
-
-  hide() {
-    // Auto-hide bubble after certain time
+// File: apps/desktop/src/avatar/live2d/EyeTracking.ts
+export class EyeTracking {
+  trackCursor(cursorPosition: { x: number, y: number }) {
+    // Control avatar eyes to track cursor position
   }
 }
 
-// apps/desktop/src/avatar/AvatarNotification.ts
-export class AvatarNotification {
-  trigger(event: string) {
-    // Handle notification trigger based on event
+// File: apps/desktop/src/avatar/live2d/HeadTracking.ts
+export class HeadTracking {
+  tiltHead(direction: string) {
+    // Tilt head based on direction
   }
 }
 
-// apps/desktop/src/avatar/AvatarSettings.ts
-export class AvatarSettings {
-  size: number = 100;
-  opacity: number = 1.0;
-  animationSpeed: number = 1.0;
-  speechBubbleOn: boolean = true;
-  topMost: boolean = true;
-  clickThrough: boolean = false;
-
-  persist() {
-    // Save settings locally
+// File: apps/desktop/src/avatar/live2d/TailPhysics.ts
+export class TailPhysics {
+  simulateSwing() {
+    // Simulate tail swinging
   }
 }
+
+// File: apps/desktop/src/avatar/live2d/WingController.ts
+export class WingController {
+  flapWings() {
+    // Control wing flapping
+  }
+}
+
+// File: apps/desktop/src/avatar/live2d/IdleMotion.ts
+export class IdleMotion {
+  performRandomIdleMotion() {
+    // Perform a random idle motion
+  }
+}
+
+// File: apps/desktop/src/avatar/live2d/ClickReaction.ts
+export class ClickReaction {
+  onMouseClick() {
+    // Handle click interaction and show reaction
+  }
+}
+
+// Implementation for cursor interaction, click and drag reaction, performance goals, and testing would follow similar patterns
 ```

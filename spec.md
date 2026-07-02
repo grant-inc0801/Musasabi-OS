@@ -1,187 +1,188 @@
 ```markdown
-# 技術指示書: S5-008 MUSA Desktop Avatar MVP
+# 技術指示書: AV-004 Musasabi Live2D Motion System
 
 ## 概要
-このドキュメントは、Musasabi AIのデスクトップアバターを実装するための詳細な技術指示書です。アバターはMusasabi OSの顔となり、ユーザーのデスクトップに常に表示されます。本プロジェクトはMVP（Minimum Viable Product）バージョンの開発を目的としています。
+
+Live2D Motion Systemの開発は、Musasabiアバターを静的な存在からユーザーのデスクトップ上で生きているような存在へと変換します。このシステムは滑らかな体の動き、目の追従、グライドアニメーション、表現力豊かなインタラクションを提供します。ユーザーが相互作用していない時でも、アバターが生き生きとしているように感じられることを目指します。
 
 ## ビジョン
-1. デスクトップ
-2. MUSAアバター
-3. Sales Workspace
-4. AI PM
-5. Sales Brain
-6. 学習モード
 
-## 必要なモジュール
-プロジェクトのソースコードは以下のディレクトリに配置されます:
-- `apps/desktop/src/avatar/`
+1. Musasabi AI
+2. Emotion Engine
+3. Live2D Motion Engine
+4. Desktop Avatar
+5. Natural Presence
 
-### モジュールファイル
-- `AvatarManager.ts`
-- `AvatarState.ts`
-- `AvatarAnimation.ts`
-- `AvatarController.ts`
-- `AvatarSpeechBubble.ts`
-- `AvatarNotification.ts`
-- `AvatarSettings.ts`
+## 必要モジュール
 
-## デスクトップ動作
+```
+apps/desktop/src/avatar/live2d/
+  - Live2DController.ts
+  - MotionController.ts
+  - MotionScheduler.ts
+  - EyeTracking.ts
+  - HeadTracking.ts
+  - TailPhysics.ts
+  - WingController.ts
+  - IdleMotion.ts
+  - ClickReaction.ts
+```
 
-### 位置
-- デフォルト: 右下隅
-- 常にトップ表示
-- ドラッグ可能
-- 再起動後に位置を記憶
+## モーション状態のサポート
 
-## アバターステート
-サポートされるステート:
 - Idle
+- Blink
+- Breathing
+- Ear Twitch
+- Tail Swing
+- Head Tilt
+- Look Around
+- Stretch
+- Yawn
 - Thinking
-- Learning
+- Happy
 - Working
-- Happy
-- Warning
+- Learning
 - Sleeping
+- Celebrating
+- Calling
 
-各ステートに専用のアニメーションが必要です。
+## デスクトップ上の動作
 
-## 表情
-サポートされる表情:
-- Neutral
-- Smile
-- Happy
-- Thinking
-- Confused
-- Surprised
-- Sad
-- Excited
+無作為に以下を実行します:
 
-## モーション
-実装するモーション:
-- blink
-- breathing
-- idle sway
-- small bounce
-- wave
-- point
-- celebrate
+- 別のコーナーにグライド
+- タスクバーの端に止まる
+- カーソルの方向を見る
+- ユーザーに向かって手を振る
+- 翼をストレッチ
+- 頭をかく
+- 通知バブルを検査
 
-アニメーションは自然にループする必要があります。
+**ランダム間隔:** 15–90秒
 
-## スピーチバブル
-表示内容:
-- コーチングメッセージ
-- スプリント通知
-- 学習完了
-- タスク完了
-- 約束取得
-- 警告メッセージ
+## カーソルとのインタラクション
 
-バブルは自動で隠れます。
+- マウス近接時:
+  - 目でカーソルを追い、頭を傾ける
+- マウスクリック時:
+  - リアクションを取り、笑顔を見せ、手を振る
+- ドラッグ時:
+  - 翼を羽ばたたき、自然な体の物理を維持する
 
-## 通知
-アバターの反応トリガー:
-- スプリント開始
-- スプリント完了
-- コール開始
-- コール終了
-- 新しいコーチング情報
-- 学習完了
-- GitHub issue完了
+## 物理
 
-## モード
-表示されるモード:
-- Learning Mode
-- Support Mode
-- AutoCall Mode (Disabled)
-- Analysis Mode
+軽量の手続き型物理を導入し、以下をサポートします:
 
-モードごとに色コードを設定します。
+- 尾の揺れ
+- 翼の揺れ
+- 耳の動き
+- 体のバウンス
+
+**注意:** 重い物理エンジンの使用は禁止します。
+
+## モーションキュー
+
+- キューされたモーションのサポート
+- 割り込み可能なモーション
+- 優先度付きモーション
+
+優先度:
+1. Emergency
+2. Calling
+3. Celebrating
+4. Working
+5. Learning
+6. Idle
+
+## パフォーマンス目標
+
+- 60 FPS
+- CPU < 3%
+- メモリ < 150MB
 
 ## 設定
-サポートする設定:
-- アバターサイズ
-- 透明度
-- アニメーション速度
-- スピーチバブルのオン/オフ
-- 常にトップ表示
-- クリックスルーモード
 
-設定はローカルに永続保存されます。
+以下を許可します:
 
-## パフォーマンス
-ターゲット:
-- 待機時CPU使用率: <2%
-- RAM使用量: <100MB
-- アニメーション: 60 FPS
+- アニメーション品質
+- アイドル頻度
+- カーソルトラッキング
+- モーション速度
+- 動きを軽減するモード
 
-## UI
-右クリックメニュー:
-- ダッシュボードを開く
-- セールスワークスペースを開く
-- モード切替
-- 設定
-- アバターを隠す
-- 終了
+## 開発者モード
 
-ダブルクリック:
-- Musasabiダッシュボードを開く
+表示項目:
 
-## 将来の互換性
-以下の技術用のフックを予約します（未実装）:
-- Live2D
-- Three.js
-- Unity
-- VRM
-- 音声
-- 感情エンジン
+- 現在のモーション
+- モーションキュー
+- FPS
+- 物理状態
+- 感情
+- Live2Dの状態
 
 ## テスト
-実装されるテスト:
-- アバターステートの切り替え
-- アニメーションループ
-- ドラッグ＆ドロップ
-- 位置の永続性
-- 通知表示
-- 設定の永続性
-- モード切替
+
+以下を実装します:
+
+- モーションキュー
+- アイドルスケジューラ
+- カーソルトラッキング
+- クリックリアクション
+- ドラッグインタラクション
+- 物理の安定性
+- 動き軽減モード
 
 ## ドキュメンテーション
-更新するドキュメント:
-- `README.md`
-- `CHANGELOG.md`
-- `docs/AVATAR.md`
+
+ドキュメント作成:
+
+- `docs/LIVE2D_AVATAR.md`
+
+ドキュメント更新:
+
+- `README`
+- `CHANGELOG`
+- `docs/AVATAR_ENGINE.md`
 
 ## 制限事項
-次の機能は実装しないでください:
-- 音声合成
-- 音声認識
-- Live2D
-- 3Dレンダリング
-- AutoCall
-- 外部AI API
 
-必要に応じてプレースホルダーアセットを使用してください。
+以下の実装禁止:
+
+- 音声
+- リップシンク
+- 3D
+- VRM
+- 音声認識
+- AutoCall統合
+
+これらは今後のスプリントで対応します。
 
 ## 受け入れ基準
-- アバターがデスクトップに表示される
-- アバターはドラッグ可能
-- アバターは位置を記憶
-- アバターが状態変化を表示
-- スピーチバブルが機能
-- 通知が機能
-- 設定が永続化される
-- テストが通過
-- ドキュメントが更新される
+
+- Live2D モーションシステムが正常に動作する
+- カーソルトラッキングが動作する
+- アイドルモーションが自然に再生される
+- モーションキューが機能する
+- 物理が安定している
+- パフォーマンス目標を達成
+- テストが合格
+- ドキュメンテーションが更新されている
 
 ## 納品物
-報告内容:
+
+レポート:
+
 - 変更されたファイル
 - テスト結果
-- 推奨コミットメッセージ
+- モーションのスクリーンショット/GIF
+- パフォーマンスメトリクス
+- 推奨コミット
 
-自動的にプッシュしないでください。
+**推奨コミットメッセージ:**
 
-### 推奨コミットメッセージ
-`feat(avatar): implement MUSA desktop avatar MVP`
+```
+feat(avatar): implement Live2D motion system
+```
 ```
