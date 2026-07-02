@@ -1,188 +1,208 @@
 ```markdown
-# 技術指示書: AV-004 Musasabi Live2D Motion System
+# 技術指示書: AV-005 Musasabi 3D Avatar Foundation (VRM)
 
-## 概要
+## 目的
 
-Live2D Motion Systemの開発は、Musasabiアバターを静的な存在からユーザーのデスクトップ上で生きているような存在へと変換します。このシステムは滑らかな体の動き、目の追従、グライドアニメーション、表現力豊かなインタラクションを提供します。ユーザーが相互作用していない時でも、アバターが生き生きとしているように感じられることを目指します。
+VRM標準を使用してMusasabiアバターの3D基盤を実装します。このスプリントでは、既存のアバターエンジン、感情エンジン、Live2Dモーションシステムとの互換性を維持しつつ、完全にインタラクティブな3Dアバターを初めて導入します。このアバターはMusasabi OSの恒久的な顔となります。
 
 ## ビジョン
 
-1. Musasabi AI
-2. Emotion Engine
-3. Live2D Motion Engine
-4. Desktop Avatar
-5. Natural Presence
+- Musasabi AI
+- Avatar Engine
+- Emotion Engine
+- VRM Runtime
+- 3D Musasabi
+- Desktop Overlay
 
-## 必要モジュール
+## 技術スタック
 
-```
-apps/desktop/src/avatar/live2d/
-  - Live2DController.ts
-  - MotionController.ts
-  - MotionScheduler.ts
-  - EyeTracking.ts
-  - HeadTracking.ts
-  - TailPhysics.ts
-  - WingController.ts
-  - IdleMotion.ts
-  - ClickReaction.ts
-```
+### Desktop
 
-## モーション状態のサポート
+- Tauri
+- React
+- TypeScript
+
+### 3D
+
+- Three.js
+- @pixiv/three-vrm
+
+## 必須モジュール
+
+`apps/desktop/src/avatar/vrm/` 以下のモジュールを実装します。
+
+- `VRMAvatar.ts`
+- `VRMLoader.ts`
+- `VRMAnimationController.ts`
+- `VRMEmotionController.ts`
+- `VRMCameraController.ts`
+- `VRMPhysicsController.ts`
+- `VRMStateMachine.ts`
+- `index.ts`
+
+## アセット構造
+
+アセットは以下のディレクトリに配置されます。
+
+`apps/desktop/assets/avatar/musasabi/`
+
+- `vrm/`
+  - `musasabi.vrm`
+- `motions/`
+  - `idle.fbx`
+  - `happy.fbx`
+  - `thinking.fbx`
+  - `learning.fbx`
+  - `working.fbx`
+  - `sleeping.fbx`
+  - `celebrating.fbx`
+  - `calling.fbx`
+- `textures/`
+- `icons/`
+
+## 初期アバターの外観
+
+- 飛び鼠（ムササビ）
+- 3頭身のかわいい比率
+- 大きく表現力豊かな目
+- 柔らかく丸い体
+- 大きなグライディング用膜
+- ふわふわの尾
+- 中庸なビジネススタイルの外観
+- タヌキのアセットは使用しない
+
+## モーションコントローラー
+
+以下のモーションをサポート:
 
 - Idle
-- Blink
-- Breathing
-- Ear Twitch
-- Tail Swing
-- Head Tilt
-- Look Around
-- Stretch
-- Yawn
+- Walk
+- Glide
+- Wave
 - Thinking
-- Happy
-- Working
-- Learning
+- Typing
+- Reading
 - Sleeping
 - Celebrating
 - Calling
+- Stretch
 
-## デスクトップ上の動作
+## カメラ
 
-無作為に以下を実行します:
+以下のカメラ機能をサポート:
 
-- 別のコーナーにグライド
-- タスクバーの端に止まる
-- カーソルの方向を見る
-- ユーザーに向かって手を振る
-- 翼をストレッチ
-- 頭をかく
-- 通知バブルを検査
+- Front
+- 45°
+- Side
+- Zoom
+- Auto Focus
 
-**ランダム間隔:** 15–90秒
+## 感情統合
 
-## カーソルとのインタラクション
+Emotion Engineからのイベントを受け取り、以下の感情をサポート:
 
-- マウス近接時:
-  - 目でカーソルを追い、頭を傾ける
-- マウスクリック時:
-  - リアクションを取り、笑顔を見せ、手を振る
-- ドラッグ時:
-  - 翼を羽ばたたき、自然な体の物理を維持する
+- Idle
+- Happy
+- Thinking
+- Learning
+- Working
+- Calling
+- Sleeping
+- Celebrating
+- Warning
+- Error
 
-## 物理
+## アニメーションブレンディング
 
-軽量の手続き型物理を導入し、以下をサポートします:
+以下をサポート：
 
-- 尾の揺れ
-- 翼の揺れ
-- 耳の動き
-- 体のバウンス
-
-**注意:** 重い物理エンジンの使用は禁止します。
-
-## モーションキュー
-
-- キューされたモーションのサポート
-- 割り込み可能なモーション
-- 優先度付きモーション
-
-優先度:
-1. Emergency
-2. Calling
-3. Celebrating
-4. Working
-5. Learning
-6. Idle
+- クロスフェード
+- レイヤー化されたアニメーション
+- 中断可能なアニメーション
+- 優先アニメーション
 
 ## パフォーマンス目標
 
-- 60 FPS
-- CPU < 3%
-- メモリ < 150MB
+- ターゲット: 60 FPS
+- CPU使用率: <5%
+- メモリ使用量: <250MB
 
 ## 設定
 
-以下を許可します:
+以下の設定項目を許可:
 
-- アニメーション品質
-- アイドル頻度
-- カーソルトラッキング
-- モーション速度
-- 動きを軽減するモード
+- アバタースケール
+- アニメーション速度
+- シャドウ
+- アウトライン
+- 品質
+- モーションの有効化
+- 物理演算の有効化
 
 ## 開発者モード
 
-表示項目:
+以下を表示:
 
-- 現在のモーション
-- モーションキュー
+- 現在のアニメーション
+- 現在の感情
 - FPS
-- 物理状態
-- 感情
-- Live2Dの状態
+- トライアングル数
+- ドローコール数
+- メモリ使用量
 
 ## テスト
 
-以下を実装します:
+以下のテストを実施:
 
-- モーションキュー
-- アイドルスケジューラ
-- カーソルトラッキング
-- クリックリアクション
-- ドラッグインタラクション
-- 物理の安定性
-- 動き軽減モード
+- VRMのロード
+- アニメーションの再生
+- アニメーションブレンディング
+- 感情の同期
+- カメラコントロール
+- 物理演算の有効化/無効化
+- パフォーマンスベンチマーク
 
-## ドキュメンテーション
+## ドキュメント
 
-ドキュメント作成:
+以下を作成・更新:
 
-- `docs/LIVE2D_AVATAR.md`
-
-ドキュメント更新:
-
+- `docs/VRM_AVATAR.md`
 - `README`
 - `CHANGELOG`
 - `docs/AVATAR_ENGINE.md`
 
-## 制限事項
+## 制約
 
-以下の実装禁止:
+以下の機能は実装しない:
 
-- 音声
-- リップシンク
-- 3D
-- VRM
 - 音声認識
-- AutoCall統合
-
-これらは今後のスプリントで対応します。
+- 音声合成
+- リップシンク
+- AI対話
+- デスクトップ自動化
 
 ## 受け入れ基準
 
-- Live2D モーションシステムが正常に動作する
-- カーソルトラッキングが動作する
-- アイドルモーションが自然に再生される
-- モーションキューが機能する
-- 物理が安定している
-- パフォーマンス目標を達成
-- テストが合格
-- ドキュメンテーションが更新されている
+- VRMアバターが正常にロードされる
+- アバターが正しくレンダリングされる
+- アニメーションがスムーズに再生される
+- 感情エンジンがアバターを更新する
+- カメラコントロールが機能する
+- パフォーマンス目標を達成する
+- テストが通過する
+- ドキュメントが更新される
 
 ## 納品物
 
-レポート:
-
-- 変更されたファイル
+- 変更されたファイルのリスト
 - テスト結果
-- モーションのスクリーンショット/GIF
-- パフォーマンスメトリクス
-- 推奨コミット
+- パフォーマンスベンチマーク
+- スクリーンショット / GIF
+- 推奨コミットメッセージ
 
-**推奨コミットメッセージ:**
+推奨コミットメッセージ:
 
 ```
-feat(avatar): implement Live2D motion system
+feat(avatar): implement VRM-based 3D Musasabi avatar foundation
 ```
 ```
