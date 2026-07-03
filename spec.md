@@ -1,180 +1,195 @@
-Below is a technical instruction document structured in Markdown based on the task description provided.
-
 ```markdown
-# Technical Instruction Document: S10-001 MUSA 3D Avatar Engine
+# 技術指示書: Company Knowledge Graphの実装
 
-## Objective
+## 概要
 
-**Sprint Name:** Sprint 10 - MUSA 3D Avatar Engine
+本指示書はMusasabi OSの中央知識層であるCompany Knowledge Graphの実装に関する詳細を提供します。Musasabi AIが社員、顧客、企業、通話、文書、会議、プロジェクト、タスクなどの間の関係を理解できるように構築します。
 
-- **Purpose:** Develop the first fully interactive 3D desktop avatar for Musasabi OS. Transform MUSA from a static icon to a dynamic AI entity with interaction capabilities.
+## ビジョン
 
-## Sprint Goal
+1. Memory Engine
+2. Knowledge Graph
+3. AI Employees
+4. Sales Brain
+5. Company Brain
+6. Decision Engine
+7. Musasabi Avatar
 
-- Deliver a production-ready 3D desktop avatar.
-- Ensure compatibility for future support with VRM, Live2D, and Unity.
+## 必須モジュール
 
-## Sprint Tasks
+以下のファイルを `packages/brain/src/knowledge/` ディレクトリに実装します。
 
-### Task S10-001: 3D Avatar Engine
+- `KnowledgeGraph.ts`
+- `GraphRepository.ts`
+- `GraphBuilder.ts`
+- `GraphSearch.ts`
+- `RelationshipEngine.ts`
+- `EntityResolver.ts`
+- `GraphVisualizer.ts`
 
-- **Objective:** Implement the rendering engine.
-- **Preferred Technologies:** Three.js
-- **Future Support:** VRM, Unity, Live2D
+## データベース (SQLite)
 
-### Task S10-002: VRM Loader
+### テーブルの作成
 
-- **Objective:** Enable loading of `.vrm` avatar models.
-- **Additional Feature:** Support hot reload for dynamic updates.
+#### knowledge_nodes
 
-### Task S10-003: Emotion Animation
+- `id`: プライマリキー
+- `node_type`: ノードの種類
+- `node_name`: ノードの名前
+- `description`: 説明
+- `source`: データのソース
+- `created_at`: 作成日時
+- `updated_at`: 更新日時
 
-- **Objective:** Synchronize avatar expressions with Emotion Engine.
-- **Emotion States:**
-  - Idle
-  - Happy
-  - Thinking
-  - Learning
-  - Working
-  - Warning
-  - Celebrating
-  - Sleeping
+#### knowledge_edges
 
-### Task S10-004: Motion Library
+- `id`: プライマリキー
+- `source_node_id`: ソースノードID
+- `target_node_id`: ターゲットノードID
+- `relationship_type`: 関係の種類
+- `confidence`: 確信度
+- `created_at`: 作成日時
 
-- **Objective:** Implement a variety of avatar motions, including:
-  - Idle
-  - Blink
-  - Breathing
-  - Wave
-  - Point
-  - Celebrate
-  - Stretch
-  - Shadow Boxing
-  - Jump
-  - Sit
-  - Sleep
-  - Roll
+#### knowledge_tags
 
-### Task S10-005: Desktop Overlay
+- `id`: プライマリキー
+- `node_id`: ノードID
+- `tag`: タグ
 
-- **Objective:** Create an always-on-top desktop window supporting:
-  - Dragging
-  - Resizing
-  - Opacity adjustments
-  - Position memorization
-  - Click-through mode
+## ノードタイプ
 
-### Task S10-006: Speech Bubble
+サポート対象:
 
-- **Objective:** Display content related to:
-  - Coaching
-  - Learning
-  - GitHub notifications
-  - Sprint notifications
-  - Sales advice
+- Company
+- Customer
+- Store
+- Employee
+- AI Employee
+- Project
+- Task
+- Document
+- Meeting
+- Call
+- Product
+- Service
+- Calendar Event
+- Opportunity
+- Campaign
 
-### Task S10-007: Interaction
+## 関係タイプ
 
-- **Mouse Interactions:**
-  - Single click, double click, drag, hover
-- **Right-click Menu Options:**
-  - Open Dashboard
-  - Sales Workspace
-  - Settings
-  - Learning Mode
-  - Support Mode
-  - Analysis Mode
-  - Exit
+サポート対象:
 
-### Task S10-008: Avatar Performance
+- owns
+- works_for
+- assigned_to
+- called
+- purchased
+- created
+- related_to
+- depends_on
+- belongs_to
+- learned_from
+- scheduled_with
+- reports_to
 
-- **Objectives:**
-  - Target a frame rate of 60 FPS.
-  - Maintain RAM usage under 150MB.
-  - Enable GPU acceleration.
-  - Idle CPU usage below 2%.
+## 自動グラフ生成
 
-## Avatar Appearance Specifications
+以下のイベントにより自動生成:
 
-- **Species:** Flying Squirrel (Musasabi)
-- **Name:** MUSA
-- **Style:** Fluffy, business-friendly, expressive, rounded proportions, 3 heads tall.
-- **Outfit Options:**
-  - Default: GRANT polo shirt
-  - Optional: Headset, Glasses, Suit
+- Learning Modeが知識を保存
+- FileMakerが顧客をインポート
+- Zoom Phoneが通話を生成
+- カレンダーがイベントを生成
+- ドキュメントがインポートされる
 
-## Emotion Integration
+実行する処理:
 
-- **Connect to:**
-  - Emotion Engine
-- **Personality:** Sales Brain, AI Employee
+- ノードの作成
+- 関係の作成
+- グラフの更新
 
-## Future Compatibility
+## グラフ検索機能
 
-- **Support Pre-Planning for:**
-  - Voice Engine
-  - Lip Sync
-  - Gesture Engine
-  - AutoCall
-  - AI Employees
-  - VRM, Unity
+サポート項目:
 
-## Tests
+- キーワード
+- ノードタイプ
+- 関係
+- タイムライン
+- 接続されたエンティティ
+- 最短関係経路
 
-- Implement tests for:
-  - VRM loading
-  - Animation switching
-  - Emotion synchronization
-  - Overlay positioning
-  - Click interaction
-  - Desktop persistence
-  - FPS benchmark
+## Company Explorer UI
 
-## Documentation Updates
+作成: Company Knowledge Explorer
 
-- Update the following documents:
-  - README.md
-  - CHANGELOG.md
-  - docs/AVATAR_3D.md
+表示機能:
 
-## Restrictions
+- グラフビュー
+- エンティティリスト
+- 関係リスト
+- タイムライン
+- 検索
+- 接続ノード
+- AI提案
 
-- Do not implement:
-  - Voice synthesis
-  - Speech recognition
-  - Customer conversation
-  - AutoCall execution
-  - Cloud rendering
+## AI統合
 
-## Acceptance Criteria
+- Sales Brain → Customer Relationships
+- Company Brain → Organization Structure
+- Learning Engine → Knowledge Links
+- Decision Engine → Context Retrieval
+- Avatar → Context Awareness
 
-- Successful rendering of the 3D avatar.
-- Functional VRM loading.
-- Control of expressions by the Emotion Engine.
-- Operational motion library.
-- Effective desktop overlay functionality.
-- Working speech bubble feature.
-- Achievement of performance targets.
-- Passing of all included tests.
-- Updated documentation.
+## テスト項目
 
-## Deliverables
+実施:
 
-- **Report Contents:**
-  - Changed files
-  - Test results
-  - Performance benchmark
-- **Suggested Commit:** 
-  ```
-  feat(avatar): implement MUSA 3D avatar engine
-  ```
+- ノード作成
+- 関係作成
+- 重複エンティティの統合
+- グラフ検索
+- グラフ視覚化データ生成
+- 関係の移動
 
-- **Note:** Do not push automatically.
+## ドキュメントの作成/更新
 
----
+- 作成: `docs/COMPANY_KNOWLEDGE_GRAPH.md`
+- 更新: `README.md`, `CHANGELOG.md`, `docs/BRAIN_MEMORY_ENGINE.md`
 
-Create the necessary `docs/sprints/Sprint-010.yaml` file and ensure all tasks and requirements are documented and tracked accordingly.
+## 制約事項
+
+以下は実装しません:
+
+- 外部グラフデータベース
+- クラウド同期
+- LLM推論
+- AutoCall
+
+ローカルナレッジグラフのみを使用します。
+
+## 受け入れ基準
+
+- Knowledge Graphが実装されている
+- ノードが自動的に作成される
+- 関係が自動的に作成される
+- 検索機能が動作する
+- グラフエクスプローラーが動作する
+- AIモジュールがグラフをクエリできる
+- テストがすべて通過する
+- ドキュメントが更新されている
+
+## 納品物
+
+- 変更されたファイルのレポート
+- テスト結果
+- グラフエクスプローラーのスクリーンショット
+- 推奨コミット
+
+### 推奨コミット
+
 ```
-
-This document serves as a detailed technical directive for the implementation of the MUSA 3D Avatar Engine based on your task description.
+feat(brain): implement Company Knowledge Graph
+```
+```
