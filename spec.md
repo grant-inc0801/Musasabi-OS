@@ -1,195 +1,215 @@
-```markdown
-# 技術指示書: Company Knowledge Graphの実装
+# 技術指示書: S11-001 MUSA Voice Engine
 
-## 概要
+## 目的
 
-本指示書はMusasabi OSの中央知識層であるCompany Knowledge Graphの実装に関する詳細を提供します。Musasabi AIが社員、顧客、企業、通話、文書、会議、プロジェクト、タスクなどの間の関係を理解できるように構築します。
+Sprint 11では、Musasabi OSのための音声インタラクションレイヤー「MUSA Voice Engine」を実装します。このエンジンは、ユーザーとMUSAの間で自然な会話ができるようにし、既存のEmotion Engine、Avatar Engine、AI Employees、Sales Brain、AI Organizationと統合します。
 
-## ビジョン
+このSprintは内部音声インタラクションに焦点を当てています。顧客の自動通話は対象外です。
 
-1. Memory Engine
-2. Knowledge Graph
-3. AI Employees
-4. Sales Brain
-5. Company Brain
-6. Decision Engine
-7. Musasabi Avatar
+## ファイルの作成
 
-## 必須モジュール
+- `docs/sprints/Sprint-011.yaml`
 
-以下のファイルを `packages/brain/src/knowledge/` ディレクトリに実装します。
+## Sprintの目標
 
-- `KnowledgeGraph.ts`
-- `GraphRepository.ts`
-- `GraphBuilder.ts`
-- `GraphSearch.ts`
-- `RelationshipEngine.ts`
-- `EntityResolver.ts`
-- `GraphVisualizer.ts`
+ユーザーが自然にMUSAと音声でコミュニケーションを取れるようにします。アバターは、同期した音声、表情、ジェスチャ、およびコンテキスト認識で対応する必要があります。
 
-## データベース (SQLite)
+## Sprintタスク
 
-### テーブルの作成
+### S11-001 音声エンジン基盤
 
-#### knowledge_nodes
+音声サブシステムを作成します。
 
-- `id`: プライマリキー
-- `node_type`: ノードの種類
-- `node_name`: ノードの名前
-- `description`: 説明
-- `source`: データのソース
-- `created_at`: 作成日時
-- `updated_at`: 更新日時
+**モジュール:**
 
-#### knowledge_edges
+- `packages/voice/voiceEngine.js`
+- `packages/voice/speechService.js`
+- `packages/voice/voiceRouter.js`
+- `packages/voice/voiceSession.js`
+- `packages/voice/wakeWordManager.js`
 
-- `id`: プライマリキー
-- `source_node_id`: ソースノードID
-- `target_node_id`: ターゲットノードID
-- `relationship_type`: 関係の種類
-- `confidence`: 確信度
-- `created_at`: 作成日時
+### S11-002 音声認識
 
-#### knowledge_tags
+サポート言語：
 
-- `id`: プライマリキー
-- `node_id`: ノードID
-- `tag`: タグ
+- 日本語
+- 英語
 
-## ノードタイプ
+コマンド：
 
-サポート対象:
+- セールスワークスペースを開く
+- 学習モードを開始
+- 学習モードを停止
+- 今日の売上を分析
+- ダッシュボードを開く
+- 次のリードを表示
 
-- Company
-- Customer
-- Store
-- Employee
-- AI Employee
-- Project
-- Task
-- Document
-- Meeting
-- Call
-- Product
-- Service
-- Calendar Event
-- Opportunity
-- Campaign
+### S11-003 音声合成
 
-## 関係タイプ
+サポート：
 
-サポート対象:
+- 感情音声
+- 話す速度
+- ピッチ
+- 音量
+- ポーズのタイミング
 
-- owns
-- works_for
-- assigned_to
-- called
-- purchased
-- created
-- related_to
-- depends_on
-- belongs_to
-- learned_from
-- scheduled_with
-- reports_to
+感情と同期。
 
-## 自動グラフ生成
+### S11-004 リップシンク
 
-以下のイベントにより自動生成:
+同期化対象：
 
-- Learning Modeが知識を保存
-- FileMakerが顧客をインポート
-- Zoom Phoneが通話を生成
-- カレンダーがイベントを生成
-- ドキュメントがインポートされる
+- スピーチ
+- アバターマウス
+- 表情
+- 瞬きのタイミング
+- ボディモーション
 
-実行する処理:
+### S11-005 音声コマンドルーター
 
-- ノードの作成
-- 関係の作成
-- グラフの更新
+サポートコマンド:
 
-## グラフ検索機能
+- セールス
+- カレンダー
+- ダッシュボード
+- 学習
+- 設定
+- スプリントマネージャー
+- AI Employees
 
-サポート項目:
+### S11-006 会話メモリ
 
-- キーワード
-- ノードタイプ
-- 関係
-- タイムライン
-- 接続されたエンティティ
-- 最短関係経路
+記憶する内容：
 
-## Company Explorer UI
+- 最近の会話
+- 過去のコマンド
+- 好みの話し方
+- ユーザーの好み
 
-作成: Company Knowledge Explorer
+### S11-007 エモーションボイス
 
-表示機能:
+感情変化：
 
-- グラフビュー
-- エンティティリスト
-- 関係リスト
-- タイムライン
-- 検索
-- 接続ノード
-- AI提案
+- トーン
+- スピード
+- 音量
+- ポーズ
 
-## AI統合
+例：
 
-- Sales Brain → Customer Relationships
-- Company Brain → Organization Structure
-- Learning Engine → Knowledge Links
-- Decision Engine → Context Retrieval
-- Avatar → Context Awareness
+- 喜び：明るい声
+- 思考中：スローな声
+- 警告：真剣な声
+- 祝祭：エネルギッシュな声
 
-## テスト項目
+### S11-008 音声設定
 
-実施:
+設定可能項目：
 
-- ノード作成
-- 関係作成
-- 重複エンティティの統合
-- グラフ検索
-- グラフ視覚化データ生成
-- 関係の移動
+- マイク
+- スピーカー
+- ウェイクワード
+- ボイスタイル
+- 音声速度
+- ミュート
+- プッシュ・トゥ・トーク
 
-## ドキュメントの作成/更新
+## デスクトップインテグレーション
 
-- 作成: `docs/COMPANY_KNOWLEDGE_GRAPH.md`
-- 更新: `README.md`, `CHANGELOG.md`, `docs/BRAIN_MEMORY_ENGINE.md`
+アバターは以下を行うべきです。
 
-## 制約事項
+- リスニング
+- スピーキング
+- アニメーション
+- 感情的に反応
 
-以下は実装しません:
+音声インタラクションの統合対象:
 
-- 外部グラフデータベース
-- クラウド同期
-- LLM推論
-- AutoCall
+- Emotion Engine
+- Avatar Engine
+- AI Employees
+- Sprint Manager
+- Sales Workspace
 
-ローカルナレッジグラフのみを使用します。
+## パフォーマンス
 
-## 受け入れ基準
+目標:
 
-- Knowledge Graphが実装されている
-- ノードが自動的に作成される
-- 関係が自動的に作成される
-- 検索機能が動作する
-- グラフエクスプローラーが動作する
-- AIモジュールがグラフをクエリできる
-- テストがすべて通過する
-- ドキュメントが更新されている
+- 音声応答: <300ms
+- 音声遅延: <500ms
+- CPU使用率: <5%
 
-## 納品物
+## セキュリティ
 
-- 変更されたファイルのレポート
+- 音声データはデフォルトでローカルに残す
+- 音声録音は自動アップロードされない
+- マイクアクセスにはユーザーの許可が必要
+
+## 将来の互換性
+
+サポート:
+
+- 自動通話
+- Zoom Phone
+- Live2D
+- VRM
+- モバイルアプリ
+- 多言語
+
+## テスト
+
+実装:
+
+- スピーチ認識
+- 音声合成
+- ウェイクワード
+- リップシンク
+- 感情音声同期
+- 音声コマンドルーティング
+- マイク許可
+
+## ドキュメント
+
+更新:
+
+- `README.md`
+- `CHANGELOG.md`
+- `docs/VOICE_ENGINE.md`
+
+## 制限
+
+実装禁止事項:
+
+- 顧客向けアウトバウンド通話
+- 自動コール応答
+- 許可なしのバックグラウンド録音
+- クラウド音声ストレージ
+
+## 受入基準
+
+- 音声エンジンの初期化
+- 音声認識の動作確認
+- 音声合成の動作確認
+- リップシンクの動作確認
+- ウェイクワードの動作確認
+- アバターの自然な反応
+- テストの合格
+- ドキュメントの更新
+
+## デリバラブル
+
+報告:
+
+- 変更ファイル
 - テスト結果
-- グラフエクスプローラーのスクリーンショット
+- パフォーマンスベンチマーク
 - 推奨コミット
 
-### 推奨コミット
+自動プッシュは禁止。
+
+推奨コミット:
 
 ```
-feat(brain): implement Company Knowledge Graph
-```
+feat(voice): implement MUSA Voice Engine
 ```
