@@ -1,106 +1,177 @@
-```markdown
-# 技術指示書: S9-001 Emotion Engine & Adaptive Personality
+# 技術指示書: S5-012 AI PM CEO Dashboard
 
-## はじめに
+## 目次
+1. [概要](#概要)
+2. [ビジョン](#ビジョン)
+3. [ダッシュボードセクション](#ダッシュボードセクション)
+4. [CEOコントロール](#ceoコントロール)
+5. [レポート](#レポート)
+6. [データベース構成](#データベース構成)
+7. [テスト](#テスト)
+8. [ドキュメンテーション](#ドキュメンテーション)
+9. [受入基準](#受入基準)
+10. [制約](#制約)
+11. [納品物](#納品物)
 
-本指示書は、Musasabi AIにおける「Emotion Engine & Adaptive Personality」を実装するための技術的な指示を提供します。このドキュメントに従って開発、テスト、ドキュメント作成を行ってください。
+## 概要
+Musasabi OS開発のためのAI PM CEO Dashboardを実装します。このダッシュボードは、CEOがGitHubを開かずにAI開発プロセス全体を監視するための指令センターとして機能します。コーディングの知識は必要ありません。
 
-## Sprint 概要
+## ビジョン
+- CEO
+- AI PM Dashboard
+- スプリントステータス
+- GitHub
+- Codex
+- レビュー
+- Musasabi OS
 
-### 目標
+## ダッシュボードセクション
+### 1. スプリント概要
+- アクティブスプリント
+- スプリント進捗（%）
+- スプリントETA
+- 残タスク
+- 完了タスク
+- ブロックされたタスク
+- 進捗バー: `██████□□□□ 62%`
 
-- Emotion EngineとAdaptive Personality Systemの構築
+### 2. 現在のタスク
+- タスクID
+- タイトル
+- ステータス
+- 担当者
+- ブランチ
+- プルリクエスト
+- 推定完了
 
-### 感情が影響を与える領域
+### 3. 開発パイプライン
+- スプリント
+- イシュー
+- 実装
+- ビルド
+- テスト
+- AI レビュー
+- PR 準備完了
+- マージ
+- 現在のステージをハイライト
 
-- アバターの表情
-- コーチングスタイル
-- 通知
-- デスクトップの動作
-- AI従業員間の相互作用
+### 4. Codexステータス
+- 現在のアクティビティ
+  - 待機中
+  - コーディング
+  - テスト
+  - レビュー
+  - 失敗
+- 表示:
+  - 経過時間
+  - 最終コミット
+  - 変更されたファイル
+  - 現在のブランチ
 
-## Sprint タスク
+### 5. GitHubステータス
+- オープンイシュー
+- オープンプルリクエスト
+- レビューキュー
+- マージキュー
+- 失敗したワークフロー
 
-### S9-001 Emotion Engine Foundation
+### 6. AI品質
+- ビルド成功率
+- テスト成功率
+- レビュースコア
+- ドキュメンテーションスコア
+- セキュリティスコア
+- 全体的な品質スコア
 
-- 感情状態管理システムの実装
-- サポートされる感情: Neutral, Happy, Focused, Thinking, Curious, Encouraging, Concerned, Celebrating
+### 7. Musasabiアバター
+- コーディング: タイピングアニメーション
+- テスト中: 思考アニメーション
+- レビュー中: 読むアニメーション
+- 完了: お祝いアニメーション
+- 失敗: 心配そうな表情
 
-### S9-002 Adaptive Personality
+### 8. 通知
+- スプリント開始
+- タスク完了
+- レビュー必要
+- ビルド失敗
+- マージ準備完了
+- スプリント完了
 
-- 性格プロファイルのサポート
-- 性格の変化が通知の言い回し、コーチングの言い回し、ダッシュボードのコメント、アバターの振る舞いに影響
+## CEOコントロール
+- スプリント開始
+- スプリント一時停止
+- スプリント再開
+- スプリント停止
+- 失敗したタスクの再試行
+- レポート生成
 
-### S9-003 Context Awareness
+## レポート
+### 生成
+- デイリーデベロップメントレポート
+### 含む
+- 完了したタスク
+- 失敗したタスク
+- 品質スコア
+- スプリント進捗
+- 推定完了
+### エクスポート
+- PDF
+- Markdown
 
-- 感情の変化は以下に応じて: スプリント進捗、営業KPI、アポイント取得、ユーザーの作業負荷、学習モード、サポートモード、分析モード
-
-### S9-004 Avatar Emotion Sync
-
-- Emotion Engineとアバターの表情、アニメーション、スピーチバブルの同期
-
-### S9-005 Memory Influence
-
-- 最近の歴史が感情に影響を与える: 多数のアポイント→Celebrating, 繰り返す失敗→Encouraging, 長期間のアイドル→Gentle reminder
-
-### S9-006 Coaching Style
-
-- コーチがスタイルを適応: 新しいセールスパーソン→Encouraging, 経験豊富なセールスパーソン→Analytical, マネージャー→Executive summary
-
-### S9-007 Emotion Dashboard
-
-- 表示: 現在の感情、理由、自信レベル、性格、最近のイベント
-
-### S9-008 Emotion API
-
-- 内部API作成: setEmotion(), getEmotion(), calculateEmotion(), applyContext(), resetEmotion()
-
-## データベーススキーマ (SQLite)
-
-- **emotion_states**: id, employee_id, emotion, confidence, reason, created_at
-- **personality_profiles**: id, employee_id, profile, intensity, updated_at
-- **emotion_history**: id, employee_id, previous_emotion, new_emotion, trigger, created_at
-
-## 互換性とサポート
-
-- Supported: Live2D, VRM, Voice, AI Employees, AI Organization, AutoCall
+## データベース構成
+### SQLite
+#### テーブル: development_reports
+- id
+- sprint_key
+- generated_at
+- report_type
+- summary
+- quality_score
 
 ## テスト
+- ダッシュボードレンダリング
+- スプリント進捗計算
+- パイプラインビジュアライゼーション
+- レポート生成
+- 通知表示
+- アバターステータス同期
 
-- 実装するテスト: 感情の遷移、性格の切り替え、文脈の認識、アバターの同期、コーチングの適応、ダッシュボードの更新
+## ドキュメンテーション
+### 作成
+- docs/CEO_DASHBOARD.md
+### 更新
+- README.md
+- CHANGELOG.md
+- docs/AI_PM.md
 
-## ドキュメントの更新
-
-- 更新対象: README.md, CHANGELOG.md, docs/EMOTION_ENGINE.md
-
-## 制限事項
-
--実装しない: 音声合成, 心理的診断, 定義されたルール外の自律的な感情決定
-- 感情の変化は決定論的かつ説明可能であること
-
-## 受け入れ基準
-
-- Sprint-009.yamlの存在確認
-- Emotion Engineの動作
-- 性格プロファイルの機能
-- アバターが感情を反映
-- コーチングスタイルが適応
-- ダッシュボードが感情状態を表示
+## 受入基準
+- CEOダッシュボードが存在
+- スプリント進捗が表示
+- パイプラインステータスが表示
+- Codexステータスが表示
+- GitHubステータスが表示
+- アバターが開発状況に反応
+- レポートが生成
 - テストが合格
-- ドキュメントの更新
+- ドキュメントが更新
 
-## デリバラブル
+## 制約
+- GitHubアクションを直接実行しない
+- プルリクエストを自動的にマージしない
+- AIレビューをバイパスしない
+- 機密情報を公開しない
 
-- 変更されたファイルの報告
-- テスト結果の報告
-- 推奨commitメッセージ
+## 納品物
+- 変更されたファイルのレポート
+- テスト結果
+- ダッシュボードスクリーンショット
+- サンプル開発レポート
+- 提案されたコミット
 
-### 推奨コミットメッセージ
-
+### 提案コミット
+```plaintext
+feat(ai-pm): implement CEO dashboard
 ```
-feat(ai): implement Emotion Engine and Adaptive Personality
-```
 
-本指示書に基づいて開発を進め、指示された基準を満たすようにしてください。```
-
-以上、技術指示書を完成させました。適切な管理とレビューを怠らず、スプリントの目標を達成できるよう進めてください。
+この技術指示書に基づいてAI PM CEO Dashboardを正確に実装し、Musasabi OS開発を効率的に監視・管理できるようにします。
