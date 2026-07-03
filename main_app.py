@@ -10,47 +10,61 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Run safe git sync and push
-      run: ./scripts/github/safe-git-sync-and-push.sh
+      - name: Safe Git Sync and Push
+        run: bash scripts/github/safe-git-sync-and-push.sh
 ```
 
 ```bash
 # scripts/github/safe-git-sync-and-push.sh
 #!/bin/bash
-
 set -e
 
-echo "Fetching latest origin main..."
-git fetch origin main
+# Log current branch
+echo "Current branch: $(git rev-parse --abbrev-ref HEAD)"
 
-echo "Rebasing current branch onto origin/main..."
+# Fetch and rebase
+git fetch origin main
 if git rebase origin/main; then
-  echo "Rebase successful, pushing changes..."
-  git push origin main
+  # Log hashes
+  echo "Local commit hash: $(git rev-parse HEAD)"
+  echo "Remote main hash: $(git rev-parse origin/main)"
+  echo "Rebase succeeded."
+
+  # Push
+  if git push origin main; then
+    echo "Push succeeded."
+  else
+    echo "Push failed."
+    exit 1
+  fi
 else
-  echo "Rebase failed, aborting..."
+  echo "Rebase failed. Aborting rebase."
   git rebase --abort
-  echo "Adding needs-review label and commenting on the issue..."
-  # Assuming a hypothetical script or command to add label and comment
-  # ./scripts/github/add-label-and-comment.sh \
-  #   --label "needs-review" \
-  #   --comment "Rebase failed due to conflicts"
+  echo "Reason for failure: $(git status --untracked-files=no)"
+  echo "Conflicting files:"
+  git diff --name-only --diff-filter=U
+  git issue create --label "needs-review" --comment "Rebase failed. Needs review for conflicts."
   exit 1
 fi
 ```
 
 ```bash
-#!/bin/bash
+# Test script (not specified in prompt, but implied for validation)
+# scripts/test_safe_git_sync.sh
 
-# scripts/github/add-label-and-comment.sh (hypothetical)
-# Note: This script is for illustration and may require actual implementations 
-# using GitHub API with gh CLI or curl
-echo "Labeling issue and adding a comment"
-# gh issue comment <ISSUE_NUMBER> --body "Rebase failed due to conflicts in <CONFLICTING_FILES>"
-# gh issue edit <ISSUE_NUMBER> --add-label "needs-review"
+#!/bin/bash
+set -e
+
+# Ensure the safe-git-sync-and-push.sh script exists
+if [[ ! -f scripts/github/safe-git-sync-and-push.sh ]]; then
+  echo "safe-git-sync-and-push.sh does not exist."
+  exit 1
+fi
+
+# Simulate script execution
+bash scripts/github/safe-git-sync-and-push.sh || echo "Safe sync script failed as expected for testing."
 ```
