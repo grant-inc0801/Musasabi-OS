@@ -1,135 +1,138 @@
 ```markdown
-# 技術指示書: S5-012 AI Pipeline Review Gate 実装
+# 技術指示書: S5-009 AI Pipeline Branch Isolation
 
-## 目的
+## 概要
 
-Musasabi AIの完成タスクが次のタスクに移る前に、必ずレビューゲートを通過する仕組みを導入する。
+AI開発パイプラインを改善するため、直接のmainへのコミットから、タスク専用のブランチに移行します。これにより、AI生成タスクの相互ブロックを防止し、プッシュやリベースの競合を減少させます。
 
 ## 問題点
 
-現行のパイプラインは、コミット/プッシュ後にレビュー未完了でも継続可能。これにより、品質に問題のある変更が自動化ループを続けるリスクがある。
+現在のAIパイプラインでは、mainへの直接コミットが行われています。複数のAIタスクが近接して実行されると、以下のようなプッシュ失敗が発生します。
 
-## レビューゲート要件
+- リモートにローカルが持っていない作業が含まれている
+- 最初にフェッチが必要
+- 非高速フォワード更新が拒否される
 
-次のタスクを開始する前に確認すべき項目:
+安全なリベースを用いても、並行ワークフローが衝突する可能性があります。
 
-1. テストがパスしていること
-2. マージコンフリクトマーカーがないこと
-3. 秘密情報が公開されていないこと
-4. README / CHANGELOG が更新されていること
-5. タスク受入れ基準がチェックされていること
-6. 変更されたファイルが報告されていること
-7. 提案されたコミットが存在すること
+## 必要な変更点
 
-## レビューステータスのラベル
+各AIタスクは専用のブランチを作成する必要があります。
 
-- review-pending
-- review-approved
-- review-rejected
-- needs-review
+ブランチ形式:
 
-## 必須の挙動
-
-### プッシュが成功した場合:
-- 問題にレビューサマリーをコメントする
-- review-pending ラベルを追加する
-- 問題をまだ閉じない
-- 次の問題は作成しない
-
-### review-approved ラベルが追加された場合:
-- 現在の問題を閉じる
-- Sprint.yamlから次の問題を作成する
-- review-pending を削除する
-
-### review-rejected ラベルが追加された場合:
-- 問題は開いたままにする
-- needs-review を追加する
-- 次の問題は作成しない
-
-## ワークフロートリガー
-
-GitHub Actionsの更新:
-```yaml
-on:
-  issues:
-    types:
-      - labeled
+```
+ai/{issue-key}-{slug}
 ```
 
-### review-approved ラベル時:
-- 問題を閉じる
-- 次の問題を作成する
+例:
 
-### review-rejected ラベル時:
-- 問題は開いたまま
-- needs-review を追加
+- ai/AV-007-desktop-assistant-behavior
+- ai/S5-008-git-auto-sync-before-push
+- ai/S5-009-branch-isolation
 
-## スクリプト
+## 必要なフロー
 
-作成: `scripts/github/review-gate.js`
+1. イシュータイトルからイシューキーを抽出
+2. 最新のmainからブランチを作成
+3. タスクを実装
+4. 変更点をコミット
+5. ブランチをプッシュ
+6. プルリクエストを作成
+7. mainへ直接プッシュしない
 
-サポートする機能:
-- summarize
-- approve
-- reject
-- validate
+## Gitフロー
 
-## バリデーションチェック
+```bash
+git fetch origin main
 
-以下を実装:
-- コンフリクトマーカーチェック
-- 秘密情報パターンチェック
-- ドキュメント更新チェック
-- テスト結果チェック
-- 受入れ基準チェック
+git checkout -B ai/{issue-key}-{slug} origin/main
 
-### 秘密情報パターンチェック
+# 変更を実装
 
-検出する可能性のある秘密情報:
-- OPENAI_API_KEY
-- ANTHROPIC_API_KEY
-- ZOOM_CLIENT_SECRET
-- FILEMAKER_PASSWORD
-- sk-
-- ghp_
-- github_pat_
+git add .
 
-秘密情報の値は出力しない。
+git commit -m "..."
 
-## ドキュメントの更新
+git push -u origin ai/{issue-key}-{slug}
+```
 
-更新:
-- README.md
-- CHANGELOG.md
-- docs/AI_PIPELINE.md
-- docs/SPRINT_SYSTEM.md
+## プルリクエスト
+
+プルリクエストを自動で作成します。
+
+- PRタイトル: `{issue-key} {issue-title}`
+- PR本文には以下を含む:
+  - リンクされたイシュー
+  - 変更されたファイルの概要
+  - テスト結果
+  - 推奨レビュワー
+  - リスク
+
+## 現在のイシュー管理
+
+ブランチをプッシュしただけでイシューを閉じないでください。
+
+- イシューにPR URLをコメント
+- ラベルを 'review' に設定
+- PRがマージされるまでイシューを開いたままにする
+
+## マージルール
+
+自動マージしないでください。マージ前に人またはAIのPMレビューが必要です。
+
+## 必須ファイルの更新
+
+更新が必要なファイル:
+
+- `.github/workflows/ai_pipeline.yml`
+- `scripts/github/extract-issue-key.js`
+- `scripts/github/create-task-branch.sh`
+- `scripts/github/create-pr.js`
+- `docs/AI_PIPELINE.md`
+
+## 安全ルール
+
+- mainに強制プッシュしない
+- mainに直接コミットしない
+- PRが存在する前にイシューを閉じない
+- 現在のPRがマージまたは承認される前に次のイシューを作成しない
+- PR作成に失敗した場合、イシューにラベル "needs-review" を追加する
 
 ## テスト
 
 以下のテストを追加:
-- レビューサマリー生成
-- review-pending ラベル
-- review-approved フロー
-- review-rejected フロー
-- コンフリクトマーカー検出
-- 秘密情報パターン検出
-- 承認後にのみ次の問題
 
-## 受入基準
+- イシューキー抽出
+- ブランチ名生成
+- ブランチスラッグのサニタイズ
+- ワークフローがmainにプッシュしないこと
+- PR本文生成
+- イシューコメント生成
 
-- パイプラインは review-pending で停止する
-- review-approved になるまで問題はクローズしない
-- review-approved になるまで次の問題は作成しない
-- review-rejected は問題を開いたままにする
-- needs-review は拒否時に追加される
-- 秘密情報チェックが存在する
-- コンフリクトチェックが存在する
-- テストに成功する
-- ドキュメントが更新されている
+## ドキュメント更新
 
-## 提案されたコミット
+以下を更新:
+
+- `README.md`
+- `CHANGELOG.md`
+- `docs/AI_PIPELINE.md`
+- `docs/SPRINT_SYSTEM.md`
+
+## 受け入れ基準
+
+- AIタスクブランチが作成される
+- AIパイプラインがmainに直接プッシュしなくなる
+- PRが自動で作成される
+- イシューにPRリンクコメントが付く
+- PRがマージされるまでイシューがオープンのままになる
+- 直接mainプッシュが無効化される
+- テストが合格する
+- ドキュメントが更新される
+
+## 提案コミットメッセージ
 
 ```
-feat(github): add AI pipeline review gate
+chore(github): isolate AI pipeline work in task branches
 ```
 ```
