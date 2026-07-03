@@ -1,145 +1,92 @@
 ```markdown
-# 技術指示書: S5-011 AI Pipeline Checkpoint Recovery
+# 技術指示書: S5-008 Git Auto Sync Before Push
 
-## 目的
+## 概要
 
-AI Pipeline Checkpoint Recoveryを実装する。
+### タスク目的
+GitHub Actionsにおけるプッシュ失敗を修正します。具体的には、リモートの`main`がローカルのワークフローチェックアウトよりも先行していることが原因で生じる問題を解消します。
 
-現在のAIパイプラインは、後続のステップ（例：push）が失敗した場合、ジョブ全体が失敗として扱われている。これにより、不要な手戻りや混乱が生じている。
+### 現在のエラー
+リモートがローカルにない作業を含んでいるため、`git push`が拒否されます。これは、他のワークフローまたは開発者が`main`にプッシュする前に現在のAIワークフローがプッシュを試みる際に発生します。
 
-## 問題点
+## 必要な修正
 
-### 例
+### 提案するGitフロー
+以下の手順をAIパイプラインに組み込みます：
 
-- S5-009では実装とコミットが正常に完了した。
-- コミット: 62dca61
-- しかし、リモートのmainに新しいコミットがあったためpushが失敗した。
-- この時、pushのみが失敗した場合は実装を最初からやり直すべきではない。
+1. `git fetch origin main`
+2. `git rebase origin/main`
+3. `git push origin main`
 
-## 必要な動作
+### リベースが成功した場合
+- コミットをプッシュ
+- 成功コメントを残す
+- 該当する場合は課題をクローズ
+- 次の課題を該当する場合は作成
 
-AIパイプラインにチェックポイント機能を追加する。
+### リベースが失敗した場合
+- `git rebase --abort`を実行
+- `needs-review`ラベルを追加
+- 現在の課題に失敗理由と競合ファイルをコメント
+- 非ゼロ終了でワークフローを停止
 
-### パイプラインステージ
+## 必要なワークフローの更新
 
-1. issue_started
-2. implementation_completed
-3. tests_passed
-4. commit_created
-5. push_completed
-6. issue_closed
-7. next_issue_created
+### ワークフローの更新
+ファイル: `.github/workflows/ai_pipeline.yml`
+- 最終プッシュ前に安全な同期ステップを追加
 
-各チェックポイントは記録すること。
+### スクリプトの作成
+ファイル: `scripts/github/safe-git-sync-and-push.sh`
+- 動作内容:
+  1. `git fetch origin main`
+  2. `git rebase origin/main`
+  3. 成功した場合: `git push origin main`
+  4. 失敗した場合: リベースを中止し、`exit 1`
 
-## 状態保存（SQLite / ファイル）
-
-- プロジェクトに既にSQLiteパイプライン状態がある場合、それを使用。
-- それ以外の場合は、ローカルファイルで状態を保存する:
-  - `.github/ai-pipeline-state/`
-
-### ファイル
-
-- current-task.json
-- checkpoints.json
-
-## チェックポイントデータ
-
-以下を保存する:
-
-- issue_number
-- issue_title
-- task_key
-- checkpoint
-- status
-- commit_hash
-- timestamp
-- error_message
-
-## リカバリルール
-
-- パイプラインが再実行された場合:
-  - implementation_completedがあればコードを再生成しない（強制されない限り）
-  - tests_passedがあれば実装を再実行しない
-  - commit_createdがあれば重複するコミットを作成しない
-  - pushが失敗した場合は安全なpushのみ再試行
-  - issue_closedが失敗した場合はクローズのみ再試行
-  - next_issue_createdが失敗した場合は次のissue作成のみ再試行
-
-## 安全なPushの依存関係
-
-- この問題はS5-010 Fix Auto Commit Push Rejectionに依存
-- 安全なpushスクリプトが存在する場合、それを使用
-
-## ワークフロー更新
-
-- 更新対象: `.github/workflows/ai_pipeline.yml`
-- 主要なステップ終了後にチェックポイントを書き込む処理を追加
-
-## スクリプト
-
-### 作成
-
-- ファイル: `scripts/github/pipeline-checkpoint.js`
-
-### サポートコマンド
-
-- write
-- read
-- exists
-- clear
-- summary
-
-#### 例
-
-```
-node scripts/github/pipeline-checkpoint.js write commit_created --commit 62dca61
-```
-
-## 失敗時の処理
-
-- ステップが失敗した場合:
-  - 失敗したチェックポイントを記録
-  - issueにコメントを追加
-  - ラベル`needs-review`を追加
-  - issueをクローズしない
-  - 次のissueを作成しない
+## ロギング
+以下をログに記録します：
+- 現在のブランチ
+- ローカルコミットハッシュ
+- リモートメインハッシュ
+- リベース結果
+- プッシュ結果
 
 ## テスト
 
-以下に対するテストを追加:
+以下のテストまたは検証スクリプトを追加
+- セーフシンクスクリプトの存在確認
+- ワークフローがセーフシンクスクリプトを呼び出すこと
+- フォースプッシュが使用されていないことの確認
+- 失敗時のリベース中止が存在すること
 
-- チェックポイントの書き込み
-- チェックポイントの読み取り
-- チェックポイントの存在
-- push失敗からのリカバリ
-- 重複コミットの回避
-- 重複するissue作成の回避
-- 失敗チェックポイントの記録
+## 制約事項
 
-## ドキュメント
-
-以下を更新する:
-
-- README.md
-- CHANGELOG.md
-- docs/AI_PIPELINE.md
+やってはいけないこと:
+- `git push --force`の使用
+- リベース失敗時の課題クローズ
+- プッシュ失敗時の次の課題作成
 
 ## 受け入れ基準
 
-- パイプラインがチェックポイントを記録する
-- 再実行で失敗したpushから再開できる
-- 重複コミットを回避
-- 重複する次のissueを回避
-- 失敗したステップがissueにラベル`needs-review`を付加
+- AIパイプラインがプッシュ前にフェッチする
+- AIパイプラインがプッシュ前にリベースする
+- フェッチによるプッシュ失敗が解決される
+- リベースの競合でパイプラインが安全に停止する
+- 失敗時に課題は開いたままにする
+- 失敗時に`needs-review`ラベルが追加される
+- フォースプッシュが使用されていない
+- テストが合格する
 - ドキュメントが更新される
-- テストが通過する
+
+## ドキュメント更新
+以下のファイルを更新:
+- `README.md`
+- `CHANGELOG.md`
+- `docs/AI_PIPELINE.md`
 
 ## 推奨コミットメッセージ
-
 ```
-feat(github): add AI pipeline checkpoint recovery
+fix(github): add safe git sync before AI pipeline push
 ```
 ```
-
-この技術指示書は、AI Pipelineのチェックポイント機能を実装するための概要と詳細を提供します。これにより、特定のステップでの失敗から効率的に回復し、全体の再実行を防止することで生産性を向上させることができます。
