@@ -1,99 +1,71 @@
-```bash
-mkdir musasabi-os
-cd musasabi-os
-npm init -y
-npm install tauri
-
-# Create Tauri configuration
-mkdir src-tauri
-cat > src-tauri/tauri.conf.json <<EOL
-{
-  "build": {
-    "distDir": "../build",
-    "devPath": "../public",
-    "withGlobalTauri": true
-  },
-  "package": {
-    "productName": "Musasabi OS",
-    "version": "0.1.0"
-  },
-  "tauri": {
-    "windows": [
-      "withFrame: false"
-    ]
+```typescript
+// packages/zoom-phone/src/ZoomPhoneConnector.ts
+export class ZoomPhoneConnector {
+  connect() {
+    // Code to connect with Zoom Phone API
+  }
+  onEvent(callback: (event: any) => void) {
+    // Code to trigger callback on receiving an event
   }
 }
-EOL
 
-# Create main HTML file
-mkdir public
-echo "<html><body><h1>Welcome to Musasabi OS</h1></body></html>" > public/index.html
-
-# Update package.json
-cat > package.json <<EOL
-{
-  "name": "musasabi-os",
-  "version": "0.1.0",
-  "scripts": {
-    "dev:desktop-app": "tauri dev",
-    "build:desktop-app": "tauri build",
-    "package:windows": "tauri build --target windows"
-  },
-  "devDependencies": {
-    "tauri": "^1.0.0"
+// packages/zoom-phone/src/VoicePipeline.ts
+export class VoicePipeline {
+  constructor(private zoomPhoneConnector: ZoomPhoneConnector) {}
+  
+  start() {
+    this.zoomPhoneConnector.onEvent(this.handleEvent.bind(this));
+  }
+  
+  handleEvent(event: any) {
+    // Code to process voice event
   }
 }
-EOL
 
-# Create README.md with required documentation
-cat > README.md <<EOL
-# Musasabi OS
+// packages/zoom-phone/src/CallSessionManager.ts
+export class CallSessionManager {
+  startSession(session: any) {
+    // Code to start a call session
+  }
 
-## Development
+  updateSession(session: any) {
+    // Code to update a call session
+  }
 
-### Web Development
+  endSession(session: any) {
+    // Code to end a call session
+  }
+}
 
-\`\`\`bash
-npm run start
-\`\`\`
+// packages/zoom-phone/src/EventRouter.ts
+export class EventRouter {
+  routeEvent(event: any) {
+    // Code to route an event to appropriate module
+  }
+}
 
-### Desktop App Development
+// packages/zoom-phone/src/TranscriptCollector.ts
+export class TranscriptCollector {
+  collectTranscript(transcript: any) {
+    // Code to collect and process transcript data
+  }
+}
 
-\`\`\`bash
-npm run dev:desktop-app
-\`\`\`
+// packages/zoom-phone/src/AudioMetadataCollector.ts
+export class AudioMetadataCollector {
+  collectMetadata(audioData: any) {
+    // Code to collect audio metadata
+  }
+}
 
-## Building
+// packages/zoom-phone/src/VoicePipelineRepository.ts
+export class VoicePipelineRepository {
+  saveCallSession(session: any) {
+    // Code to save call session to database
+  }
 
-### Windows Desktop App
-
-\`\`\`bash
-npm run build:desktop-app
-\`\`\`
-
-## Packaging
-
-### Windows Installer
-
-\`\`\`bash
-npm run package:windows
-\`\`\`
-EOL
-
-# Create CHANGELOG.md
-echo "# Changelog" > CHANGELOG.md
-
-# Create DESKTOP_APP.md
-cat > docs/DESKTOP_APP.md <<EOL
-# Musasabi OS Desktop App
-
-This document provides information on the desktop application implementation for Musasabi OS using Tauri.
-EOL
-
-# Create INSTALL.md
-cat > docs/INSTALL.md <<EOL
-# Installation Guide
-
-Instructions for installing Musasabi OS desktop application on Windows.
-EOL
+  saveVoiceEvent(event: any) {
+    // Code to save voice event to database
+  }
+}
 ```

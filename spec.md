@@ -1,113 +1,180 @@
-# 技術指示書
-
-## プロジェクト概要
-
-**タスク:** β-003 Desktop App Packaging
-
-Musasabi OSの現在のWebベースの内部MVPをWindowsのデスクトップアプリケーションとして実装します。アプリケーションは、Tauriを使用してデスクトップアプリとして起動させます。
-
----
+```markdown
+# 技術指示書: S7-002 Zoom Phone Real-Time Voice Pipeline
 
 ## 目的
 
-Musasabi OSをTauriを使用してWindowsデスクトップアプリケーションとして作成します。
+Zoom Phoneのリアルタイム音声パイプラインを実装する。これはLearning Mode、Sales Coach、Voice Analysis、将来のAutoCall Modeが使用するライブ音声イベントパイプラインを確立する。このパイプラインは、通話イベントをリアルタイムで受信し、Musasabi OSモジュールに配信する。AIによる会話、オートコール、自律通話は行わない。本スプリントは観察のみを目的とする。
 
----
+## ビジョン
 
-## 要件
+1. Zoom Phone
+2. Call Events
+3. Voice Pipeline
+4. Learning Mode
+5. Voice Analysis
+6. Sales Coach
+7. Memory Engine
+8. Company Brain
 
-### デスクトップアプリ
+## 必要モジュール
 
-以下を実装します:
+`packages/zoom-phone/src/` 以下に次のモジュールを実装する。
 
-- Tauriデスクトップシェル
-- Windowsデスクトップウィンドウ
-- アプリタイトル: Musasabi OS
-- ローカルファーストスタートアップ（ブラウザ不要）
-- 既存のアプリUIを読み込み
-- 現在の機能を保持
+- `ZoomPhoneConnector.ts`
+- `VoicePipeline.ts`
+- `CallSessionManager.ts`
+- `EventRouter.ts`
+- `TranscriptCollector.ts`
+- `AudioMetadataCollector.ts`
+- `VoicePipelineRepository.ts`
 
-### ウィンドウの振る舞い
+## 対応イベント
 
-以下をサポートします:
+- Incoming Call
+- Outgoing Call
+- Call Started
+- Call Connected
+- Call Ended
+- Recording Started
+- Recording Finished
+- Transcript Ready
+- Participant Joined
+- Participant Left
+- Mute
+- Hold
+- Resume
 
-- 標準的なデスクトップウィンドウ（最小化、最大化、閉じる）
-- ウィンドウサイズの記憶
-- ウィンドウ位置の記憶
+## コールセッション
 
-### アプリの識別
+### テーブル: `call_sessions`
 
-使用する名称と識別子:
+フィールド:
+- id
+- session_id
+- lead_id
+- operator
+- direction
+- started_at
+- connected_at
+- ended_at
+- duration
+- status
 
-- アプリ名: Musasabi OS
-- 識別子: com.grant.musasabi
+ステータス:
+- ringing
+- connected
+- on_hold
+- completed
+- failed
 
-### アバター将来互換性
+## イベントキュー
 
-以下に備えます:
+### テーブル: `voice_events`
 
-- 常駐アバターウィンドウ
-- 常に最前面のアバター
-- 透明なオーバーレイ
-- ドラッグ可能なアバター
+フィールド:
+- id
+- session_id
+- event_type
+- payload_json
+- created_at
 
-（簡単な場合を除き、オーバーレイの実装は不要）
+## トランスクリプトパイプライン
 
-### スクリプト
+- トランスクリプトのプレースホルダをサポート
+- トランスクリプトステータスをサポート
+- トランスクリプト受信イベントのサポート
+- トランスクリプト更新イベントのサポート
 
-以下のコマンドを追加します:
+音声認識は行わない。利用可能であればトランスクリプトを受け取る。
 
-- `npm run dev:desktop-app`
-- `npm run build:desktop-app`
-- `npm run package:windows`
+## 音声メタデータ
 
-### インストーラー
+メタデータを収集および保存:
+- duration
+- silence time
+- speaking ratio
+- interruptions
+- recording availability
 
-Windowsインストーラビルドを準備します。出力として以下のいずれかを生成します:
+## 統合
 
-- .exeインストーラー
-- .msiインストーラー（サポートされている場合）
+以下のモジュールにイベントを公開:
+- Learning Mode
+- Sales Brain
+- Memory Engine
+- Voice Analysis
+- Executive Dashboard
+- Avatar
 
-### ドキュメンテーション
+## ダッシュボード
 
-以下を更新します:
+ライブコールモニターを作成し、以下を表示:
+- Active Calls
+- Call Status
+- Duration
+- Transcript Status
+- Voice Analysis Status
+- Learning Status
 
+## アバター統合
+
+- Call Started → Headset appears + Listening animation
+- Call Ended → Thinking animation
+- Transcript Ready → Notebook animation
+- Learning Complete → Happy animation
+
+## テスト
+
+次を実装:
+- Event routing
+- Session lifecycle
+- Transcript events
+- Metadata collection
+- Dashboard updates
+- Avatar synchronization
+
+## ドキュメント
+
+作成:
+- `docs/ZOOM_PHONE_PIPELINE.md`
+
+更新:
 - `README.md`
 - `CHANGELOG.md`
-- `docs/DESKTOP_APP.md`
-- `docs/INSTALL.md`
 
-READMEには以下を含めます:
+## 制限事項
 
-- Web開発モードの実行方法
-- デスクトップアプリ開発モードの実行方法
-- Windowsアプリのビルド手順
-- インストーラの出力場所
-
----
-
-## 制約
-
-- 現在のWeb開発起動手順は削除しないこと。
-- `npm run dev:desktop` を壊さないこと。
-- クラウドサービスを要求しないこと。
-- 外部APIを要求しないこと。
-- AutoCallを実装しないこと。
-
----
+次の機能は実装しない:
+- AutoCall
+- Speech Recognition
+- Voice Generation
+- Customer Conversation
+- Call Recording Download
+- Telephone Control
 
 ## 受け入れ基準
 
-- Musasabi OSがデスクトップアプリとして起動すること。
-- 既存のUIがデスクトップアプリ内に読み込まれること。
-- `npm run dev:desktop` が引き続き機能すること。
-- デスクトップアプリビルドコマンドが存在すること。
-- Windowsパッケージングコマンドが存在すること。
-- READMEが更新されていること。
-- テストが通ること。
+- Voice pipelineがイベントを受信できる
+- Call sessionsが追跡される
+- Event routingが動作する
+- Metadataが保存される
+- Dashboardがリアルタイムで更新される
+- Avatarが正しく反応する
+- テストが通過する
+- ドキュメントが更新される
 
----
+## 成果物
 
-## 提案されるコミット
+- 変更されたファイルのレポート
+- テスト結果
+- Live Call Monitorのスクリーンショット
+- 推奨コミット
 
-`feat(desktop): package Musasabi OS as Windows desktop app`
+### 推奨コミット
+
+```
+feat(zoom): implement real-time voice pipeline
+```
+```
+
+この技術指示書は、プロジェクトの成功のために必要な情報をカバーしています。すべてのイベントが正しくルーティングされ、関連するメタデータが取得および保存されていることを確認してください。手順ごとにドキュメントを更新し、提出する際にはすべての成果物が揃っていることを確認してください。
