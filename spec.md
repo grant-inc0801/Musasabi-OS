@@ -1,116 +1,135 @@
-# 技術指示書: S5-008 Git Auto Sync Before Push
+```markdown
+# 技術指示書: S5-012 AI Pipeline Review Gate 実装
 
-## 概要
+## 目的
 
-この技術指示書は、GitHub Actionsのプッシュエラーを解決するために、AIパイプラインがプッシュ前にリモートのmainと同期する手順を記述しています。エラー状況は、他のワークフローや開発者がmainにプッシュした後、現在のAIワークフローがプッシュを試みるときに発生します。
+Musasabi AIの完成タスクが次のタスクに移る前に、必ずレビューゲートを通過する仕組みを導入する。
 
-## 必要な修正
+## 問題点
 
-プッシュ前に、AIパイプラインがリモートのmainと自動的に同期されるようにする必要があります。
+現行のパイプラインは、コミット/プッシュ後にレビュー未完了でも継続可能。これにより、品質に問題のある変更が自動化ループを続けるリスクがある。
 
-## 必要なGitフロー
+## レビューゲート要件
 
-AIパイプラインを以下のGitフローで更新します:
+次のタスクを開始する前に確認すべき項目:
 
-```bash
-git fetch origin main
-git rebase origin/main
-git push origin main
+1. テストがパスしていること
+2. マージコンフリクトマーカーがないこと
+3. 秘密情報が公開されていないこと
+4. README / CHANGELOG が更新されていること
+5. タスク受入れ基準がチェックされていること
+6. 変更されたファイルが報告されていること
+7. 提案されたコミットが存在すること
+
+## レビューステータスのラベル
+
+- review-pending
+- review-approved
+- review-rejected
+- needs-review
+
+## 必須の挙動
+
+### プッシュが成功した場合:
+- 問題にレビューサマリーをコメントする
+- review-pending ラベルを追加する
+- 問題をまだ閉じない
+- 次の問題は作成しない
+
+### review-approved ラベルが追加された場合:
+- 現在の問題を閉じる
+- Sprint.yamlから次の問題を作成する
+- review-pending を削除する
+
+### review-rejected ラベルが追加された場合:
+- 問題は開いたままにする
+- needs-review を追加する
+- 次の問題は作成しない
+
+## ワークフロートリガー
+
+GitHub Actionsの更新:
+```yaml
+on:
+  issues:
+    types:
+      - labeled
 ```
 
-## 成功時の流れ
+### review-approved ラベル時:
+- 問題を閉じる
+- 次の問題を作成する
 
-リベースが成功した場合:
+### review-rejected ラベル時:
+- 問題は開いたまま
+- needs-review を追加
 
-- コミットをプッシュ
-- 成功をコメント
-- 該当する場合は、イシューをクローズ
-- 該当する場合は、次のイシューを作成
+## スクリプト
 
-## 失敗時の流れ
+作成: `scripts/github/review-gate.js`
 
-リベースが失敗した場合:
+サポートする機能:
+- summarize
+- approve
+- reject
+- validate
 
-- 強制プッシュは禁止
-- イシューをクローズしない
-- 次のイシューを作成しない
+## バリデーションチェック
 
-実行するコマンド:
+以下を実装:
+- コンフリクトマーカーチェック
+- 秘密情報パターンチェック
+- ドキュメント更新チェック
+- テスト結果チェック
+- 受入れ基準チェック
 
-```bash
-git rebase --abort
-```
+### 秘密情報パターンチェック
 
-その後:
+検出する可能性のある秘密情報:
+- OPENAI_API_KEY
+- ANTHROPIC_API_KEY
+- ZOOM_CLIENT_SECRET
+- FILEMAKER_PASSWORD
+- sk-
+- ghp_
+- github_pat_
 
-- ラベルを追加: `needs-review`
-- 現在のイシューに失敗の理由をコメント
-- 競合したファイルを含める
-- 非ゼロの終了コードでワークフローを停止
+秘密情報の値は出力しない。
 
-## 必要なワークフローの更新
+## ドキュメントの更新
 
-- 更新するファイル: `.github/workflows/ai_pipeline.yml`
-- 最終プッシュ前に安全な同期ステップを追加
-
-## 必須スクリプト
-
-- 作成するスクリプト: `scripts/github/safe-git-sync-and-push.sh`
-
-### スクリプトの動作
-
-1. `git fetch origin main`
-2. `git rebase origin/main`
-3. 成功時: `git push origin main`
-4. 失敗時: リベースを中止し、`exit 1`で終了
-
-## ロギング
-
-以下の情報をログに記録する:
-
-- 現在のブランチ
-- ローカルコミットのハッシュ
-- リモートのmainのハッシュ
-- リベースの結果
-- プッシュの結果
+更新:
+- README.md
+- CHANGELOG.md
+- docs/AI_PIPELINE.md
+- docs/SPRINT_SYSTEM.md
 
 ## テスト
 
-以下のテストまたはバリデーションスクリプトを追加:
+以下のテストを追加:
+- レビューサマリー生成
+- review-pending ラベル
+- review-approved フロー
+- review-rejected フロー
+- コンフリクトマーカー検出
+- 秘密情報パターン検出
+- 承認後にのみ次の問題
 
-- 安全な同期スクリプトが存在すること
-- ワークフローが安全な同期スクリプトを呼び出すこと
-- 強制プッシュが使用されないこと
-- 失敗パスでリベースの中止が存在すること
+## 受入基準
 
-## 制約
+- パイプラインは review-pending で停止する
+- review-approved になるまで問題はクローズしない
+- review-approved になるまで次の問題は作成しない
+- review-rejected は問題を開いたままにする
+- needs-review は拒否時に追加される
+- 秘密情報チェックが存在する
+- コンフリクトチェックが存在する
+- テストに成功する
+- ドキュメントが更新されている
 
-- `git push --force`を使用しない
-- リベース失敗時にイシューをクローズしない
-- プッシュ失敗時に次のイシューを作成しない
-
-## 受け入れ基準
-
-- AIパイプラインがプッシュ前にfetchすること
-- AIパイプラインがプッシュ前にリベースすること
-- fetch-firstによるプッシュ失敗が解決されること
-- リベースの競合がパイプラインを安全に停止すること
-- 失敗時にイシューが開いたままになること
-- 失敗時に`needs-review`ラベルが追加されること
-- 強制プッシュが使用されないこと
-- テストが通過すること
-- ドキュメントが更新されること
-
-## ドキュメント
-
-以下を更新します:
-
-- `README.md`
-- `CHANGELOG.md`
-- `docs/AI_PIPELINE.md`
-
-## 提案するコミットメッセージ
+## 提案されたコミット
 
 ```
-fix(github): add safe git sync before AI pipeline push
+feat(github): add AI pipeline review gate
+```
 ```
