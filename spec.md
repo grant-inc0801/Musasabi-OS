@@ -1,175 +1,171 @@
 ```markdown
-# 技術指示書: S6-005 AI Employee Skill Engine
+# 技術指示書: Epic β-001 Sales Department Operational Release
 
-## 目的
-Musasabi OS での AI Employee Skill Engine の実装を行います。各AI社員が経験を積み、特定のスキルを向上させ、自身のパフォーマンス履歴を構築しながらCompany Brainを通じて会社の知識を共有します。これにより、専門的なAI社員が作成されます。
+## タスク概要
 
-## ビジョンフロー
-1. Learning Engine
-2. Memory Engine
-3. Knowledge Graph
-4. **Skill Engine**
-5. AI Employee
-6. Decision Engine
-7. Avatar
+### 目的
+Musasabi OS Beta v0.9を社内営業部門での運用のために最終調整します。現在、内部MVPは成功裏に起動し、コアエンジンも準備できています。次のステップは、Musasabi OSをテレマーケティングの営業チームが日常的に利用できるようにすることです。
 
-## 必要モジュール
-以下のディレクトリにモジュールを実装します:
-`packages/brain/src/skills/`
-- `SkillEngine.ts`
-- `SkillRepository.ts`
-- `SkillCalculator.ts`
-- `ExperienceEngine.ts`
-- `SkillLevelService.ts`
-- `RecommendationEngine.ts`
-- `SkillHistory.ts`
-- `index.ts`
+---
 
-## データベース設定
-### SQLite テーブル作成
-#### ai_employees
-- `id`
-- `employee_name`
-- `department`
-- `role`
-- `level`
-- `experience`
-- `current_status`
-- `created_at`
-- `updated_at`
+## 現状
 
-#### employee_skills
-- `id`
-- `employee_id`
-- `skill_name`
-- `level`
-- `experience`
-- `confidence`
-- `last_updated`
+**確認済みの稼働**:
+- Musasabi OS
+- MUSA-001
+- Local First
+- Policy Engine
+- Permission Engine
+- Event Bus
+- Scheduler
+- Company Brain
+- Memory Engine
+- Thinking Engine
+- Sales Intelligence
 
-#### employee_skill_history
-- `id`
-- `employee_id`
-- `skill_name`
-- `previous_level`
-- `new_level`
-- `gained_experience`
-- `event_source`
-- `created_at`
+---
 
-## 初期部門
-- サポート
-- 営業
-- 開発
-- カスタマーサポート
-- 会計
-- 管理
-- マーケティング
-- 経営
+## ベータ版の目標
 
-## 初期スキルセット
-### 営業
-- コールドコール
-- 異議処理
-- クロージング
-- 交渉
-- 聞くスキル
+営業担当者がPCを起動し、MUSAを確認し、セールスリストを確認してコーチングを受け、ノートを保存しながらSales Brainを継続的に改善できるようにします。
 
-### 開発
-- アーキテクチャ
-- TypeScript
-- React
-- Rust
-- テスト
-- ドキュメント作成
+---
 
-### ジェネラル
-- 学習
-- 記憶
-- 意思決定
-- コミュニケーション
-- 分析
+## 優先作業分野
 
-## 経験ルール
-以下のアクションで経験値を獲得:
-- 完了したタスク
-- 承認された学習
-- 成功したアポイントメント
-- ユーザーフィードバック
-- ドキュメントの質
-- レビューの質
+### 1. デスクトップMUSAアバター
 
-## レベルシステム
-- レベル1から100まで存在
-- 必要な経験値は徐々に増加
+**実装内容**:
+- 常に表示
+- ドラッグ可能
+- 吹き出し表示
+- モード表示
+  - Learning Mode
+  - Support Mode
+  - Analysis Mode
+  - AutoCall OFF
+- 営業イベントに反応
+- ダッシュボードをクリックで開く
 
-## スキル推薦
-特定のタスクを繰り返し実行する場合、関連スキルの向上を推奨します。
-例えば、営業AIが異議処理で多くの成功を収めた場合、異議処理スキルを強化します。
+### 2. セールスワークスペース
 
-## 従業員ダッシュボード
-AI社員プロフィールを作成し、以下を表示:
-- 名前
-- 部門
-- レベル
-- 経験
-- スキルツリー
-- 最近の成長
-- 主要スキル
-- 現在のタスク
-- パフォーマンス履歴
+**要件**:
+- リードリスト
+- リード詳細
+- コール履歴
+- トランスクリプト
+- 聞き取りノート
+- 次のアクション
+- MUSAコーチングパネル
 
-## アバターの統合
-専門分野に応じてアバターがわずかに変化:
-- 営業: ヘッドセット
-- 開発: ラップトップ
-- 会計: 電卓
-- サポート: ノート
-- 経営: スーツアクセサリー
+### 3. FileMaker同期
 
-## テスト
-以下のテストを実装:
-- 経験値の獲得
-- レベルアップ
-- スキルの成長
-- 履歴の作成
-- 推奨の生成
-- ダッシュボードのレンダリング
+**要件**:
+- フィールドマッピング
+- インポートプレビュー
+- 重複レビュー
+- 安全なインポート
+- 同期ステータス表示
 
-## ドキュメント
-以下を作成および更新:
-- `docs/AI_EMPLOYEE_SKILL_ENGINE.md`
-- `README.md`
-- `CHANGELOG.md`
-- `docs/BRAIN_MEMORY_ENGINE.md`
+### 4. Zoom Phone同期
+
+**要件**:
+- 通話ログインポート
+- 通話ステータス
+- 電話によるリードマッチング
+- マッチされていない通話
+- 同期ステータス表示
+
+### 5. ラーニングモード
+
+**要件**:
+- トランスクリプト学習
+- 通話ノート学習
+- 異議学習
+- 反論学習
+- ベストトーク学習
+- コーチング改善
+
+### 6. セールスコマンドセンター
+
+**ディスプレイ**:
+- 今日の通話
+- アポイントメント
+- アポイントメント率
+- 優先リード
+- コールバックキュー
+- 学習ステータス
+- MUSAのアドバイス
+
+---
+
+## 必須ユーザーインターフェース
+
+ホーム画面に表示するもの:
+- MUSAアバター
+- セールスワークスペース
+- セールスコマンドセンター
+- FileMakerステータス
+- Zoom Phoneステータス
+- 学習ステータス
+- 今日の通話
+- 今日のアポイントメント
+
+---
+
+## ベータ完了基準
+
+Beta v0.9が完了とみなされる条件:
+- アプリが信頼性高く起動
+- MUSAアバターが見える
+- 営業担当者がSales Workspaceを開くことができる
+- リードを追加/インポート可能
+- コール履歴を保存可能
+- トランスクリプトを保存可能
+- MUSAがコーチングを提供
+- 学習記録が生成可能
+- FileMakerのサンプルインポートが動作
+- Zoomのサンプルコールインポートが動作
+- 日々のダッシュボードが機能
+- テストがパス
+
+---
 
 ## 制限事項
-実装しない項目:
-- 自律的な昇格
-- 給与計算
-- 外部HRシステム
-- AutoCallの実行
-- LLM自律計画
 
-## 受入基準
-- AI社員の存在
-- スキルの追跡
-- 経験の蓄積
-- レベルの正しい増加
-- スキル履歴の保存
-- ダッシュボードでの社員成長の表示
-- アバターが専門性を反映
-- テストの合格
-- ドキュメントの更新完了
+**今は実装しない**:
+- AutoCall実行
+- 音声生成
+- 顧客音声会話
+- クラウド同期
+- マーケットプレイス
+- マルチテナント
+- 外部展開
+
+AutoCallはONにしないでください。
+
+---
+
+## 開発ルール
+
+アーキテクチャよりも使いやすさに重点を置きます。既存機能がある場合、それを磨き、接続することに集中します。不必要な新しいフレームワークは作成しません。
+
+---
 
 ## 納品物
-- 変更されたファイル群の報告
-- テスト結果
-- AI Employeeダッシュボードのスクリーンショット
-- 推奨コミットメッセージ
 
-### 推奨コミット
+- Musasabi OS Beta v0.9の有用なビルド
+- README更新
+- CHANGELOG更新
+- docs/BETA_RELEASE.md
+- ベータ準備チェックリスト
+- テスト結果
+
+---
+
+## 推奨コミット
+
 ```
-feat(brain): implement AI Employee Skill Engine
+release(beta): finalize sales department operational beta
 ```
 ```
