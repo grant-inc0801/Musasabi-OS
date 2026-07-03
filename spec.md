@@ -1,182 +1,150 @@
-# 技術指示書: S7-001 AI Employee Foundation
+```markdown
+# Technical Specification for S5-011 AI Pipeline Autonomous Sprint Orchestrator
 
-## 概要
+## Overview
 
-Sprint 7では、Musasabi OSにAI Employeeの基礎を構築します。この機能は複数のAI Employeesをサポートし、それぞれが独自のプロファイル、学習履歴、割り当てられた部署、パフォーマンス指標を持つように設計されています。初のAI Employeeはテレマーケティングに特化します。
+The objective of this project is to implement the Autonomous Sprint Orchestrator, which will serve as the central brain of the AI development pipeline. Instead of relying on independent GitHub Actions, a single orchestrator will manage the complete development lifecycle, spanning from Sprint planning to Pull Request review.
 
-## 目標
+## Vision
 
-AI Employeeフレームワークを構築し、各AI Employeeが実際の従業員と同様に振る舞うようにします。
+- **Input**: `Sprint.yaml`
+- **Process**: Sprint Orchestrator → Issue Generator → Codex → Task Branch → Tests → AI Review → Pull Request → Merge Ready → Sprint Progress → Next Task
+- **Output**: Efficient, centrally-managed sprint cycles in the AI development pipeline.
 
-## タスク詳細
+## Responsibilities
 
-### S7-001 AI Employee Foundation
+The Orchestrator will be responsible for:
+- Loading Sprint definitions
+- Determining the next executable task
+- Checking task dependencies
+- Generating GitHub Issues
+- Monitoring Codex progress
+- Validating build/test results
+- Triggering AI reviews
+- Updating Sprint progress
+- Selecting the next task after completion
 
-- AI Employee管理フレームワークの作成。
+## Required Modules
 
-### S7-002 AI Employee Profile
+The following components will be central to the implementation:
 
-- Employee Profileシステムの作成。
+- `SprintOrchestrator.ts` 
+- `TaskScheduler.ts`
+- `DependencyResolver.ts`
+- `WorkflowMonitor.ts`
+- `ProgressTracker.ts`
+- `TaskStateMachine.ts`
+- `IssueDispatcher.ts`
 
-#### フィールド
+These files will be created in the directory: `packages/ai-pm/src/orchestrator/`
 
-- `employee_id`
-- `employee_name`
-- `avatar`
-- `department`
-- `role`
-- `status`
-- `personality`
-- `created_at`
+## Sprint Lifecycle
 
-### S7-003 AI Employee Skills
+The Orchestrator is designed to support the complete Sprint lifecycle stages:
 
-- Employeeのスキル追跡。
+- Draft → Approved → Running → Paused → Review → Completed → Archived
 
-#### スキル例
+## Task Lifecycle
 
-- Telemarketing
-- Sales
-- Customer Support
-- FileMaker
-- Zoom Phone
-- Coaching
-- Analysis
+Tasks within the sprint will progress through:
 
-#### スキル範囲
+- Pending → Ready → Assigned → In Progress → Testing → Review → Completed → Blocked → Failed
 
-- 0~100
+## Dependency Engine
 
-### S7-004 AI Employee Memory
+Before a task is generated, the engine must:
+- Verify dependencies are satisfied
+- Ensure previous tasks are completed
+- Validate the current Sprint state
+- Confirm no duplicate issues exist
 
-- 各Employeeの独立したメモリー所有。
+## Recovery Mechanism
 
-#### 格納内容
+In the case of a workflow failure:
+- Stop the Sprint
+- Mark the task as Failed
+- Comment on the Issue
+- Label the issue with 'needs-review'
+- Preserve the remaining tasks
+- Allow the Sprint to resume after manual approval
 
-- 学習履歴
-- ベストトーク
-- 異論
-- コーチング履歴
-- KPIs
+## Dashboard
 
-### S7-005 AI Employee Assignment
+Enhance Orchestrator panel with:
+- Active Sprint information
+- Current Task details
+- Completed and Remaining Tasks
+- Failed Tasks
+- Current PR and Branch
+- Pipeline Status
+- Average Task Duration
+- Sprint Estimated Time of Arrival (ETA)
 
-- AI Employeesの割り当て。
+## Metrics
 
-#### 割り当て対象
+The following metrics will be tracked:
+- Total completed tasks
+- Average implementation and review times
+- Build success rate
+- Test pass rate
+- PR approval rate
 
-- キャンペーン
-- 部署
-- リードキュー
-- 業種
+## Notifications
 
-### S7-006 AI Employee Dashboard
+System should notify stakeholders for key events:
+- Sprint Started
+- Task Assigned
+- Build Failed
+- Review Required
+- PR Ready
+- Sprint Completed
 
-#### 表示内容
+## Tests
 
-- Employeeリスト
-- ステータス
-- 現在のタスク
-- 本日の予定
-- 学習進捗
-- 成功率
-- スキル成長
+Implement and validate:
+- Dependency resolution
+- Task scheduling
+- Workflow monitoring
+- Failure recovery
+- Progress calculation
+- ETA calculation
 
-### S7-007 AI Employee Collaboration
+## Documentation
 
-- AI Employee間のコラボレーションサポート。
+Documentation tasks include but are not limited to:
+- Creating `docs/SPRINT_ORCHESTRATOR.md`
+- Updating `README.md`, `CHANGELOG.md`, `docs/AI_PIPELINE.md`, and `docs/SPRINT_SYSTEM.md`
 
-#### 例
+## Restrictions
 
-1. Sales AI
-2. Coach AI
-3. Manager AI
-4. Knowledge AI
+The Orchestrator must not:
+- Bypass dependency validation
+- Skip failed tests
+- Auto-merge Pull Requests
+- Create duplicate GitHub Issues
+- Modify Sprint definitions during execution
 
-### S7-008 AI Employee Administration
+## Acceptance Criteria
 
-#### 管理者の操作可能項目
+- The Sprint Orchestrator adequately controls the workflow.
+- Dependency validation is effective.
+- Progress tracking functions as required.
+- System successfully recovers from failures.
+- Dashboard accurately displays orchestrator status.
+- Appropriate notifications are generated.
+- All tests must pass.
+- Documentation is complete and accurate.
 
-- AI Employeeの作成
-- Employeeのアーカイブ
-- AIの有効/無効
-- 部署変更
-- キャンペーンの割り当て
+## Deliverables
 
-## データベース設計
+Report must include:
+- List of changed files
+- Test results summary
+- Screenshots of the dashboard
+- Suggested commit message
 
-### テーブル: ai_employees
-
-- `id`
-- `employee_key`
-- `name`
-- `department`
-- `role`
-- `avatar`
-- `personality`
-- `status`
-- `created_at`
-- `updated_at`
-
-### テーブル: employee_skills
-
-- `id`
-- `employee_id`
-- `skill_name`
-- `level`
-- `updated_at`
-
-### テーブル: employee_memory
-
-- `id`
-- `employee_id`
-- `memory_type`
-- `source_id`
-- `confidence`
-- `created_at`
-
-### テーブル: employee_assignments
-
-- `id`
-- `employee_id`
-- `assignment_type`
-- `assignment_id`
-- `started_at`
-- `completed_at`
-
-## 将来対応
-
-- Learning Mode
-- AutoCall
-- Voice
-- 複数AI Employees
-- CEO AI
-- Sales Manager AI
-- Support AI
-
-## 制約事項
-
-以下の事項は実装しないこと:
-
-- 音声会話
-- 自律的な採用
-- AutoCallの実行
-- 外部のAI API
-
-## 受け入れ基準
-
-- Sprint-007.yamlが存在する
-- AI Employeeのテーブルが存在する
-- AI Employeeダッシュボードが存在する
-- Employeeプロファイルが機能する
-- スキルシステムが機能する
-- メモリーシステムが機能する
-- 割り当てシステムが機能する
-- テストが通過する
-- ドキュメントが更新される
-
-## 推奨コミット
-
-```plaintext
-feat(ai): implement AI Employee Foundation
+**Suggested Commit Message**:
+```
+feat(ai-pm): implement autonomous sprint orchestrator
+```
 ```
