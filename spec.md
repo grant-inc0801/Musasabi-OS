@@ -1,188 +1,243 @@
-```markdown
-# 技術指示書: β-002 MUSA Resident Avatar First Usable Version
+# 技術指示書: S6-008 Executive AI (CEO Assistant)
 
 ## 概要
 
-Musasabi OS Betaのための最初の利用可能な居住MUSAアバターを実装する。
+本技術指示書は、Musasabi OS のエグゼクティブインテリジェンスレイヤーとして設計された「Executive AI (CEO Assistant)」の実装指示を提供します。Executive AI は、企業全体の状況の可視化、KPI監視、戦略的推奨、オペレーションの洞察、AI従業員管理、エグゼクティブレポート作成を担当します。しかし、ビジネスの意思決定を自律的に実行することはありません。
 
-既にアプリケーションは正常に起動し、MUSA-001のステータスを表示している。今回のタスクでは、MUSAをアプリ内のデスクトップスタイルAI従業員プレゼンスとして可視化する必要がある。この実装は最終の3Dアバターではなく、迅速に利用可能なベータ版アバターである。
+## 構成
 
----
-
-## 現状
-
-確認済みの動作:
-
-- Musasabi OS
-- MUSA-001
-- コアエンジンが準備完了
-- セールスインテリジェンス準備完了
-- ローカルファーストモード
-
----
-
-## 目標
-
-ホーム画面に表示されるMUSAアバターパネルを追加し、将来的なデスクトップオーバーレイモードに対応する準備をする。
-
----
-
-## 必要なUI要素
-
-MUSAアバターカードまたは浮動パネルを追加。
-
-表示内容:
-
-- Musasabi / 飛び鼠のアバタープレースホルダー
-- MUSAの名前
-- 現在のモード
-- 現在の感情
-- ステータス
-- スピーチバブル
-
----
-
-## アバターモード
-
-手動モード切替サポート:
-
-- 学習モード
-- サポートモード
-- 分析モード
-- AutoCallモードOFF
-
-AutoCallを無効化し、視覚的にロック。
-
----
-
-## スピーチバブル
-
-デフォルトメッセージを表示:
+### Vision
 
 ```
-おはようございます。
-MUSAです。
-今日も営業活動を一緒に改善していきましょう。
+Company Brain
+↓
+Memory Engine
+↓
+Knowledge Graph
+↓
+Decision Engine
+↓
+Executive AI
+↓
+CEO Dashboard
+↓
+Human Decision
 ```
 
----
+### 必須モジュール
 
-## セールスデータ参照メッセージ
+ディレクトリ: `packages/executive/src/`
 
-セールスコールが0の場合:
+- `ExecutiveAI.ts`
+- `ExecutiveDashboard.ts`
+- `KPIService.ts`
+- `BusinessHealthAnalyzer.ts`
+- `RecommendationCenter.ts`
+- `RiskMonitor.ts`
+- `ReportGenerator.ts`
+- `ExecutiveNotificationService.ts`
+
+### データベース (SQLite)
+
+#### `executive_reports`
+
+フィールド:
+
+- id
+- report_type
+- generated_at
+- generated_by
+- summary
+- recommendation_json
+- quality_score
+
+#### `executive_kpis`
+
+フィールド:
+
+- id
+- kpi_name
+- current_value
+- target_value
+- trend
+- status
+- updated_at
+
+#### `executive_alerts`
+
+フィールド:
+
+- id
+- severity
+- title
+- description
+- related_module
+- acknowledged
+- created_at
+
+Severity レベル:
+
+- info
+- warning
+- critical
+
+### ダッシュボード: CEO Dashboard
+
+#### セクション
+
+1. **Company Overview**
+
+   - Today's Sales
+   - Monthly Sales
+   - Active Leads
+   - Active AI Employees
+   - Current Sprint
+   - Current Development Status
+
+2. **Sales KPI**
+
+   - Calls Today
+   - Appointments
+   - Appointment Rate
+   - Pipeline Value
+   - Conversion Rate
+
+3. **Development KPI**
+
+   - Active Sprint
+   - Open Issues
+   - Pull Requests
+   - Build Status
+   - Test Success Rate
+   - AI Quality Score
+
+4. **AI Employee Status**
+
+   各AIについて:
+
+   - Current Task
+   - Status
+   - Confidence
+   - Workload
+
+5. **Executive Recommendations**
+
+   - Top Priority Today
+   - Risks
+   - Opportunities
+   - Suggested Next Action
+
+   推奨事項には下記を含む必要があります:
+
+   - Evidence
+   - Confidence
+   - Risk
+   - Expected Impact
+
+6. **Company Health Score**
+
+   計算: 0〜100
+
+   基にする要素:
+
+   - Sales
+   - Development
+   - Operations
+   - Learning
+   - System Health
+   - AI Performance
+
+7. **Reports**
+
+   生成:
+
+   - Daily Report
+   - Weekly Report
+   - Monthly Report
+   - Sprint Report
+   - AI Employee Report
+
+   エクスポート形式:
+
+   - PDF
+   - Markdown
+   - Excel
+
+### アバター統合
+
+エグゼクティブムササビの振る舞い:
+
+- Normal: Reading reports
+- Good KPI: Celebrating
+- Warning: Concerned
+- Critical: Urgent notification
+
+### 通知
+
+サポートイベント:
+
+- Sprint Completed
+- Sales Target Achieved
+- KPI Warning
+- AI Employee Waiting
+- Build Failed
+- System Alert
+
+### テスト
+
+以下のテストを実装:
+
+- KPI 計算
+- 報告書生成
+- 推奨事項生成
+- 健康スコア計算
+- ダッシュボードレンダリング
+- 通知作成
+
+### ドキュメント
+
+以下を作成もしくは更新:
+
+- `docs/EXECUTIVE_AI.md`
+- `README.md`
+- `CHANGELOG.md`
+- `docs/COMPANY_BRAIN.md`
+- `docs/CEO_DASHBOARD.md`
+
+### 制限
+
+以下の機能は実装しないこと:
+
+- 自律的管理意思決定
+- 自動従業員評価
+- 自動会社方針変更
+- 自動財務実行
+- 外部ERP統合
+
+### 受け入れ基準
+
+- エグゼクティブダッシュボードが存在する
+- KPI計算が機能する
+- Company Health Score が表示される
+- エグゼクティブ推奨事項が生成される
+- レポートのエクスポートが可能
+- アバターがエグゼクティブステータスを反映する
+- 通知が機能する
+- テストが通過する
+- ドキュメントが更新されている
+
+### 納品物
+
+報告内容:
+
+- 変更されたファイル一覧
+- テスト結果
+- エグゼクティブダッシュボードのスクリーンショット
+- サンプルデイリーレポート
+- 推薦コミット
+
+推薦コミットメッセージ:
 
 ```
-まだ本日の架電データはありません。
-Zoom Phoneまたは手動入力から営業データを追加してください。
-```
-
-FileMakerのリードが0の場合:
-
-```
-FileMakerリードがまだありません。
-サンプルデータまたはFileMaker連携から取り込みできます。
-```
-
-学習モードがアクティブな場合:
-
-```
-Learning Modeで営業活動を学習中です。
-```
-
----
-
-## ビジュアルスタイル
-
-Musasabiのモチーフを使用。
-
-たぬきのモチーフは使用禁止。
-
-プレースホルダー許可:
-
-- 丸みを帯びた体
-- 大きな目
-- ふさふさした尾
-- 翼膜形状
-- フレンドリーなビジネススタイル
-
----
-
-## インタラクション
-
-アバターをクリック:
-
-- セールスワークスペースまたはダッシュボードを開く
-
-モード変更ボタン:
-
-- 学習
-- サポート
-- 分析
-- AutoCall OFF
-
----
-
-## 永続性
-
-選択されたモードをローカルに保存。
-
-再起動時に前回のモードを復元。
-
----
-
-## テスト
-
-以下のテストを追加:
-
-- アバターのレンダリング
-- デフォルトスピーチバブルの表示
-- モード切替の動作
-- AutoCallが無効のまま
-- モード永続性が動作
-- アバターUIにたぬきの参照がない
-
----
-
-## ドキュメント
-
-以下を更新:
-
-- README.md
-- CHANGELOG.md
-- docs/AVATAR.md
-- docs/BETA_RELEASE.md
-
----
-
-## 制限事項
-
-以下を実装しない:
-
-- 3Dレンダリング
-- Live2D
-- 音声
-- 音声認識
-- AutoCallの実行
-- 外部API
-
----
-
-## 受け入れ基準
-
-- MUSAアバターがホーム画面に表示される
-- スピーチバブルの表示
-- モード切替が動作
-- AutoCallが無効
-- 選択されたモードが永続化
-- アバターがMusasabiモチーフを使用
-- テストが合格
-- ドキュメントが更新
-
----
-
-## 推奨コミット
-
-```
-feat(beta): add first usable MUSA resident avatar
-```
+feat(executive): implement Executive AI (CEO Assistant)
 ```
