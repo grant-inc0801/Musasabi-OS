@@ -1,243 +1,197 @@
-# 技術指示書: S6-008 Executive AI (CEO Assistant)
+# 技術指示書: S7-001 Learning Mode Production
+
+---
 
 ## 概要
 
-本技術指示書は、Musasabi OS のエグゼクティブインテリジェンスレイヤーとして設計された「Executive AI (CEO Assistant)」の実装指示を提供します。Executive AI は、企業全体の状況の可視化、KPI監視、戦略的推奨、オペレーションの洞察、AI従業員管理、エグゼクティブレポート作成を担当します。しかし、ビジネスの意思決定を自律的に実行することはありません。
+この技術指示書は、Musasabi AIのLearning Modeを営業部門でプライマリ運用モードとして実装するための指針を提供します。このモードでは、AIが承認された業務活動を絶えず観察し、改善提案を行うことを目的としていますが、顧客に対するアクションを自律的に実行することはありません。
 
-## 構成
+### 目的
 
-### Vision
+Learning ModeのProduction版を実装します。このSprintは、後続のAutoCall Modeの基礎となります。
 
-```
-Company Brain
-↓
-Memory Engine
-↓
-Knowledge Graph
-↓
-Decision Engine
-↓
-Executive AI
-↓
-CEO Dashboard
-↓
-Human Decision
-```
+### ビジョン
 
-### 必須モジュール
+1. Sales Activity
+2. Learning Mode
+3. Brain Memory
+4. Knowledge Graph
+5. Sales Brain
+6. Recommendation
+7. Human Review
 
-ディレクトリ: `packages/executive/src/`
+---
 
-- `ExecutiveAI.ts`
-- `ExecutiveDashboard.ts`
-- `KPIService.ts`
-- `BusinessHealthAnalyzer.ts`
-- `RecommendationCenter.ts`
-- `RiskMonitor.ts`
-- `ReportGenerator.ts`
-- `ExecutiveNotificationService.ts`
+## 必要なモジュールの設計
 
-### データベース (SQLite)
+`packages/learning/src/` に以下のモジュールを実装します:
 
-#### `executive_reports`
+- **LearningModeController.ts**: Learning Modeのメイン制御を担います。
+- **SessionManager.ts**: Learning Sessionの開始、休止、再開、停止を管理します。
+- **ActivityCollector.ts**: 営業活動データを収集します。
+- **LearningTimeline.ts**: 時系列に沿った学習タイムラインを生成します。
+- **ImprovementDetector.ts**: 改善点の自動検出を行います。
+- **RecommendationPublisher.ts**: 改善点の提案を行います。
+- **LearningStatistics.ts**: 学習の統計情報を管理します。
 
-フィールド:
+---
 
-- id
-- report_type
-- generated_at
-- generated_by
-- summary
-- recommendation_json
-- quality_score
+## 学習ソース
 
-#### `executive_kpis`
+以下の情報を学習ソースとしてサポートします:
 
-フィールド:
+- Zoomの電話会議メタデータ
+- 通話記録
+- FileMakerのリード更新
+- 営業ノート
+- カレンダーイベント
+- タスクの完了状況
+- ユーザーフィードバック
 
-- id
-- kpi_name
-- current_value
-- target_value
-- trend
-- status
-- updated_at
+---
 
-#### `executive_alerts`
+## 学習セッション
 
-フィールド:
+サポートする操作:
 
-- id
-- severity
-- title
-- description
-- related_module
-- acknowledged
-- created_at
+- 開始
+- 一時停止
+- 再開
+- 停止
 
-Severity レベル:
+各セッションに保存される情報:
 
-- info
-- warning
-- critical
+- オペレーター
+- 期間
+- 活動
+- 学んだ内容
+- 提案事項
 
-### ダッシュボード: CEO Dashboard
+---
 
-#### セクション
+## タイムライン生成
 
-1. **Company Overview**
+年代順の学習タイムラインを作成し、以下を表示します:
 
-   - Today's Sales
-   - Monthly Sales
-   - Active Leads
-   - Active AI Employees
-   - Current Sprint
-   - Current Development Status
+- 通話
+- ノート
+- ドキュメント
+- タスク
+- 推薦事項
+- フィードバック
 
-2. **Sales KPI**
+---
 
-   - Calls Today
-   - Appointments
-   - Appointment Rate
-   - Pipeline Value
-   - Conversion Rate
+## 改善検出
 
-3. **Development KPI**
+以下を自動的に検出し、学習候補を生成します:
 
-   - Active Sprint
-   - Open Issues
-   - Pull Requests
-   - Build Status
-   - Test Success Rate
-   - AI Quality Score
+- 繰り返し現れる反対意見
+- 成功した再反論
+- 効果的な話の始め方
+- 効果的な話の終わり方
+- 共通の顧客質問
+- ワークフロープロセス上のボトルネック
 
-4. **AI Employee Status**
+---
 
-   各AIについて:
+## 提案エンジン
 
-   - Current Task
-   - Status
-   - Confidence
-   - Workload
+以下を推奨します:
 
-5. **Executive Recommendations**
+- スクリプト改善
+- フォローアップのタイミング
+- リードの優先度
+- 反対意見への対応
+- ワークフローの最適化
 
-   - Top Priority Today
-   - Risks
-   - Opportunities
-   - Suggested Next Action
+各推奨には以下の情報を含めます:
 
-   推奨事項には下記を含む必要があります:
+- 証拠
+- 信頼度
+- 予測される利益
 
-   - Evidence
-   - Confidence
-   - Risk
-   - Expected Impact
+---
 
-6. **Company Health Score**
+## ダッシュボード
 
-   計算: 0〜100
+作成するダッシュボード:
 
-   基にする要素:
+- Learning Dashboard
 
-   - Sales
-   - Development
-   - Operations
-   - Learning
-   - System Health
-   - AI Performance
+表示項目:
 
-7. **Reports**
+- アクティブセッション
+- 今日の学習
+- 提案事項
+- 改善の機会
+- 学習トレンド
+- 信頼スコア
 
-   生成:
+---
 
-   - Daily Report
-   - Weekly Report
-   - Monthly Report
-   - Sprint Report
-   - AI Employee Report
+## アバター統合
 
-   エクスポート形式:
+Learning Mode中:
 
-   - PDF
-   - Markdown
-   - Excel
+1. Musasabiのノートブックのアニメーション
+2. タイピング、リーディング、思考動作
 
-### アバター統合
+提案が承認された場合:
 
-エグゼクティブムササビの振る舞い:
+- 喜びのアニメーション
 
-- Normal: Reading reports
-- Good KPI: Celebrating
-- Warning: Concerned
-- Critical: Urgent notification
+---
 
-### 通知
+## テスト
 
-サポートイベント:
+以下のテストを実装します:
 
-- Sprint Completed
-- Sales Target Achieved
-- KPI Warning
-- AI Employee Waiting
-- Build Failed
-- System Alert
+- セッションライフサイクル
+- タイムライン生成
+- 提案生成
+- 学習統計
+- ダッシュボードのレンダリング
 
-### テスト
+---
 
-以下のテストを実装:
+## ドキュメンテーション
 
-- KPI 計算
-- 報告書生成
-- 推奨事項生成
-- 健康スコア計算
-- ダッシュボードレンダリング
-- 通知作成
+以下のドキュメントを作成および更新します:
 
-### ドキュメント
-
-以下を作成もしくは更新:
-
-- `docs/EXECUTIVE_AI.md`
+- `docs/LEARNING_MODE_PRODUCTION.md`
 - `README.md`
 - `CHANGELOG.md`
-- `docs/COMPANY_BRAIN.md`
-- `docs/CEO_DASHBOARD.md`
 
-### 制限
+---
 
-以下の機能は実装しないこと:
+## 制約
 
-- 自律的管理意思決定
-- 自動従業員評価
-- 自動会社方針変更
-- 自動財務実行
-- 外部ERP統合
+以下は実装しません:
 
-### 受け入れ基準
+- AutoCall
+- 顧客との会話
+- 自動CRM更新
+- 自動実行
 
-- エグゼクティブダッシュボードが存在する
-- KPI計算が機能する
-- Company Health Score が表示される
-- エグゼクティブ推奨事項が生成される
-- レポートのエクスポートが可能
-- アバターがエグゼクティブステータスを反映する
-- 通知が機能する
-- テストが通過する
-- ドキュメントが更新されている
+---
 
-### 納品物
+## 受け入れ基準
 
-報告内容:
+- Learning Modeが継続的に稼働すること
+- タイムラインが機能すること
+- 提案が生成されること
+- ダッシュボードが機能すること
+- アバターがLearning Modeを反映すること
+- テストが通過すること
+- ドキュメントが更新されること
 
-- 変更されたファイル一覧
-- テスト結果
-- エグゼクティブダッシュボードのスクリーンショット
-- サンプルデイリーレポート
-- 推薦コミット
+---
 
-推薦コミットメッセージ:
+## コミット例
 
+```markdown
+feat(learning): implement production Learning Mode
 ```
-feat(executive): implement Executive AI (CEO Assistant)
-```
+
+---

@@ -1,52 +1,68 @@
 ```typescript
-// packages/executive/src/ExecutiveAI.ts
-export class ExecutiveAI {
-  monitorKPI(kpis: any[]) {}
-  analyzeBusinessHealth(data: any) {}
-  generateRecommendations(data: any) {}
-  generateReport(reportType: string) {}
-  sendNotifications(events: any[]) {}
+// packages/learning/src/LearningModeController.ts
+export class LearningModeController {
+  start() {
+    // Start the learning mode
+  }
+  pause() {
+    // Pause the learning mode
+  }
+  resume() {
+    // Resume the learning mode
+  }
+  stop() {
+    // Stop the learning mode
+  }
 }
 
-// packages/executive/src/ExecutiveDashboard.ts
-export class ExecutiveDashboard {
-  renderDashboard() {}
-  displayCompanyOverview() {}
-  displaySalesKPI() {}
-  displayDevelopmentKPI() {}
-  displayAIEmployeeStatus() {}
-  displayExecutiveRecommendations() {}
-  displayCompanyHealthScore() {}
-  displayReports() {}
+// packages/learning/src/SessionManager.ts
+export class SessionManager {
+  createSession(operator: string, activities: string[]) {
+    // Create a new learning session
+  }
+  pauseSession(sessionId: string) {
+    // Pause the specified session
+  }
+  resumeSession(sessionId: string) {
+    // Resume the specified session
+  }
+  stopSession(sessionId: string) {
+    // Stop the specified session
+  }
 }
 
-// packages/executive/src/KPIService.ts
-export class KPIService {
-  calculateKPI(kpis: any[]) {}
+// packages/learning/src/ActivityCollector.ts
+export class ActivityCollector {
+  collectData() {
+    // Collect sales activity data
+  }
 }
 
-// packages/executive/src/BusinessHealthAnalyzer.ts
-export class BusinessHealthAnalyzer {
-  computeHealthScore(data: any) {}
+// packages/learning/src/LearningTimeline.ts
+export class LearningTimeline {
+  generateTimeline(activities: string[]) {
+    // Generate a learning timeline
+  }
 }
 
-// packages/executive/src/RecommendationCenter.ts
-export class RecommendationCenter {
-  generate(data: any) {}
+// packages/learning/src/ImprovementDetector.ts
+export class ImprovementDetector {
+  detectImprovements(data: any) {
+    // Detect improvements from the given data
+  }
 }
 
-// packages/executive/src/RiskMonitor.ts
-export class RiskMonitor {
-  assessRisk(data: any) {}
+// packages/learning/src/RecommendationPublisher.ts
+export class RecommendationPublisher {
+  publishRecommendations(recommendations: any) {
+    // Publish the given recommendations
+  }
 }
 
-// packages/executive/src/ReportGenerator.ts
-export class ReportGenerator {
-  exportReport(reportType: string, format: string) {}
-}
-
-// packages/executive/src/ExecutiveNotificationService.ts
-export class ExecutiveNotificationService {
-  notifyEvent(event: string) {}
+// packages/learning/src/LearningStatistics.ts
+export class LearningStatistics {
+  updateStats(sessionId: string, stats: any) {
+    // Update learning statistics
+  }
 }
 ```
