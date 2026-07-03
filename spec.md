@@ -1,229 +1,242 @@
-# 技術指示書: AI PM Autonomous Sprint Executor
+```markdown
+# 技術指示書: S5-010 AI Pipeline Automatic Pull Request Review
 
-この技術指示書は、AIプロジェクトマネージャー (AI PM) による完全自動化されたスプリント実行システムを実装するための詳細なガイドを提供します。
+## はじめに
 
-## 目次
-
-1. [プロジェクトの目的](#プロジェクトの目的)
-2. [システムビジョン](#システムビジョン)
-3. [AI PMの責務](#AI-PMの責務)
-4. [スプリントの状態遷移](#スプリントの状態遷移)
-5. [必要なモジュール](#必要なモジュール)
-6. [SQLiteデータベースのスキーマ](#SQLiteデータベースのスキーマ)
-7. [リカバリー機能](#リカバリー機能)
-8. [ダッシュボード要件](#ダッシュボード要件)
-9. [通知要件](#通知要件)
-10. [テスト要件](#テスト要件)
-11. [ドキュメント更新](#ドキュメント更新)
-12. [制約事項](#制約事項)
-13. [受け入れ基準](#受け入れ基準)
-14. [デリバラブル](#デリバラブル)
+本指示書は、AI開発パイプラインにおける自動Pull Request（PR）レビューシステムの実装に関するガイドラインを提供します。本システムはCodexが実装を完了しPRをオープンした際、AI PMが自動的にそのPRをレビューすることで、必要な場合にのみ人間による承認が行われる完全な自動開発ワークフローを実現します。
 
 ---
 
-## プロジェクトの目的
+## ビジョン
 
-AIプロジェクトマネージャー（AI PM）がスプリント全体を自律的に実行するシステムを実装する。このシステムでは、CEOがスプリントを開始すると、AI PMがスプリント完了まで全てのワークフローを管理します。
+- *Sprint.yaml* から始まり、以下の順で進むワークフローを構築します。
 
----
-
-## システムビジョン
-
-```
-CEO 
-  ↓ 
-Start Sprint 
-  ↓ 
-AI PM 
-  ↓ 
-Generate Issue 
-  ↓ 
-Codex 
-  ↓ 
-Implementation 
-  ↓ 
-Tests 
-  ↓ 
-Review Gate 
-  ↓ 
-Safe Push 
-  ↓ 
-Close Issue 
-  ↓ 
-Next Sprint Task 
-  ↓ 
-Sprint Complete
-```
+    ```
+    Sprint.yaml
+    ↓
+    AI PM
+    ↓
+    GitHub Issue
+    ↓
+    Codex
+    ↓
+    Implementation
+    ↓
+    Automatic Pull Request
+    ↓
+    AI PM Review
+    ↓
+    Tests
+    ↓
+    Quality Score
+    ↓
+    Merge Ready
+    ```
 
 ---
 
-## AI PMの責務
+## レビューパイプライン
 
-AI PMは以下の責務を負います:
+各Pull Requestは自動的に以下を実行する必要があります:
 
-- スプリントの定義を読み込む
-- アクティブなタスクを検出
-- GitHub Issueを生成
-- ワークフローを監視
-- レビューゲートの承認を待機
-- 完了したIssueをクローズ
-- 次のタスクを選択
-- スプリントが完了するまでこれを繰り返す
-
----
-
-## スプリントの状態遷移
-
-### 状態一覧
-
-- planned
-- active
-- waiting_for_codex
-- implementation
-- testing
-- review_pending
-- review_approved
-- completed
-- failed
-
-遷移は決定論的である必要があります。
+1. Build
+2. Unit Tests
+3. Integration Tests
+4. Lint
+5. Type Check
+6. Architecture Validation
+7. Sprint Validation
+8. Security Scan
+9. Documentation Check
 
 ---
 
 ## 必要なモジュール
 
-以下のモジュールを `packages/ai-pm/src/executor/` に実装します。
+### 新規作成
 
-- `sprintExecutor.js`
-- `issueDispatcher.js`
-- `workflowMonitor.js`
-- `reviewMonitor.js`
-- `completionDetector.js`
-- `recoveryManager.js`
+- `scripts/github/`
+  - `review-pr.js`
+  - `quality-score.js`
+  - `architecture-validator.js`
+  - `sprint-validator.js`
+  - `documentation-validator.js`
 
----
+### 更新
 
-## SQLiteデータベースのスキーマ
-
-### sprint_execution_history
-
-- id
-- sprint_key
-- task_key
-- state
-- issue_number
-- started_at
-- completed_at
-- duration_ms
-- result
-
-### pipeline_events
-
-- id
-- event_type
-- task_key
-- issue_number
-- detail_json
-- created_at
+- `.github/workflows/`
+  - `ai_pipeline.yml`
+  - `pr_review.yml`
 
 ---
 
-## リカバリー機能
+## AIレビュー
 
-GitHub Actionsが失敗した場合:
+以下を自動でレビューします:
 
-- 最後のチェックポイントから再試行する
-- 完了した作業を再生成しない
-- 失敗したステージからのみ継続する
-
----
-
-## ダッシュボード要件
-
-スプリントマネージャーのUIを更新して、以下を表示:
-
-- 現在のスプリント
-- 現在のタスク
-- 現在のワークフローステージ
-- アクティブなGitHub Issue
-- Codexのステータス
-- レビューステータス
-- 完了予定
-- 残りのタスク
+- コード品質
+- 重複コード
+- 命名の一貫性
+- プロジェクト構造
+- スプリント準拠
+- アーキテクチャ準拠
+- ドキュメント
+- テストカバレッジ
 
 ---
 
-## 通知要件
+## クオリティスコア
 
-以下のイベント発生時に通知を行う：
+スコアの範囲は0〜100。以下のカテゴリで評価します:
 
-- スプリント開始
-- Issueの作成
-- テストの失敗
-- レビュー待ち
-- スプリント完了
-
----
-
-## テスト要件
-
-以下のシナリオをテストする：
-
-- スプリント実行フロー
-- 状態遷移
-- Issueのディスパッチ
-- ワークフローの監視
-- プッシュ失敗時のリカバリー
-- 完了検出
-- ダッシュボードの更新
+- アーキテクチャ
+- コード品質
+- パフォーマンス
+- メンテナンス性
+- ドキュメント
+- テスト
+- セキュリティ
+- 全体スコア
 
 ---
 
-## ドキュメント更新
+## PRコメント
 
-以下のドキュメントを更新する：
+自動コメント例:
 
-- `README.md`
-- `CHANGELOG.md`
-- `docs/SPRINT_SYSTEM.md`
-- `docs/AI_PM.md`
+```
+## AI Review
+
+Architecture: ✅
+
+Tests: ✅
+
+Documentation: ✅
+
+Security: ✅
+
+Performance: 93/100
+
+Overall Score: 96/100
+
+Recommendation:
+
+Merge Ready
+```
 
 ---
 
-## 制約事項
+## ラベル
 
-以下の機能は実装しない：
+以下のラベルを自動で適用します:
 
-- AutoCall
-- デプロイ自動化
-- 強制プッシュ
-- 自動マージコンフリクト解決
+- review-passed
+- review-failed
+- needs-review
+- quality-high
+- quality-medium
+- quality-low
 
 ---
 
-## 受け入れ基準
+## マージ条件
 
-- AI PMがスプリントを自律的に実行する
-- スプリントの状態遷移が正常に機能する
-- 次のIssueが自動生成される
-- リカバリー機能が動作する
-- ダッシュボードが実行状態を反映する
-- テストがすべて合格する
+次の条件を満たす場合のみマージを許可します:
+
+- クオリティスコアが90以上
+- テストがパス
+- アーキテクチャ検証がパス
+- スプリント検証がパス
+- ドキュメントが更新済み
+
+---
+
+## フェイルハンドリング
+
+レビューが失敗した場合:
+
+- マージしない
+- 理由をコメント
+- `needs-review`ラベルを適用
+- PRをオープンしたままにする
+
+---
+
+## ダッシュボード
+
+AI PMダッシュボードを更新し、以下を表示:
+
+- オープンPR
+- レビューキュー
+- 平均クオリティスコア
+- レビュー所要時間
+- 保留中のレビュー
+
+---
+
+## テスト
+
+以下を実装:
+
+- クオリティスコアリング
+- アーキテクチャ検証
+- スプリント検証
+- ドキュメント検証
+- ラベル適用
+- マージ条件検証
+
+---
+
+## ドキュメント
+
+以下を更新:
+
+- README.md
+- CHANGELOG.md
+- docs/AI_PIPELINE.md
+- docs/AI_REVIEW.md
+
+---
+
+## 受入基準
+
+- PRが自動でレビューされる
+- クオリティスコアが生成される
+- ラベルが正しく適用される
+- レビューコメントが生成される
+- マージ条件が強制される
+- ダッシュボードが更新される
+- テストが合格する
 - ドキュメントが更新される
 
 ---
 
-## デリバラブル
+## 制限事項
 
-レポートには以下を含める：
+- 自動マージは行わない
+- 失敗したテストを無視しない
+- スプリント検証を無視しない
+- 人間の承認が可能であること
+
+---
+
+## 納品物
+
+報告書:
 
 - 変更されたファイル
 - テスト結果
-- スプリント実行サマリー
-- 推奨コミットメッセージ
+- クオリティスコアの例
+- レビューコメントの例
+- 推奨コミット
 
-自動プッシュは行わないことを厳守。
+推奨コミット:
 
-### 推奨コミットメッセージ
+```
+feat(ai-pm): implement automatic pull request review pipeline
+```
 
-`feat(ai-pm): implement autonomous sprint executor`
+```
+
+この指示書に沿って、PRレビューシステムを実装してください。
+```
