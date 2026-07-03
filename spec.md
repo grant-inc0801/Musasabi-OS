@@ -1,171 +1,258 @@
-```markdown
-# 技術指示書: Epic β-001 Sales Department Operational Release
+# 技術指示書: S6-006 マルチエージェントコラボレーションエンジン
 
-## タスク概要
+## 1. 概要
 
 ### 目的
-Musasabi OS Beta v0.9を社内営業部門での運用のために最終調整します。現在、内部MVPは成功裏に起動し、コアエンジンも準備できています。次のステップは、Musasabi OSをテレマーケティングの営業チームが日常的に利用できるようにすることです。
+マルチエージェントコラボレーションエンジンを実装します。Musasabi OSは複数のAIが連携可能なプラットフォームとして機能し、AI社員が共有タスクシステムを介して協働できることが求められます。このスプリントでは、協力タスクの実行、責任の割り当て、エージェント間のメッセージ送信、および共有コンテキストを導入します。
 
----
+### ビジョン
 
-## 現状
+```
+CEO
+↓
+AI PM
+↓
+Task
+↓
+Multi-Agent Coordinator
+↓
+[Sales AI, Development AI, Accounting AI, Marketing AI, Support AI]
+↓
+Shared Company Brain
+↓
+Human Approval
+```
 
-**確認済みの稼働**:
-- Musasabi OS
-- MUSA-001
-- Local First
-- Policy Engine
-- Permission Engine
-- Event Bus
-- Scheduler
-- Company Brain
-- Memory Engine
-- Thinking Engine
-- Sales Intelligence
+## 2. 必要モジュール
 
----
+以下のモジュールを `packages/brain/src/multi-agent/` に実装します。
 
-## ベータ版の目標
+- MultiAgentCoordinator.ts
+- AgentRegistry.ts
+- AgentMessageBus.ts
+- AgentTaskDispatcher.ts
+- CollaborationEngine.ts
+- ContextSharing.ts
+- AgentStateManager.ts
+- index.ts
 
-営業担当者がPCを起動し、MUSAを確認し、セールスリストを確認してコーチングを受け、ノートを保存しながらSales Brainを継続的に改善できるようにします。
+## 3. データベース設計
 
----
+### SQLite
 
-## 優先作業分野
+#### ai_agents テーブル
 
-### 1. デスクトップMUSAアバター
+| フィールド名      | データ型 | 説明         |
+|------------------|----------|--------------|
+| id               | INTEGER  | ID           |
+| agent_name       | TEXT     | エージェント名 |
+| department       | TEXT     | 部門         |
+| role             | TEXT     | 役割         |
+| status           | TEXT     | 状態         |
+| current_task     | TEXT     | 現在のタスク |
+| workload         | INTEGER  | ワークロード |
+| created_at       | DATETIME | 作成日時     |
+| updated_at       | DATETIME | 更新日時     |
 
-**実装内容**:
-- 常に表示
-- ドラッグ可能
-- 吹き出し表示
-- モード表示
-  - Learning Mode
-  - Support Mode
-  - Analysis Mode
-  - AutoCall OFF
-- 営業イベントに反応
-- ダッシュボードをクリックで開く
+#### agent_tasks テーブル
 
-### 2. セールスワークスペース
+| フィールド名      | データ型 | 説明         |
+|------------------|----------|--------------|
+| id               | INTEGER  | ID           |
+| task_key         | TEXT     | タスクキー   |
+| title            | TEXT     | タイトル     |
+| assigned_agent   | TEXT     | 担当エージェント |
+| priority         | INTEGER  | 優先度       |
+| status           | TEXT     | 状態         |
+| created_at       | DATETIME | 作成日時     |
+| updated_at       | DATETIME | 更新日時     |
 
-**要件**:
-- リードリスト
-- リード詳細
-- コール履歴
-- トランスクリプト
-- 聞き取りノート
-- 次のアクション
-- MUSAコーチングパネル
+ステータスオプション:
+- pending
+- assigned
+- working
+- waiting
+- review
+- completed
+- failed
 
-### 3. FileMaker同期
+#### agent_messages テーブル
 
-**要件**:
-- フィールドマッピング
-- インポートプレビュー
-- 重複レビュー
-- 安全なインポート
-- 同期ステータス表示
+| フィールド名   | データ型 | 説明         |
+|---------------|----------|--------------|
+| id            | INTEGER  | ID           |
+| sender_agent  | TEXT     | 送信エージェント |
+| receiver_agent| TEXT     | 受信エージェント |
+| message_type  | TEXT     | メッセージタイプ |
+| payload_json  | TEXT     | ペイロードJSON |
+| created_at    | DATETIME | 作成日時     |
 
-### 4. Zoom Phone同期
+#### collaboration_sessions テーブル
 
-**要件**:
-- 通話ログインポート
-- 通話ステータス
-- 電話によるリードマッチング
-- マッチされていない通話
-- 同期ステータス表示
+| フィールド名          | データ型 | 説明          |
+|----------------------|----------|---------------|
+| id                   | INTEGER  | ID            |
+| session_name         | TEXT     | セッション名  |
+| objective            | TEXT     | 目的          |
+| participating_agents | TEXT     | 参加エージェント |
+| status               | TEXT     | 状態          |
+| created_at           | DATETIME | 作成日時      |
+| updated_at           | DATETIME | 更新日時      |
 
-### 5. ラーニングモード
+## 4. デフォルトAI社員
 
-**要件**:
-- トランスクリプト学習
-- 通話ノート学習
-- 異議学習
-- 反論学習
-- ベストトーク学習
-- コーチング改善
+以下のAI社員を作成します:
 
-### 6. セールスコマンドセンター
+- AI PM
+- Sales AI
+- Development AI
+- Accounting AI
+- Support AI
+- Marketing AI
+- Executive AI
 
-**ディスプレイ**:
-- 今日の通話
-- アポイントメント
-- アポイントメント率
-- 優先リード
-- コールバックキュー
-- 学習ステータス
-- MUSAのアドバイス
+## 5. エージェントの能力
 
----
+### Sales AI
+- リード分析
+- アポイントメント戦略
+- セールスコーチング
 
-## 必須ユーザーインターフェース
+### Development AI
+- コード分析
+- ドキュメント化
+- テスト
 
-ホーム画面に表示するもの:
-- MUSAアバター
-- セールスワークスペース
-- セールスコマンドセンター
-- FileMakerステータス
-- Zoom Phoneステータス
-- 学習ステータス
-- 今日の通話
-- 今日のアポイントメント
+### Accounting AI
+- 財務ワークフロー
+- 請求書レビュー
 
----
+### Support AI
+- チケット分析
+- FAQ生成
 
-## ベータ完了基準
+### Marketing AI
+- キャンペーン計画
+- コンテンツ生成
 
-Beta v0.9が完了とみなされる条件:
-- アプリが信頼性高く起動
-- MUSAアバターが見える
-- 営業担当者がSales Workspaceを開くことができる
-- リードを追加/インポート可能
-- コール履歴を保存可能
-- トランスクリプトを保存可能
-- MUSAがコーチングを提供
-- 学習記録が生成可能
-- FileMakerのサンプルインポートが動作
-- Zoomのサンプルコールインポートが動作
-- 日々のダッシュボードが機能
-- テストがパス
+### Executive AI
+- KPI分析
+- ビジネスレポート
+- 意思決定推奨
 
----
+## 6. コラボレーションフロー
 
-## 制限事項
+```
+Task
+↓
+Coordinator
+↓
+Assign Agent
+↓
+(If another specialty required)
+↓
+Send collaboration request
+↓
+Receive response
+↓
+Continue task
+↓
+Complete
+```
 
-**今は実装しない**:
-- AutoCall実行
-- 音声生成
-- 顧客音声会話
+## 7. 共有コンテキスト
+
+### 共有する情報
+- 会社の頭脳
+- メモリエンジン
+- ナレッジグラフ
+
+### 個別に管理する情報
+- スキルレベル
+- 経験
+- タスクキュー
+- パフォーマンス履歴
+
+## 8. ダッシュボード
+
+AI組織ダッシュボードを作成し、以下を表示:
+
+- 組織図
+- 現在のタスク
+- 現在のステータス
+- アクティブなコラボレーション
+- 保留中のリクエスト
+- 完了したタスク
+- エージェントのワークロード
+
+## 9. アバター統合
+
+各AI社員に独自のMusasabiアバターを割り当てます。
+
+| エージェント     | アバター           |
+|-----------------|--------------------|
+| Sales           | 青いヘッドセット  |
+| Development     | 黒いフーディ      |
+| Accounting      | 緑のバイザー      |
+| Marketing       | 紫のノートブック  |
+| Support         | オレンジのヘッドセット |
+| Executive       | 金のネクタイ      |
+
+## 10. テスト
+
+以下の機能をテスト:
+
+- タスクの割り当て
+- コラボレーションリクエスト
+- 共有コンテキストの取得
+- エージェントメッセージング
+- ワークロードバランシング
+- 組織ダッシュボード
+
+## 11. ドキュメント
+
+以下のドキュメントを作成・更新:
+
+- `docs/MULTI_AGENT_ENGINE.md`
+- 更新: `README.md`
+- 更新: `CHANGELOG.md`
+- 更新: `docs/AI_EMPLOYEE_SKILL_ENGINE.md`
+
+## 12. 制限事項
+
+以下の機能は実装しないでください:
+
+- 独立した自律的実行
+- 外部メッセージング
 - クラウド同期
-- マーケットプレイス
-- マルチテナント
-- 外部展開
+- 自動コール実行
+- 自己改変エージェント
 
-AutoCallはONにしないでください。
+## 13. 受け入れ基準
 
----
+- 複数のAI社員が存在すること
+- タスクを割り当てられること
+- エージェントが協働すること
+- 共有コンテキストが機能すること
+- ダッシュボードが組織を表示すること
+- アバターの専門化が機能すること
+- テストが合格すること
+- ドキュメントが更新されること
 
-## 開発ルール
+## 14. デリバラブル
 
-アーキテクチャよりも使いやすさに重点を置きます。既存機能がある場合、それを磨き、接続することに集中します。不必要な新しいフレームワークは作成しません。
+### レポート内容
 
----
-
-## 納品物
-
-- Musasabi OS Beta v0.9の有用なビルド
-- README更新
-- CHANGELOG更新
-- docs/BETA_RELEASE.md
-- ベータ準備チェックリスト
+- 変更されたファイル
 - テスト結果
+- 組織ダッシュボードのスクリーンショット
+- 推奨コミット
 
----
+### 推奨コミットメッセージ
+```
+feat(brain): implement Multi-Agent Collaboration Engine
+```
 
-## 推奨コミット
+--- 
 
-```
-release(beta): finalize sales department operational beta
-```
-```
+この技術指示書に基づいて、S6-006 マルチエージェントコラボレーションエンジンの実装を進めてください。
