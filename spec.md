@@ -1,119 +1,106 @@
-# 技術指示書: Sprint 8 - AI Organization System
+```markdown
+# 技術指示書: S9-001 Emotion Engine & Adaptive Personality
 
-この文書は、通称「AI Organization System」と呼ばれるプロジェクト Sprint 8 の技術指示書です。このSprintでは、Musasabi OSを、AI従業員の集合から完全なAI組織へと進化させます。
+## はじめに
 
-## 目標
+本指示書は、Musasabi AIにおける「Emotion Engine & Adaptive Personality」を実装するための技術的な指示を提供します。このドキュメントに従って開発、テスト、ドキュメント作成を行ってください。
 
-- AI組織管理システムの構築
-- AI従業員が部門に所属し、組織の階層構造の下で協力する
+## Sprint 概要
 
-## スプリントタスク
+### 目標
 
-### S8-001 AI Organization Foundation
+- Emotion EngineとAdaptive Personality Systemの構築
 
-- 組織管理のためのフレームワークの作成
+### 感情が影響を与える領域
 
-### S8-002 Department Management
+- アバターの表情
+- コーチングスタイル
+- 通知
+- デスクトップの動作
+- AI従業員間の相互作用
 
-以下の部門をサポートする:
+## Sprint タスク
 
-- CEO Office
-- Sales
-- Sales Support
-- Marketing
-- Development
-- Customer Success
-- Accounting
-- HR
-- Administration
+### S9-001 Emotion Engine Foundation
 
-各部門は以下の要素を持つ:
+- 感情状態管理システムの実装
+- サポートされる感情: Neutral, Happy, Focused, Thinking, Curious, Encouraging, Concerned, Celebrating
 
-- マネージャー
-- メンバー
-- KPI
-- 権限管理
+### S9-002 Adaptive Personality
 
-### S8-003 Organization Chart
+- 性格プロファイルのサポート
+- 性格の変化が通知の言い回し、コーチングの言い回し、ダッシュボードのコメント、アバターの振る舞いに影響
 
-- 動的な組織チャートの作成
-- チャートにはCEO、マネージャー、AI従業員、人間従業員を表示
-- ドラッグ＆ドロップによる組織編集をサポート
+### S9-003 Context Awareness
 
-### S8-004 Task Delegation Engine
+- 感情の変化は以下に応じて: スプリント進捗、営業KPI、アポイント取得、ユーザーの作業負荷、学習モード、サポートモード、分析モード
 
-- AI従業員が他のAI従業員に業務を割り当てる機能の実装
-- 業務のトラッキング（割り当て、完了、ブロック）
+### S9-004 Avatar Emotion Sync
 
-### S8-005 Internal Communication
+- Emotion Engineとアバターの表情、アニメーション、スピーチバブルの同期
 
-- 内部通信バスの作成
-- 通知、タスク要求、承認、ステータス更新をサポート
+### S9-005 Memory Influence
 
-### S8-006 Shared Company Brain
+- 最近の歴史が感情に影響を与える: 多数のアポイント→Celebrating, 繰り返す失敗→Encouraging, 長期間のアイドル→Gentle reminder
 
-- 部門間での知識共有システム
-- 知識にはセールス、サポート、HR、開発、マーケティングのタイプがある
-- 知識はバージョン管理される
+### S9-006 Coaching Style
 
-### S8-007 Executive Dashboard
+- コーチがスタイルを適応: 新しいセールスパーソン→Encouraging, 経験豊富なセールスパーソン→Analytical, マネージャー→Executive summary
 
-- 部門KPI、アクティブAI従業員、タスクキュー、パフォーマンス、ボトルネック、組織の健康状態を表示
+### S9-007 Emotion Dashboard
 
-### S8-008 Permission System
+- 表示: 現在の感情、理由、自信レベル、性格、最近のイベント
 
-- CEO、エグゼクティブ、マネージャー、従業員、オブザーバーのための権限管理システム
+### S9-008 Emotion API
 
-## 技術要件
+- 内部API作成: setEmotion(), getEmotion(), calculateEmotion(), applyContext(), resetEmotion()
 
-### データベース (SQLite)
+## データベーススキーマ (SQLite)
 
-#### テーブル構成
+- **emotion_states**: id, employee_id, emotion, confidence, reason, created_at
+- **personality_profiles**: id, employee_id, profile, intensity, updated_at
+- **emotion_history**: id, employee_id, previous_emotion, new_emotion, trigger, created_at
 
-- organizations: 組織の基本情報
-- departments: 部門の基本情報
-- organization_members: 組織メンバーの情報
-- department_tasks: 部門内タスクの情報
-- department_messages: 部門内メッセージの情報
+## 互換性とサポート
 
-### 互換性
-
-- 複数の企業をサポート
-- マルチテナント組織
-- 人間とAIのハイブリッドチーム
-- AutoCall、AI CEO、AI COO、AI Sales Managerのサポート
-
-### 制限事項
-
-- 外部会社との連携の不具合
-- 自律的採用・解雇機能
-- 外部メッセージング、音声通信を実装しない
+- Supported: Live2D, VRM, Voice, AI Employees, AI Organization, AutoCall
 
 ## テスト
 
-- 組織作成、部門作成、組織チャートレンダリング、タスクデリゲーション、権限検証、知識共有、ダッシュボード更新のテスト
+- 実装するテスト: 感情の遷移、性格の切り替え、文脈の認識、アバターの同期、コーチングの適応、ダッシュボードの更新
 
-## ドキュメンテーション
+## ドキュメントの更新
 
-- `README.md`, `CHANGELOG.md`, `docs/AI_ORGANIZATION.md`を更新
+- 更新対象: README.md, CHANGELOG.md, docs/EMOTION_ENGINE.md
+
+## 制限事項
+
+-実装しない: 音声合成, 心理的診断, 定義されたルール外の自律的な感情決定
+- 感情の変化は決定論的かつ説明可能であること
 
 ## 受け入れ基準
 
-- `Sprint-008.yaml`の存在確認
-- 各機能が適切に動作し、テストが通過し、ドキュメントが更新されていること
+- Sprint-009.yamlの存在確認
+- Emotion Engineの動作
+- 性格プロファイルの機能
+- アバターが感情を反映
+- コーチングスタイルが適応
+- ダッシュボードが感情状態を表示
+- テストが合格
+- ドキュメントの更新
 
 ## デリバラブル
 
-### レポート
-
-- 変更されたファイル
-- テスト結果
-- 推奨コミットメッセージ
+- 変更されたファイルの報告
+- テスト結果の報告
+- 推奨commitメッセージ
 
 ### 推奨コミットメッセージ
 
 ```
-feat(ai): implement AI Organization System
+feat(ai): implement Emotion Engine and Adaptive Personality
 ```
 
-以上を元にAI組織システムを適切に実装してください。
+本指示書に基づいて開発を進め、指示された基準を満たすようにしてください。```
+
+以上、技術指示書を完成させました。適切な管理とレビューを怠らず、スプリントの目標を達成できるよう進めてください。
