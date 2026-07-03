@@ -1,223 +1,91 @@
-# 技術指示書: S7-003 Sales Conversation Intelligence Engine
+```markdown
+# 技術指示書: β-004 Windows Installer & Auto Launch
 
-## 目次
+## 目的
+Musasabi OS BetaのWindowsインストーラーと基本的なスタートアップ動作を作成することにより、内部の営業スタッフがPowerShellコマンドを実行せずにMusasabi OSを利用できるようにします。
 
-1. [概要](#概要)
-2. [ビジョン](#ビジョン)
-3. [必要モジュール](#必要モジュール)
-4. [データベース設計 (SQLite)](#データベース設計-sqlite)
-5. [分析機能](#分析機能)
-6. [パターン検出](#パターン検出)
-7. [レコメンデーションエンジン](#レコメンデーションエンジン)
-8. [ダッシュボード](#ダッシュボード)
-9. [Sales Brain統合](#sales-brain統合)
-10. [アバター統合](#アバター統合)
-11. [テスト](#テスト)
-12. [ドキュメント](#ドキュメント)
-13. [制約事項](#制約事項)
-14. [受け入れ基準](#受け入れ基準)
-15. [成果物](#成果物)
+## 要件
 
----
+### インストーラー
+Musasabi OSのWindowsインストーラーを構築します。以下の機能をサポートします：
+- インストール
+- アンインストール
+- アップデートの準備ができた構造
+- デスクトップショートカット
+- スタートメニューショートカット
 
-## 概要
+### スタートアップ
+インストール後は、以下の条件を満たす必要があります：
+- ユーザーがデスクトップショートカットからMusasabi OSを起動可能
+- アプリがデスクトップアプリとして開く
+- ブラウザを必要としない
+- ターミナルを必要としない
 
-本技術指示書は、S7-003「Sales Conversation Intelligence Engine」の実装に関する詳細を記載しています。このエンジンはセールス会話を分析し、成功したコールを企業知識として再利用するためのものです。本スプリントでは分析にのみ注力します。
+### ローカルデータ
+以下のためにローカルアプリデータフォルダを使用します：
+- SQLiteデータベース
+- 設定ファイル
+- ログファイル
+- バックアップファイル
 
-## ビジョン
+実行時データをソースコードフォルダ内に保存しないこと。
 
-1. Zoom Phone
-2. Transcript
-3. Conversation Intelligence
-4. Sales Brain
-5. Learning Engine
-6. Company Brain
-7. Recommendation
+### 初回起動
+初回起動時にセットアップチェックリストを表示します：
+- FileMakerステータス
+- Zoom Phoneステータス
+- OpenAIキーのステータス
+- アバターステータス
+- データベースステータス
 
-## 必要モジュール
+APIキーなしで起動できるようにすること。
 
-`packages/sales-intelligence/src/`に以下のファイルを実装:
+### 自動起動オプション
+以下の設定を追加します：
+- Windows起動時にMusasabi OSを起動する
 
-- ConversationEngine.ts
-- TranscriptAnalyzer.ts
-- ObjectionDetector.ts
-- ClosingDetector.ts
-- QuestionAnalyzer.ts
-- TalkRatioAnalyzer.ts
-- SuccessPatternEngine.ts
-- ConversationRepository.ts
+デフォルト設定：
+- OFF
 
-## データベース設計 (SQLite)
+### ログ
+ローカルログフォルダを作成し、設定にログの場所を表示します。
 
-### conversation_analysis テーブル
-
-| フィールド名             | 型          |
-| ----------------------- | ----------- |
-| id                      | INTEGER     |
-| call_session_id         | TEXT        |
-| transcript_id           | TEXT        |
-| lead_id                 | TEXT        |
-| operator                | TEXT        |
-| overall_score           | REAL        |
-| appointment_probability | REAL        |
-| created_at              | DATETIME    |
-| updated_at              | DATETIME    |
-
-### conversation_patterns テーブル
-
-| フィールド名   | 型       |
-| ------------- | -------- |
-| id            | INTEGER  |
-| analysis_id   | INTEGER  |
-| pattern_type  | TEXT     |
-| title         | TEXT     |
-| description   | TEXT     |
-| confidence    | REAL     |
-| created_at    | DATETIME |
-
-### conversation_objections テーブル
-
-| フィールド名   | 型       |
-| ------------- | -------- |
-| id            | INTEGER  |
-| analysis_id   | INTEGER  |
-| objection     | TEXT     |
-| response      | TEXT     |
-| outcome       | TEXT     |
-| confidence    | REAL     |
-
-## 分析機能
-
-サポート内容
-
-- 開始品質
-- 質問の質
-- 聞き取り比率
-- 話す比率
-- 異議処理
-- 終了品質
-- 顧客の関心
-- 顧客感情 (ルールベース)
-- アポイントメントシグナル
-
-## パターン検出
-
-検出内容
-
-- 成功した開始
-- 成功した反駁
-- 成功した終了
-- 失われた機会
-- 弱い質問
-- 強い質問
-- 高い関心
-- 低い関心
-- 次のフォローアップチャンス
-
-## レコメンデーションエンジン
-
-生成内容
-
-- より良い開始
-- より良い質問
-- より良い反駁
-- より良い終了
-- より良いフォローアップ時間
-
-各推奨には以下を含む
-
-- 証拠
-- 信頼性
-- 予想される改善点
-
-## ダッシュボード
-
-作成内容
-
-- Sales Conversation Dashboard
-
-表示内容
-
-- 全体スコア
-- 開始スコア
-- 聞き取りスコア
-- 話す比率
-- 異議
-- 終了スコア
-- AIの推奨
-- ベストモーメント
-- 改善ポイント
-
-## Sales Brain統合
-
-承認された成功した会話は、
-
-1. Sales Brainの知識になる
-2. 将来のコーチング
-3. 将来のAutoCall学習
-
-## アバター統合
-
-- 分析中: Thinkingアニメーション
-- 分析完了: Notebookアニメーション
-- 高得点: Celebrationアニメーション
-- 低得点: Thinking + 推奨バブル
-
-## テスト
-
-実装内容
-
-- トランスクリプト分析
-- 異議検出
-- 話す比率計算
-- 推奨生成
-- ダッシュボード描画
-- Sales Brainエクスポート
+## コマンド
+以下のコマンドを追加または確認します：
+- `npm run build:desktop-app`
+- `npm run package:windows`
 
 ## ドキュメント
-
-作成内容
-
-- docs/SALES_CONVERSATION_INTELLIGENCE.md
-
-更新内容
-
+以下を更新します：
 - README.md
 - CHANGELOG.md
+- docs/INSTALL.md
+- docs/DESKTOP_APP.md
 
-## 制約事項
+含める内容：
+- インストーラーのビルド手順
+- インストール手順
+- アンインストール手順
+- ローカルデータパス
+- トラブルシューティング
 
-実装禁止項目
-
-- 大規模言語モデルの自律呼び出し
-- 顧客会話
-- AutoCall実行
-- 音声認識
-- 音声生成
+## 制限事項
+- 必要ない限り管理者権限を要求しないこと
+- オートスタートを強制しないこと
+- クラウドログインを要求しないこと
+- 外部APIを要求しないこと
+- AutoCallを実装しないこと
 
 ## 受け入れ基準
+- Windowsインストーラーがビルド可能であること
+- デスクトップショートカットが機能すること
+- アプリがターミナルなしで起動すること
+- ローカルデータパスが使用されていること
+- 初回起動時にチェックリストが表示されること
+- 自動起動設定が存在し、デフォルトでOFFになっていること
+- ドキュメントが更新されていること
+- テストが合格すること
 
-- 会話分析が動作する
-- スコアが計算される
-- 異議が検出される
-- 推奨が生成される
-- ダッシュボードが機能する
-- Sales Brain統合が機能する
-- アバターが正しく反応する
-- テストが通る
-- ドキュメントが更新される
-
-## 成果物
-
-レポート内容
-
-- 変更されたファイル
-- テスト結果
-- ダッシュボードのスクリーンショット
-- 推奨コミット
-
-推奨コミット
-
-```plaintext
-feat(sales): implement Sales Conversation Intelligence Engine
+## 推奨コミットメッセージ
+`feat(desktop): add Windows installer and launch setup`
 ```
