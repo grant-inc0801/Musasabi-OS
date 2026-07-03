@@ -1,70 +1,123 @@
-```yaml
-# docs/sprints/Sprint-006.yaml
+```python
+from datetime import datetime
 
-sprint: 6
-title: AutoCall Beta Sprint
-description: |
-  Sprint 6を開始します: AutoCall Betaの準備。
-  このスプリントでは、管理されたAIによるアウトバウンドコールを実施するための基盤を構築します。
-goals:
-  - 管理者が承認した条件下でのみ、AIアシストによるアウトバウンドコールを準備、管理し、最終的に実行できるようにするためのAutoCall Betaの基盤を構築します。
-tasks:
-  - id: S6-001
-    title: AutoCall Beta Sprint Definition
-    description: |
-      Sprint-006.yamlを作成し、タスクを登録。
-    dependencies: []
-  - id: S6-002
-    title: AutoCall Campaign Manager
-    description: |
-      対象リスト、作業時間、アポ制限、リトライルール、ステータスを含むキャンペーンを作成。
-    dependencies: [S6-001]
-  - id: S6-003
-    title: AutoCall Queue Engine
-    description: |
-      リードの優先順位、準備度スコア、アポ確率からコールキューを生成。
-    dependencies: [S6-002]
-  - id: S6-004
-    title: AutoCall Safety Gate
-    description: |
-      管理者の承認、緊急停止、作業時間、アポ制限、リスクチェックが必要。
-    dependencies: [S6-002]
-  - id: S6-005
-    title: AutoCall Conversation Script Engine
-    description: |
-      Sales Brain、異議対応ライブラリ、最良のトークパターンから決定論的なコールスクリプトを生成。
-    dependencies: [S6-002]
-  - id: S6-006
-    title: AutoCall Human Handoff
-    description: |
-      顧客が複雑な質問をしたり、高い関心を示したり、リスクが検出された場合に人間へエスカレーション。
-    dependencies: [S6-002, S6-003]
-  - id: S6-007
-    title: AutoCall Audit Log
-    description: |
-      計画済みのコール、スキップされたコール、試行済みのコール、ハンドオフ、結果、停止イベントをすべてログに記録。
-    dependencies: [S6-002]
-  - id: S6-008
-    title: AutoCall Beta Dashboard
-    description: |
-      キャンペーンステータス、キュー、アポカウント、リスクアラート、緊急停止、結果を表示。
-    dependencies: [S6-002, S6-003, S6-007]
-safety_rules: |
-  AutoCallは自動的に開始してはならない。
-  AutoCallには以下が必要:
-  - 管理者の承認
-  - アポ制限
-  - 作業時間
-  - 緊急停止が有効
-  - キャンペーン選択
-  - 承認されたリードキュー
-  - 完全な監査ログ
-acceptance_criteria:
-  - Sprint-006.yamlが存在する
-  - AI PMがSprint 6を解析可能
-  - 最初に実行可能なタスクがS6-002であること
-  - 依存関係が尊重されること
-  - AutoCallの安全ルールが文書化されていること
-  - テストが合格すること
-  - README / CHANGELOGが更新されていること
+class AIEmployee:
+    def __init__(self, employee_id, employee_name, avatar, department, role, status, personality):
+        self.employee_id = employee_id
+        self.employee_name = employee_name
+        self.avatar = avatar
+        self.department = department
+        self.role = role
+        self.status = status
+        self.personality = personality
+        self.created_at = datetime.now()
+        self.skills = {}
+        self.memory = []
+        self.assignments = []
+
+    def add_skill(self, skill_name, level):
+        if 0 <= level <= 100:
+            self.skills[skill_name] = level
+
+    def add_memory(self, memory_type, source_id, confidence):
+        self.memory.append({
+            'memory_type': memory_type,
+            'source_id': source_id,
+            'confidence': confidence,
+            'created_at': datetime.now()
+        })
+
+    def assign_to(self, assignment_type, assignment_id):
+        self.assignments.append({
+            'assignment_type': assignment_type,
+            'assignment_id': assignment_id,
+            'started_at': datetime.now(),
+            'completed_at': None
+        })
+
+    def complete_assignment(self, assignment_id):
+        for assignment in self.assignments:
+            if assignment['assignment_id'] == assignment_id:
+                assignment['completed_at'] = datetime.now()
+
+class AIDashboard:
+    def __init__(self):
+        self.employees = []
+
+    def add_employee(self, employee):
+        self.employees.append(employee)
+
+    def list_employees(self):
+        return [{'id': emp.employee_id, 'name': emp.employee_name, 'status': emp.status} for emp in self.employees]
+
+    def get_employee_status(self, employee_id):
+        for emp in self.employees:
+            if emp.employee_id == employee_id:
+                return emp.status
+
+    def get_employee_tasks(self, employee_id):
+        for emp in self.employees:
+            if emp.employee_id == employee_id:
+                return emp.assignments
+
+class AIAdministration:
+    def __init__(self, dashboard):
+        self.dashboard = dashboard
+
+    def create_employee(self, employee_id, employee_name, avatar, department, role, status, personality):
+        employee = AIEmployee(employee_id, employee_name, avatar, department, role, status, personality)
+        self.dashboard.add_employee(employee)
+        return employee
+
+    def archive_employee(self, employee_id):
+        self.dashboard.employees = [emp for emp in self.dashboard.employees if emp.employee_id != employee_id]
+
+    def toggle_employee_status(self, employee_id):
+        for emp in self.dashboard.employees:
+            if emp.employee_id == employee_id:
+                emp.status = 'inactive' if emp.status == 'active' else 'active'
+
+    def change_department(self, employee_id, new_department):
+        for emp in self.dashboard.employees:
+            if emp.employee_id == employee_id:
+                emp.department = new_department
+
+    def assign_to_campaign(self, employee_id, campaign_id):
+        for emp in self.dashboard.employees:
+            if emp.employee_id == employee_id:
+                emp.assign_to('campaign', campaign_id)
+```
+
+```yaml
+# Sprint-007.yaml
+sprint:
+  id: 7
+  name: AI Employee Foundation
+  tasks:
+    - id: S7-001
+      name: AI Employee Foundation
+    - id: S7-002
+      name: AI Employee Profile
+    - id: S7-003
+      name: AI Employee Skills
+    - id: S7-004
+      name: AI Employee Memory
+    - id: S7-005
+      name: AI Employee Assignment
+    - id: S7-006
+      name: AI Employee Dashboard
+    - id: S7-007
+      name: AI Employee Collaboration
+    - id: S7-008
+      name: AI Employee Administration
+  acceptance_criteria:
+    - exists: Sprint-007.yaml
+    - exists: ai_employees table
+    - exists: AI Employee dashboard
+    - functions: Employee profile system
+    - functions: Skill system
+    - functions: Memory system
+    - functions: Assignment system
+    - passes: tests
+    - updated: Documentation
 ```

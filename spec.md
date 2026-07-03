@@ -1,110 +1,182 @@
-```markdown
-# 技術指示書: S6-001 AutoCall Beta Sprint Definition
+# 技術指示書: S7-001 AI Employee Foundation
 
 ## 概要
 
-### タスクの目的
-Sprint 6を開始します: AutoCall Betaの準備。  
-このスプリントでは、Musasabi AIが管理されたAIによるアウトバウンドコールを実施するための基盤を構築します。この機能には、厳格な安全性、承認、アポ制限、ログ記録、および緊急停止機能が含まれます。
+Sprint 7では、Musasabi OSにAI Employeeの基礎を構築します。この機能は複数のAI Employeesをサポートし、それぞれが独自のプロファイル、学習履歴、割り当てられた部署、パフォーマンス指標を持つように設計されています。初のAI Employeeはテレマーケティングに特化します。
 
-AutoCallはすべての安全ゲートが通過するまで無効にしておく必要があります。
+## 目標
 
----
+AI Employeeフレームワークを構築し、各AI Employeeが実際の従業員と同様に振る舞うようにします。
 
-## ファイルの作成
+## タスク詳細
 
-- 作成ファイル: `docs/sprints/Sprint-006.yaml`
+### S7-001 AI Employee Foundation
 
----
+- AI Employee管理フレームワークの作成。
 
-## スプリントゴール
+### S7-002 AI Employee Profile
 
-管理者が承認した条件下でのみ、AIアシストによるアウトバウンドコールを準備、管理し、最終的に実行できるようにするためのAutoCall Betaの基盤を構築します。
+- Employee Profileシステムの作成。
 
----
+#### フィールド
 
-## スプリントタスク
+- `employee_id`
+- `employee_name`
+- `avatar`
+- `department`
+- `role`
+- `status`
+- `personality`
+- `created_at`
 
-### S6-001 AutoCall Beta Sprint Definition
-- Sprint-006.yamlを作成し、タスクを登録。
+### S7-003 AI Employee Skills
 
-### S6-002 AutoCall Campaign Manager
-- 対象リスト、作業時間、アポ制限、リトライルール、ステータスを含むキャンペーンを作成。
+- Employeeのスキル追跡。
 
-### S6-003 AutoCall Queue Engine
-- リードの優先順位、準備度スコア、アポ確率からコールキューを生成。
+#### スキル例
 
-### S6-004 AutoCall Safety Gate
-- 管理者の承認、緊急停止、作業時間、アポ制限、リスクチェックが必要。
+- Telemarketing
+- Sales
+- Customer Support
+- FileMaker
+- Zoom Phone
+- Coaching
+- Analysis
 
-### S6-005 AutoCall Conversation Script Engine
-- Sales Brain、異議対応ライブラリ、最良のトークパターンから決定論的なコールスクリプトを生成。
+#### スキル範囲
 
-### S6-006 AutoCall Human Handoff
-- 顧客が複雑な質問をしたり、高い関心を示したり、リスクが検出された場合に人間へエスカレーション。
+- 0~100
 
-### S6-007 AutoCall Audit Log
-- 計画済みのコール、スキップされたコール、試行済みのコール、ハンドオフ、結果、停止イベントをすべてログに記録。
+### S7-004 AI Employee Memory
 
-### S6-008 AutoCall Beta Dashboard
-- キャンペーンステータス、キュー、アポカウント、リスクアラート、緊急停止、結果を表示。
+- 各Employeeの独立したメモリー所有。
 
----
+#### 格納内容
 
-## 重要な安全ルール
+- 学習履歴
+- ベストトーク
+- 異論
+- コーチング履歴
+- KPIs
 
-- AutoCallは自動的に開始してはならない。
+### S7-005 AI Employee Assignment
 
-AutoCallには以下が必要:
-- 管理者の承認
-- アポ制限
-- 作業時間
-- 緊急停止が有効
-- キャンペーン選択
-- 承認されたリードキュー
-- 完全な監査ログ
+- AI Employeesの割り当て。
 
----
+#### 割り当て対象
 
-## アポイントメント制限
+- キャンペーン
+- 部署
+- リードキュー
+- 業種
 
-- アウトバウンドコールの数に制限はありません。
-- アポの数は制限されます。
+### S7-006 AI Employee Dashboard
 
-アポイントメント制限に達した場合:
-- キャンペーンを停止
-- キューを一時停止
-- 管理者に通知
-- 停止理由をログ
+#### 表示内容
 
----
+- Employeeリスト
+- ステータス
+- 現在のタスク
+- 本日の予定
+- 学習進捗
+- 成功率
+- スキル成長
 
-## 制限事項
+### S7-007 AI Employee Collaboration
 
-- 制御されていないアウトバウンドコールを実施してはならない。
-- 承認をスキップしてはならない。
-- 緊急停止を削除してはならない。
-- 作業時間外にコールしてはならない。
-- 監査ログを削除してはならない。
-- 資格情報を公開してはならない。
+- AI Employee間のコラボレーションサポート。
 
----
+#### 例
+
+1. Sales AI
+2. Coach AI
+3. Manager AI
+4. Knowledge AI
+
+### S7-008 AI Employee Administration
+
+#### 管理者の操作可能項目
+
+- AI Employeeの作成
+- Employeeのアーカイブ
+- AIの有効/無効
+- 部署変更
+- キャンペーンの割り当て
+
+## データベース設計
+
+### テーブル: ai_employees
+
+- `id`
+- `employee_key`
+- `name`
+- `department`
+- `role`
+- `avatar`
+- `personality`
+- `status`
+- `created_at`
+- `updated_at`
+
+### テーブル: employee_skills
+
+- `id`
+- `employee_id`
+- `skill_name`
+- `level`
+- `updated_at`
+
+### テーブル: employee_memory
+
+- `id`
+- `employee_id`
+- `memory_type`
+- `source_id`
+- `confidence`
+- `created_at`
+
+### テーブル: employee_assignments
+
+- `id`
+- `employee_id`
+- `assignment_type`
+- `assignment_id`
+- `started_at`
+- `completed_at`
+
+## 将来対応
+
+- Learning Mode
+- AutoCall
+- Voice
+- 複数AI Employees
+- CEO AI
+- Sales Manager AI
+- Support AI
+
+## 制約事項
+
+以下の事項は実装しないこと:
+
+- 音声会話
+- 自律的な採用
+- AutoCallの実行
+- 外部のAI API
 
 ## 受け入れ基準
 
-- `Sprint-006.yaml`が存在する
-- AI PMがSprint 6を解析可能
-- 最初に実行可能なタスクがS6-002であること
-- 依存関係が尊重されること
-- AutoCallの安全ルールが文書化されていること
-- テストが合格すること
-- README / CHANGELOGが更新されていること
-
----
+- Sprint-007.yamlが存在する
+- AI Employeeのテーブルが存在する
+- AI Employeeダッシュボードが存在する
+- Employeeプロファイルが機能する
+- スキルシステムが機能する
+- メモリーシステムが機能する
+- 割り当てシステムが機能する
+- テストが通過する
+- ドキュメントが更新される
 
 ## 推奨コミット
 
-```
-feat(autocall): start sprint 6 autocall beta
-```
+```plaintext
+feat(ai): implement AI Employee Foundation
 ```
