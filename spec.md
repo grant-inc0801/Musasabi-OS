@@ -1,150 +1,119 @@
-```markdown
-# Technical Specification for S5-011 AI Pipeline Autonomous Sprint Orchestrator
+# 技術指示書: Sprint 8 - AI Organization System
 
-## Overview
+この文書は、通称「AI Organization System」と呼ばれるプロジェクト Sprint 8 の技術指示書です。このSprintでは、Musasabi OSを、AI従業員の集合から完全なAI組織へと進化させます。
 
-The objective of this project is to implement the Autonomous Sprint Orchestrator, which will serve as the central brain of the AI development pipeline. Instead of relying on independent GitHub Actions, a single orchestrator will manage the complete development lifecycle, spanning from Sprint planning to Pull Request review.
+## 目標
 
-## Vision
+- AI組織管理システムの構築
+- AI従業員が部門に所属し、組織の階層構造の下で協力する
 
-- **Input**: `Sprint.yaml`
-- **Process**: Sprint Orchestrator → Issue Generator → Codex → Task Branch → Tests → AI Review → Pull Request → Merge Ready → Sprint Progress → Next Task
-- **Output**: Efficient, centrally-managed sprint cycles in the AI development pipeline.
+## スプリントタスク
 
-## Responsibilities
+### S8-001 AI Organization Foundation
 
-The Orchestrator will be responsible for:
-- Loading Sprint definitions
-- Determining the next executable task
-- Checking task dependencies
-- Generating GitHub Issues
-- Monitoring Codex progress
-- Validating build/test results
-- Triggering AI reviews
-- Updating Sprint progress
-- Selecting the next task after completion
+- 組織管理のためのフレームワークの作成
 
-## Required Modules
+### S8-002 Department Management
 
-The following components will be central to the implementation:
+以下の部門をサポートする:
 
-- `SprintOrchestrator.ts` 
-- `TaskScheduler.ts`
-- `DependencyResolver.ts`
-- `WorkflowMonitor.ts`
-- `ProgressTracker.ts`
-- `TaskStateMachine.ts`
-- `IssueDispatcher.ts`
+- CEO Office
+- Sales
+- Sales Support
+- Marketing
+- Development
+- Customer Success
+- Accounting
+- HR
+- Administration
 
-These files will be created in the directory: `packages/ai-pm/src/orchestrator/`
+各部門は以下の要素を持つ:
 
-## Sprint Lifecycle
+- マネージャー
+- メンバー
+- KPI
+- 権限管理
 
-The Orchestrator is designed to support the complete Sprint lifecycle stages:
+### S8-003 Organization Chart
 
-- Draft → Approved → Running → Paused → Review → Completed → Archived
+- 動的な組織チャートの作成
+- チャートにはCEO、マネージャー、AI従業員、人間従業員を表示
+- ドラッグ＆ドロップによる組織編集をサポート
 
-## Task Lifecycle
+### S8-004 Task Delegation Engine
 
-Tasks within the sprint will progress through:
+- AI従業員が他のAI従業員に業務を割り当てる機能の実装
+- 業務のトラッキング（割り当て、完了、ブロック）
 
-- Pending → Ready → Assigned → In Progress → Testing → Review → Completed → Blocked → Failed
+### S8-005 Internal Communication
 
-## Dependency Engine
+- 内部通信バスの作成
+- 通知、タスク要求、承認、ステータス更新をサポート
 
-Before a task is generated, the engine must:
-- Verify dependencies are satisfied
-- Ensure previous tasks are completed
-- Validate the current Sprint state
-- Confirm no duplicate issues exist
+### S8-006 Shared Company Brain
 
-## Recovery Mechanism
+- 部門間での知識共有システム
+- 知識にはセールス、サポート、HR、開発、マーケティングのタイプがある
+- 知識はバージョン管理される
 
-In the case of a workflow failure:
-- Stop the Sprint
-- Mark the task as Failed
-- Comment on the Issue
-- Label the issue with 'needs-review'
-- Preserve the remaining tasks
-- Allow the Sprint to resume after manual approval
+### S8-007 Executive Dashboard
 
-## Dashboard
+- 部門KPI、アクティブAI従業員、タスクキュー、パフォーマンス、ボトルネック、組織の健康状態を表示
 
-Enhance Orchestrator panel with:
-- Active Sprint information
-- Current Task details
-- Completed and Remaining Tasks
-- Failed Tasks
-- Current PR and Branch
-- Pipeline Status
-- Average Task Duration
-- Sprint Estimated Time of Arrival (ETA)
+### S8-008 Permission System
 
-## Metrics
+- CEO、エグゼクティブ、マネージャー、従業員、オブザーバーのための権限管理システム
 
-The following metrics will be tracked:
-- Total completed tasks
-- Average implementation and review times
-- Build success rate
-- Test pass rate
-- PR approval rate
+## 技術要件
 
-## Notifications
+### データベース (SQLite)
 
-System should notify stakeholders for key events:
-- Sprint Started
-- Task Assigned
-- Build Failed
-- Review Required
-- PR Ready
-- Sprint Completed
+#### テーブル構成
 
-## Tests
+- organizations: 組織の基本情報
+- departments: 部門の基本情報
+- organization_members: 組織メンバーの情報
+- department_tasks: 部門内タスクの情報
+- department_messages: 部門内メッセージの情報
 
-Implement and validate:
-- Dependency resolution
-- Task scheduling
-- Workflow monitoring
-- Failure recovery
-- Progress calculation
-- ETA calculation
+### 互換性
 
-## Documentation
+- 複数の企業をサポート
+- マルチテナント組織
+- 人間とAIのハイブリッドチーム
+- AutoCall、AI CEO、AI COO、AI Sales Managerのサポート
 
-Documentation tasks include but are not limited to:
-- Creating `docs/SPRINT_ORCHESTRATOR.md`
-- Updating `README.md`, `CHANGELOG.md`, `docs/AI_PIPELINE.md`, and `docs/SPRINT_SYSTEM.md`
+### 制限事項
 
-## Restrictions
+- 外部会社との連携の不具合
+- 自律的採用・解雇機能
+- 外部メッセージング、音声通信を実装しない
 
-The Orchestrator must not:
-- Bypass dependency validation
-- Skip failed tests
-- Auto-merge Pull Requests
-- Create duplicate GitHub Issues
-- Modify Sprint definitions during execution
+## テスト
 
-## Acceptance Criteria
+- 組織作成、部門作成、組織チャートレンダリング、タスクデリゲーション、権限検証、知識共有、ダッシュボード更新のテスト
 
-- The Sprint Orchestrator adequately controls the workflow.
-- Dependency validation is effective.
-- Progress tracking functions as required.
-- System successfully recovers from failures.
-- Dashboard accurately displays orchestrator status.
-- Appropriate notifications are generated.
-- All tests must pass.
-- Documentation is complete and accurate.
+## ドキュメンテーション
 
-## Deliverables
+- `README.md`, `CHANGELOG.md`, `docs/AI_ORGANIZATION.md`を更新
 
-Report must include:
-- List of changed files
-- Test results summary
-- Screenshots of the dashboard
-- Suggested commit message
+## 受け入れ基準
 
-**Suggested Commit Message**:
+- `Sprint-008.yaml`の存在確認
+- 各機能が適切に動作し、テストが通過し、ドキュメントが更新されていること
+
+## デリバラブル
+
+### レポート
+
+- 変更されたファイル
+- テスト結果
+- 推奨コミットメッセージ
+
+### 推奨コミットメッセージ
+
 ```
-feat(ai-pm): implement autonomous sprint orchestrator
+feat(ai): implement AI Organization System
 ```
-```
+
+以上を元にAI組織システムを適切に実装してください。
