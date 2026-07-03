@@ -1,152 +1,151 @@
-```yaml
-# .github/workflows/ai_pipeline.yml
-name: AI Pipeline
-on:
-  push:
-    branches:
-      - 'ai/**'
-jobs:
-  run:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v2
-      - name: Run tests
-        run: npm test
-      - name: Create Pull Request
-        uses: repo-sync/pull-request@v2
-        with:
-          source_branch: ${{ github.ref }}
-          destination_branch: main
-          pr_title: ${{ github.event.issue.key }} ${{ github.event.issue.title }}
-          pr_body: |
-            Linked Issue: #${{ github.event.issue.number }}
-            Changed Files: ${{ steps.changes.outputs.files }}
-            Test Results: All tests passed
-            Recommended Reviewer: @pm
-            Risk: Low
-```
-
 ```javascript
-// scripts/github/extract-issue-key.js
-const extractIssueKey = (issueTitle) => {
-  const match = issueTitle.match(/([A-Z]+-\d+)/);
-  return match ? match[1] : null;
-};
+// packages/ai-pm/src/executor/sprintExecutor.js
+const issueDispatcher = require('./issueDispatcher');
+const workflowMonitor = require('./workflowMonitor');
+const reviewMonitor = require('./reviewMonitor');
+const completionDetector = require('./completionDetector');
+const recoveryManager = require('./recoveryManager');
+const db = require('./database');
 
-module.exports = extractIssueKey;
-```
+async function executeSprint(sprintKey) {
+  const tasks = await db.getTasksForSprint(sprintKey);
+  for (const task of tasks) {
+    await transitionTask(task, 'planned', 'active');
+    const issueNumber = await issueDispatcher.createIssue(task);
+    await transitionTask(task, 'active', 'waiting_for_codex', issueNumber);
+    await workflowMonitor.waitAndExecuteImplementation(task);
+    await transitionTask(task, 'implementation', 'testing');
+    await workflowMonitor.runTests(task);
+    const reviewStatus = await reviewMonitor.awaitReviewApproval(task);
+    if (reviewStatus === 'approved') {
+      await transitionTask(task, 'review_pending', 'review_approved');
+    } else {
+      await transitionTask(task, 'review_pending', 'failed');
+      await recoveryManager.handleFailure(task);
+      continue;
+    }
+    await completionDetector.closeIssue(task);
+    await transitionTask(task, 'review_approved', 'completed');
+  }
+}
 
-```bash
-# scripts/github/create-task-branch.sh
-#!/bin/bash
-issue_key=$1
-slug=$2
+async function transitionTask(task, fromState, toState, issueNumber = null) {
+  console.log(`Transitioning task ${task.key} from ${fromState} to ${toState}`);
+  await db.updateTaskState(task.key, fromState, toState, issueNumber);
+}
 
-git fetch origin main
-git checkout -B ai/${issue_key}-${slug} origin/main
-```
+module.exports = { executeSprint };
 
-```javascript
-// scripts/github/create-pr.js
-const { Octokit } = require("@octokit/rest");
+// packages/ai-pm/src/executor/issueDispatcher.js
+const github = require('./githubClient');
 
-const createPullRequest = async (issueKey, issueTitle) => {
-  const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-  const prTitle = `${issueKey} ${issueTitle}`;
-  const prBody = `Linked Issue: #${process.env.ISSUE_NUMBER}\nTest Results: All tests passed\nRecommended Reviewer: @pm\nRisk: Low`;
-
-  await octokit.pulls.create({
-    owner: process.env.GITHUB_REPOSITORY_OWNER,
-    repo: process.env.GITHUB_REPOSITORY,
-    title: prTitle,
-    head: `ai/${issueKey}`,
-    base: "main",
-    body: prBody,
+async function createIssue(task) {
+  const issue = await github.createIssue({
+    title: `Implement ${task.summary}`,
+    body: task.description,
   });
-};
+  return issue.number;
+}
 
-module.exports = createPullRequest;
-```
+module.exports = { createIssue };
 
-```markdown
-# docs/AI_PIPELINE.md
+// packages/ai-pm/src/executor/workflowMonitor.js
+const codex = require('./codexClient');
+const ci = require('./ciClient');
 
-## AI Pipeline
+async function waitAndExecuteImplementation(task) {
+  await codex.generateCodeForTask(task);
+}
 
-### Branch Creation
+async function runTests(task) {
+  const result = await ci.runTests(task);
+  if (!result.success) throw new Error('Tests failed');
+}
 
-All AI tasks are assigned to dedicated branches:
+module.exports = { waitAndExecuteImplementation, runTests };
 
-- Branch name format: `ai/{issue-key}-{slug}`
+// packages/ai-pm/src/executor/reviewMonitor.js
+const github = require('./githubClient');
 
-### Process
+async function awaitReviewApproval(task) {
+  while (true) {
+    const status = await github.getReviewStatus(task.issueNumber);
+    if (status === 'approved') return 'approved';
+    if (status === 'changes_requested') return 'failed';
+    await new Promise((resolve) => setTimeout(resolve, 60000)); // wait 1 min
+  }
+}
 
-1. Extract issue key from issue title.
-2. Create a branch from the latest main.
-3. Implement task.
-4. Commit changes.
-5. Push branch.
-6. Create pull request.
-7. Do not push directly to main.
+module.exports = { awaitReviewApproval };
 
-### PR Rules
+// packages/ai-pm/src/executor/completionDetector.js
+const github = require('./githubClient');
 
-- PR Title: `{issue-key} {issue-title}`
-- PR Body should contain:
-  - Linked Issue
-  - Overview of changed files
-  - Test results
-  - Recommended reviewers
-  - Risks
+async function closeIssue(task) {
+  await github.closeIssue(task.issueNumber);
+}
 
-### Merge & Review
+module.exports = { closeIssue };
 
-- Manual review required before merging.
-- Do not merge automatically.
+// packages/ai-pm/src/executor/recoveryManager.js
+async function handleFailure(task) {
+  console.log(`Handling failure for task ${task.key}`);
+}
 
-### Additional Safety Rules
+module.exports = { handleFailure };
 
-- No force-push to main.
-- Do not close issues before PR exists.
-- Add "needs-review" label if PR creation fails.
-```
+// packages/ai-pm/src/executor/database.js
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database(':memory:');
 
-```markdown
-# README.md
+function setupDatabase() {
+  db.serialize(() => {
+    db.run(`CREATE TABLE sprint_execution_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sprint_key TEXT,
+      task_key TEXT,
+      state TEXT,
+      issue_number INTEGER,
+      started_at TEXT,
+      completed_at TEXT,
+      duration_ms INTEGER,
+      result TEXT
+    )`);
+    db.run(`CREATE TABLE pipeline_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      event_type TEXT,
+      task_key TEXT,
+      issue_number INTEGER,
+      detail_json TEXT,
+      created_at TEXT
+    )`);
+  });
+}
 
-## AI Pipeline Isolation
+async function getTasksForSprint(sprintKey) {
+  return new Promise((resolve, reject) => {
+    db.all('SELECT * FROM tasks WHERE sprint_key = ?', [sprintKey], (err, rows) => {
+      if (err) reject(err);
+      resolve(rows);
+    });
+  });
+}
 
-Our AI development now runs through isolated task branches to prevent main branch direct commits. This minimizes conflicts and ensures streamlined parallel development.
+async function updateTaskState(taskKey, fromState, toState, issueNumber) {
+  return new Promise((resolve, reject) => {
+    const now = new Date().toISOString();
+    db.run(
+      `UPDATE sprint_execution_history SET state = ?, completed_at = ?
+       WHERE task_key = ? AND state = ?`,
+      [toState, now, taskKey, fromState],
+      (err) => {
+        if (err) reject(err);
+        resolve();
+      }
+    );
+  });
+}
 
-## Commit Message
-
-Always use meaningful commit messages. Suggested format:
-
-```
-chore(github): isolate AI pipeline work in task branches
-```
-```
-
-```markdown
-# CHANGELOG.md
-
-## [Unreleased]
-
-### Added
-
-- AI pipeline branch isolation strategy implemented.
-- GitHub Actions workflow for automating pull requests.
-- Scripts for branch handling and PR creation.
-```
-
-```markdown
-# docs/SPRINT_SYSTEM.md
-
-## Sprints and Task Management
-
-### Key Updates
-
-- Each AI task is performed on its branch following the format `ai/{issue-key}-{slug}`.
-- Ensuring minimal disruption during concurrent operations by avoiding main branch direct modifications.
+setupDatabase();
+module.exports = { getTasksForSprint, updateTaskState };
 ```
