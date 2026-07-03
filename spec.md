@@ -1,180 +1,223 @@
-```markdown
-# 技術指示書: S7-002 Zoom Phone Real-Time Voice Pipeline
+# 技術指示書: S7-003 Sales Conversation Intelligence Engine
 
-## 目的
+## 目次
 
-Zoom Phoneのリアルタイム音声パイプラインを実装する。これはLearning Mode、Sales Coach、Voice Analysis、将来のAutoCall Modeが使用するライブ音声イベントパイプラインを確立する。このパイプラインは、通話イベントをリアルタイムで受信し、Musasabi OSモジュールに配信する。AIによる会話、オートコール、自律通話は行わない。本スプリントは観察のみを目的とする。
+1. [概要](#概要)
+2. [ビジョン](#ビジョン)
+3. [必要モジュール](#必要モジュール)
+4. [データベース設計 (SQLite)](#データベース設計-sqlite)
+5. [分析機能](#分析機能)
+6. [パターン検出](#パターン検出)
+7. [レコメンデーションエンジン](#レコメンデーションエンジン)
+8. [ダッシュボード](#ダッシュボード)
+9. [Sales Brain統合](#sales-brain統合)
+10. [アバター統合](#アバター統合)
+11. [テスト](#テスト)
+12. [ドキュメント](#ドキュメント)
+13. [制約事項](#制約事項)
+14. [受け入れ基準](#受け入れ基準)
+15. [成果物](#成果物)
+
+---
+
+## 概要
+
+本技術指示書は、S7-003「Sales Conversation Intelligence Engine」の実装に関する詳細を記載しています。このエンジンはセールス会話を分析し、成功したコールを企業知識として再利用するためのものです。本スプリントでは分析にのみ注力します。
 
 ## ビジョン
 
 1. Zoom Phone
-2. Call Events
-3. Voice Pipeline
-4. Learning Mode
-5. Voice Analysis
-6. Sales Coach
-7. Memory Engine
-8. Company Brain
+2. Transcript
+3. Conversation Intelligence
+4. Sales Brain
+5. Learning Engine
+6. Company Brain
+7. Recommendation
 
 ## 必要モジュール
 
-`packages/zoom-phone/src/` 以下に次のモジュールを実装する。
+`packages/sales-intelligence/src/`に以下のファイルを実装:
 
-- `ZoomPhoneConnector.ts`
-- `VoicePipeline.ts`
-- `CallSessionManager.ts`
-- `EventRouter.ts`
-- `TranscriptCollector.ts`
-- `AudioMetadataCollector.ts`
-- `VoicePipelineRepository.ts`
+- ConversationEngine.ts
+- TranscriptAnalyzer.ts
+- ObjectionDetector.ts
+- ClosingDetector.ts
+- QuestionAnalyzer.ts
+- TalkRatioAnalyzer.ts
+- SuccessPatternEngine.ts
+- ConversationRepository.ts
 
-## 対応イベント
+## データベース設計 (SQLite)
 
-- Incoming Call
-- Outgoing Call
-- Call Started
-- Call Connected
-- Call Ended
-- Recording Started
-- Recording Finished
-- Transcript Ready
-- Participant Joined
-- Participant Left
-- Mute
-- Hold
-- Resume
+### conversation_analysis テーブル
 
-## コールセッション
+| フィールド名             | 型          |
+| ----------------------- | ----------- |
+| id                      | INTEGER     |
+| call_session_id         | TEXT        |
+| transcript_id           | TEXT        |
+| lead_id                 | TEXT        |
+| operator                | TEXT        |
+| overall_score           | REAL        |
+| appointment_probability | REAL        |
+| created_at              | DATETIME    |
+| updated_at              | DATETIME    |
 
-### テーブル: `call_sessions`
+### conversation_patterns テーブル
 
-フィールド:
-- id
-- session_id
-- lead_id
-- operator
-- direction
-- started_at
-- connected_at
-- ended_at
-- duration
-- status
+| フィールド名   | 型       |
+| ------------- | -------- |
+| id            | INTEGER  |
+| analysis_id   | INTEGER  |
+| pattern_type  | TEXT     |
+| title         | TEXT     |
+| description   | TEXT     |
+| confidence    | REAL     |
+| created_at    | DATETIME |
 
-ステータス:
-- ringing
-- connected
-- on_hold
-- completed
-- failed
+### conversation_objections テーブル
 
-## イベントキュー
+| フィールド名   | 型       |
+| ------------- | -------- |
+| id            | INTEGER  |
+| analysis_id   | INTEGER  |
+| objection     | TEXT     |
+| response      | TEXT     |
+| outcome       | TEXT     |
+| confidence    | REAL     |
 
-### テーブル: `voice_events`
+## 分析機能
 
-フィールド:
-- id
-- session_id
-- event_type
-- payload_json
-- created_at
+サポート内容
 
-## トランスクリプトパイプライン
+- 開始品質
+- 質問の質
+- 聞き取り比率
+- 話す比率
+- 異議処理
+- 終了品質
+- 顧客の関心
+- 顧客感情 (ルールベース)
+- アポイントメントシグナル
 
-- トランスクリプトのプレースホルダをサポート
-- トランスクリプトステータスをサポート
-- トランスクリプト受信イベントのサポート
-- トランスクリプト更新イベントのサポート
+## パターン検出
 
-音声認識は行わない。利用可能であればトランスクリプトを受け取る。
+検出内容
 
-## 音声メタデータ
+- 成功した開始
+- 成功した反駁
+- 成功した終了
+- 失われた機会
+- 弱い質問
+- 強い質問
+- 高い関心
+- 低い関心
+- 次のフォローアップチャンス
 
-メタデータを収集および保存:
-- duration
-- silence time
-- speaking ratio
-- interruptions
-- recording availability
+## レコメンデーションエンジン
 
-## 統合
+生成内容
 
-以下のモジュールにイベントを公開:
-- Learning Mode
-- Sales Brain
-- Memory Engine
-- Voice Analysis
-- Executive Dashboard
-- Avatar
+- より良い開始
+- より良い質問
+- より良い反駁
+- より良い終了
+- より良いフォローアップ時間
+
+各推奨には以下を含む
+
+- 証拠
+- 信頼性
+- 予想される改善点
 
 ## ダッシュボード
 
-ライブコールモニターを作成し、以下を表示:
-- Active Calls
-- Call Status
-- Duration
-- Transcript Status
-- Voice Analysis Status
-- Learning Status
+作成内容
+
+- Sales Conversation Dashboard
+
+表示内容
+
+- 全体スコア
+- 開始スコア
+- 聞き取りスコア
+- 話す比率
+- 異議
+- 終了スコア
+- AIの推奨
+- ベストモーメント
+- 改善ポイント
+
+## Sales Brain統合
+
+承認された成功した会話は、
+
+1. Sales Brainの知識になる
+2. 将来のコーチング
+3. 将来のAutoCall学習
 
 ## アバター統合
 
-- Call Started → Headset appears + Listening animation
-- Call Ended → Thinking animation
-- Transcript Ready → Notebook animation
-- Learning Complete → Happy animation
+- 分析中: Thinkingアニメーション
+- 分析完了: Notebookアニメーション
+- 高得点: Celebrationアニメーション
+- 低得点: Thinking + 推奨バブル
 
 ## テスト
 
-次を実装:
-- Event routing
-- Session lifecycle
-- Transcript events
-- Metadata collection
-- Dashboard updates
-- Avatar synchronization
+実装内容
+
+- トランスクリプト分析
+- 異議検出
+- 話す比率計算
+- 推奨生成
+- ダッシュボード描画
+- Sales Brainエクスポート
 
 ## ドキュメント
 
-作成:
-- `docs/ZOOM_PHONE_PIPELINE.md`
+作成内容
 
-更新:
-- `README.md`
-- `CHANGELOG.md`
+- docs/SALES_CONVERSATION_INTELLIGENCE.md
 
-## 制限事項
+更新内容
 
-次の機能は実装しない:
-- AutoCall
-- Speech Recognition
-- Voice Generation
-- Customer Conversation
-- Call Recording Download
-- Telephone Control
+- README.md
+- CHANGELOG.md
+
+## 制約事項
+
+実装禁止項目
+
+- 大規模言語モデルの自律呼び出し
+- 顧客会話
+- AutoCall実行
+- 音声認識
+- 音声生成
 
 ## 受け入れ基準
 
-- Voice pipelineがイベントを受信できる
-- Call sessionsが追跡される
-- Event routingが動作する
-- Metadataが保存される
-- Dashboardがリアルタイムで更新される
-- Avatarが正しく反応する
-- テストが通過する
+- 会話分析が動作する
+- スコアが計算される
+- 異議が検出される
+- 推奨が生成される
+- ダッシュボードが機能する
+- Sales Brain統合が機能する
+- アバターが正しく反応する
+- テストが通る
 - ドキュメントが更新される
 
 ## 成果物
 
-- 変更されたファイルのレポート
+レポート内容
+
+- 変更されたファイル
 - テスト結果
-- Live Call Monitorのスクリーンショット
+- ダッシュボードのスクリーンショット
 - 推奨コミット
 
-### 推奨コミット
+推奨コミット
 
+```plaintext
+feat(sales): implement Sales Conversation Intelligence Engine
 ```
-feat(zoom): implement real-time voice pipeline
-```
-```
-
-この技術指示書は、プロジェクトの成功のために必要な情報をカバーしています。すべてのイベントが正しくルーティングされ、関連するメタデータが取得および保存されていることを確認してください。手順ごとにドキュメントを更新し、提出する際にはすべての成果物が揃っていることを確認してください。
