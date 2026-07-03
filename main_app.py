@@ -1,144 +1,70 @@
 ```yaml
-# .github/workflows/ai_pipeline.yml
-name: AI Pipeline
+# docs/sprints/Sprint-006.yaml
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-      - run: npm install
-      - name: Build
-        run: npm run build
-
-  unit-tests:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v2
-      - name: Run Unit Tests
-        run: npm test
-
-  lint:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v2
-      - name: Run Lint
-        run: npm run lint
-
-  type-check:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v2
-      - name: Type Check
-        run: npm run type-check
-
-  security-scan:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v2
-      - name: Security Scan
-        run: npm run security-scan
-
-# .github/workflows/pr_review.yml
-name: PR Review
-
-on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-
-jobs:
-  pr-review:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Run PR Review
-        run: node scripts/github/review-pr.js
-```
-
-```js
-// scripts/github/review-pr.js
-const { execSync } = require('child_process');
-
-function runCommand(command) {
-  try {
-    return execSync(command, { stdio: 'pipe' }).toString().trim();
-  } catch (error) {
-    console.error(`Error running command: ${command}\n${error}`);
-    return null;
-  }
-}
-
-function main() {
-  const qualityScore = require('./quality-score.js');
-  const archValidator = require('./architecture-validator.js');
-  const sprintValidator = require('./sprint-validator.js');
-  const docsValidator = require('./documentation-validator.js');
-
-  // Run various checks
-  const architectureCheck = archValidator();
-  const sprintCheck = sprintValidator();
-  const docsCheck = docsValidator();
-
-  const score = qualityScore.calculate();
-
-  console.log('## AI Review');
-  console.log(`Architecture: ${architectureCheck ? '✅' : '❌'}`);
-  console.log(`Sprints: ${sprintCheck ? '✅' : '❌'}`);
-  console.log(`Documentation: ${docsCheck ? '✅' : '❌'}`);
-  console.log(`Overall Score: ${score}/100`);
-  console.log('Recommendation:');
-  console.log(score >= 90 && architectureCheck && sprintCheck && docsCheck ? 'Merge Ready' : 'Needs Review');
-}
-
-main();
-```
-
-```js
-// scripts/github/quality-score.js
-module.exports = {
-  calculate: function () {
-    // Dummy calculation, replace with actual logic
-    return 96;
-  }
-};
-```
-
-```js
-// scripts/github/architecture-validator.js
-module.exports = function () {
-  // Dummy validation, replace with actual logic
-  return true;
-};
-```
-
-```js
-// scripts/github/sprint-validator.js
-module.exports = function () {
-  // Dummy validation, replace with actual logic
-  return true;
-};
-```
-
-```js
-// scripts/github/documentation-validator.js
-module.exports = function () {
-  // Dummy validation, replace with actual logic
-  return true;
-};
+sprint: 6
+title: AutoCall Beta Sprint
+description: |
+  Sprint 6を開始します: AutoCall Betaの準備。
+  このスプリントでは、管理されたAIによるアウトバウンドコールを実施するための基盤を構築します。
+goals:
+  - 管理者が承認した条件下でのみ、AIアシストによるアウトバウンドコールを準備、管理し、最終的に実行できるようにするためのAutoCall Betaの基盤を構築します。
+tasks:
+  - id: S6-001
+    title: AutoCall Beta Sprint Definition
+    description: |
+      Sprint-006.yamlを作成し、タスクを登録。
+    dependencies: []
+  - id: S6-002
+    title: AutoCall Campaign Manager
+    description: |
+      対象リスト、作業時間、アポ制限、リトライルール、ステータスを含むキャンペーンを作成。
+    dependencies: [S6-001]
+  - id: S6-003
+    title: AutoCall Queue Engine
+    description: |
+      リードの優先順位、準備度スコア、アポ確率からコールキューを生成。
+    dependencies: [S6-002]
+  - id: S6-004
+    title: AutoCall Safety Gate
+    description: |
+      管理者の承認、緊急停止、作業時間、アポ制限、リスクチェックが必要。
+    dependencies: [S6-002]
+  - id: S6-005
+    title: AutoCall Conversation Script Engine
+    description: |
+      Sales Brain、異議対応ライブラリ、最良のトークパターンから決定論的なコールスクリプトを生成。
+    dependencies: [S6-002]
+  - id: S6-006
+    title: AutoCall Human Handoff
+    description: |
+      顧客が複雑な質問をしたり、高い関心を示したり、リスクが検出された場合に人間へエスカレーション。
+    dependencies: [S6-002, S6-003]
+  - id: S6-007
+    title: AutoCall Audit Log
+    description: |
+      計画済みのコール、スキップされたコール、試行済みのコール、ハンドオフ、結果、停止イベントをすべてログに記録。
+    dependencies: [S6-002]
+  - id: S6-008
+    title: AutoCall Beta Dashboard
+    description: |
+      キャンペーンステータス、キュー、アポカウント、リスクアラート、緊急停止、結果を表示。
+    dependencies: [S6-002, S6-003, S6-007]
+safety_rules: |
+  AutoCallは自動的に開始してはならない。
+  AutoCallには以下が必要:
+  - 管理者の承認
+  - アポ制限
+  - 作業時間
+  - 緊急停止が有効
+  - キャンペーン選択
+  - 承認されたリードキュー
+  - 完全な監査ログ
+acceptance_criteria:
+  - Sprint-006.yamlが存在する
+  - AI PMがSprint 6を解析可能
+  - 最初に実行可能なタスクがS6-002であること
+  - 依存関係が尊重されること
+  - AutoCallの安全ルールが文書化されていること
+  - テストが合格すること
+  - README / CHANGELOGが更新されていること
 ```
