@@ -1,188 +1,175 @@
 ```markdown
-# 技術指示書: Learning Engine v2
+# 技術指示書: S6-005 AI Employee Skill Engine
 
 ## 目的
-Learning Engine v2の実装により、日々の活動、営業電話、ドキュメント、タスク、会議、ユーザーフィードバックを構造化された学習記録に変換し、Memory Engine、Knowledge Graph、Sales Brain、Company Brainを更新します。本エンジンは、Musasabi AIが内部的に使用される際に改善を促すコアメカニズムです。
+Musasabi OS での AI Employee Skill Engine の実装を行います。各AI社員が経験を積み、特定のスキルを向上させ、自身のパフォーマンス履歴を構築しながらCompany Brainを通じて会社の知識を共有します。これにより、専門的なAI社員が作成されます。
 
-## ビジョン
-```plaintext
-ユーザー活動
-↓
-学習キャプチャ
-↓
-学習エンジン
-↓
-メモリエンジン
-↓
-ナレッジグラフ
-↓
-企業ブレイン
-↓
-AI従業員
-```
+## ビジョンフロー
+1. Learning Engine
+2. Memory Engine
+3. Knowledge Graph
+4. **Skill Engine**
+5. AI Employee
+6. Decision Engine
+7. Avatar
 
-## 必要なモジュール
-- `packages/brain/src/learning/LearningEngine.ts`
-- `packages/brain/src/learning/LearningCapture.ts`
-- `packages/brain/src/learning/LearningClassifier.ts`
-- `packages/brain/src/learning/LearningCandidateRepository.ts`
-- `packages/brain/src/learning/LearningApprovalService.ts`
-- `packages/brain/src/learning/LearningExporter.ts`
-- `packages/brain/src/learning/LearningFeedbackService.ts`
-- `packages/brain/src/learning/index.ts`
+## 必要モジュール
+以下のディレクトリにモジュールを実装します:
+`packages/brain/src/skills/`
+- `SkillEngine.ts`
+- `SkillRepository.ts`
+- `SkillCalculator.ts`
+- `ExperienceEngine.ts`
+- `SkillLevelService.ts`
+- `RecommendationEngine.ts`
+- `SkillHistory.ts`
+- `index.ts`
 
-## データベーススキーマ: SQLite
-### テーブル: `learning_candidates`
-- フィールド: 
-  - `id`
-  - `source_type`
-  - `source_id`
-  - `title`
-  - `content`
-  - `summary`
-  - `category`
-  - `confidence`
-  - `status`
-  - `created_at`
-  - `updated_at`
-- ステータス: 
-  - `candidate`
-  - `pending_review`
-  - `approved`
-  - `rejected`
-  - `archived`
+## データベース設定
+### SQLite テーブル作成
+#### ai_employees
+- `id`
+- `employee_name`
+- `department`
+- `role`
+- `level`
+- `experience`
+- `current_status`
+- `created_at`
+- `updated_at`
 
-### テーブル: `learning_feedback`
-- フィールド:
-  - `id`
-  - `candidate_id`
-  - `feedback_type`
-  - `feedback_text`
-  - `created_by`
-  - `created_at`
+#### employee_skills
+- `id`
+- `employee_id`
+- `skill_name`
+- `level`
+- `experience`
+- `confidence`
+- `last_updated`
 
-### テーブル: `learning_exports`
-- フィールド:
-  - `id`
-  - `candidate_id`
-  - `export_target`
-  - `export_status`
-  - `exported_at`
+#### employee_skill_history
+- `id`
+- `employee_id`
+- `skill_name`
+- `previous_level`
+- `new_level`
+- `gained_experience`
+- `event_source`
+- `created_at`
 
-## 学習ソース
-サポート:
-- `sales_call`
-- `transcript`
-- `filemaker_lead`
-- `zoom_call`
-- `document`
-- `task`
-- `meeting`
-- `chat`
-- `user_feedback`
-- `system_event`
+## 初期部門
+- サポート
+- 営業
+- 開発
+- カスタマーサポート
+- 会計
+- 管理
+- マーケティング
+- 経営
 
-## 学習分類
-各学習候補を以下のように分類:
-- `sales`
-- `customer`
-- `operations`
-- `workflow`
-- `product`
-- `employee`
-- `policy`
-- `technical`
-- `company`
-- `unknown`
+## 初期スキルセット
+### 営業
+- コールドコール
+- 異議処理
+- クロージング
+- 交渉
+- 聞くスキル
 
-## 学習の流れ
-1. ソースイベントをキャプチャ
-2. 学習候補を作成
-3. 候補の分類
-4. 信頼性を算出
-5. 候補を保存
-6. レビューキューに表示
-7. 承認された場合、以下にエクスポート:
-   - メモリエンジン
-   - ナレッジグラフ
-   - 営業脳
-   - 企業ブレイン
+### 開発
+- アーキテクチャ
+- TypeScript
+- React
+- Rust
+- テスト
+- ドキュメント作成
 
-## 承認ルール
-- 学習候補は自動的に企業ブレインを更新してはならない。
-- 承認が必要。
-- メモリエンジンは生の学習記録を直ちに保存できる。
+### ジェネラル
+- 学習
+- 記憶
+- 意思決定
+- コミュニケーション
+- 分析
 
-## ユーザーインターフェース (UI)
-- 学習レビュー画面を作成
-- 表示内容:
-  - 候補リスト
-  - ソース
-  - カテゴリー
-  - 信頼性
-  - 要約
-  - ステータス
-  - 承認
-  - 拒否
-  - アーカイブ
-  - エクスポートターゲット
+## 経験ルール
+以下のアクションで経験値を獲得:
+- 完了したタスク
+- 承認された学習
+- 成功したアポイントメント
+- ユーザーフィードバック
+- ドキュメントの質
+- レビューの質
 
-## AI PM / アバター統合
-- 学習候補が作成されるとき:
-  - アバターステート: `Learning`
-- 候補が承認されるとき:
-  - アバターステート: `Happy`
-- 多くの候補がペンディングのとき:
-  - アバターバブル: `未確認の学習候補があります。`
+## レベルシステム
+- レベル1から100まで存在
+- 必要な経験値は徐々に増加
+
+## スキル推薦
+特定のタスクを繰り返し実行する場合、関連スキルの向上を推奨します。
+例えば、営業AIが異議処理で多くの成功を収めた場合、異議処理スキルを強化します。
+
+## 従業員ダッシュボード
+AI社員プロフィールを作成し、以下を表示:
+- 名前
+- 部門
+- レベル
+- 経験
+- スキルツリー
+- 最近の成長
+- 主要スキル
+- 現在のタスク
+- パフォーマンス履歴
+
+## アバターの統合
+専門分野に応じてアバターがわずかに変化:
+- 営業: ヘッドセット
+- 開発: ラップトップ
+- 会計: 電卓
+- サポート: ノート
+- 経営: スーツアクセサリー
 
 ## テスト
-実装:
-- 候補の作成
-- 分類
-- 信頼性の算出
-- 承認フロー
-- 拒否フロー
-- メモリへのエクスポート
-- グラフへのエクスポート
-- レビューキュー
+以下のテストを実装:
+- 経験値の獲得
+- レベルアップ
+- スキルの成長
+- 履歴の作成
+- 推奨の生成
+- ダッシュボードのレンダリング
 
 ## ドキュメント
-作成:
-- `docs/LEARNING_ENGINE_V2.md`
-更新:
+以下を作成および更新:
+- `docs/AI_EMPLOYEE_SKILL_ENGINE.md`
 - `README.md`
 - `CHANGELOG.md`
 - `docs/BRAIN_MEMORY_ENGINE.md`
-- `docs/COMPANY_KNOWLEDGE_GRAPH.md`
 
-## 制約
-実装禁止:
-- LLM自律学習
-- 自動企業ブレイン上書き
-- クラウド同期
-- AutoCall
-- 外部ベクターDB
+## 制限事項
+実装しない項目:
+- 自律的な昇格
+- 給与計算
+- 外部HRシステム
+- AutoCallの実行
+- LLM自律計画
 
-## 受け入れ基準
-- Learning Engine v2が存在する
-- 学習候補が作成できる
-- 候補を分類できる
-- 候補を承認/拒否できる
-- 承認された学習をメモリエンジンへエクスポートできる
-- 承認された学習をナレッジグラフへエクスポートできる
-- 学習レビューUIが機能する
-- テストがパスする
-- ドキュメントが更新されている
+## 受入基準
+- AI社員の存在
+- スキルの追跡
+- 経験の蓄積
+- レベルの正しい増加
+- スキル履歴の保存
+- ダッシュボードでの社員成長の表示
+- アバターが専門性を反映
+- テストの合格
+- ドキュメントの更新完了
 
 ## 納品物
-報告:
-- 変更されたファイル
+- 変更されたファイル群の報告
 - テスト結果
-- 学習レビューのスクリーンショット
-- 推奨コミット
+- AI Employeeダッシュボードのスクリーンショット
+- 推奨コミットメッセージ
 
 ### 推奨コミット
-```plaintext
-feat(brain): implement Learning Engine v2
+```
+feat(brain): implement AI Employee Skill Engine
 ```
 ```
