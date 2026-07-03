@@ -1,47 +1,127 @@
-```python
-# Import necessary libraries
-import sqlite3
-from datetime import datetime
+```javascript
+// S10-001: Implement 3D Avatar Engine using Three.js
+import * as THREE from 'three';
 
-# Constants
-SPRINT_STATUS = "Active"
+function initThreeJsAvatar() {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true });
+    
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-# Connect to SQLite database
-def connect_database():
-    conn = sqlite3.connect('musasabi_os.db')
-    return conn
+    const avatarGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const avatarMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const avatar = new THREE.Mesh(avatarGeometry, avatarMaterial);
+    
+    scene.add(avatar);
+    camera.position.z = 5;
 
-# Create the development_reports table
-def create_table(conn):
-    with conn:
-        conn.execute('''
-            CREATE TABLE IF NOT EXISTS development_reports (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                sprint_key TEXT,
-                generated_at TIMESTAMP,
-                report_type TEXT,
-                summary TEXT,
-                quality_score REAL
-            )
-        ''')
+    function animate() {
+        requestAnimationFrame(animate);
+        avatar.rotation.x += 0.01;
+        avatar.rotation.y += 0.01;
+        renderer.render(scene, camera);
+    }
 
-# Generate a daily development report
-def generate_report(sprint_key, report_type, summary, quality_score):
-    conn = connect_database()
-    create_table(conn)
-    with conn:
-        conn.execute('''
-            INSERT INTO development_reports (sprint_key, generated_at, report_type, summary, quality_score)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (sprint_key, datetime.now(), report_type, summary, quality_score))
-    conn.close()
+    animate();
+}
 
-# Sample report data
-sprint_key = 'S5-012'
-report_type = 'Daily Development Report'
-summary = 'Tasks completed: 5, Tasks failed: 1'
-quality_score = 8.5
+// S10-002: VRM Loader
+import { VRMLoader } from 'three/examples/jsm/loaders/VRMLoader.js';
 
-# Generate a sample report
-generate_report(sprint_key, report_type, summary, quality_score)
+function loadVRMModel(url) {
+    const loader = new VRMLoader();
+    loader.load(url, (vrm) => {
+        scene.add(vrm.scene);
+    }, undefined, (error) => {
+        console.error(error);
+    });
+}
+
+// S10-003: Emotion Animation (Partial Example)
+function synchronizeEmotion(emotion) {
+    switch (emotion) {
+        case 'Happy':
+            // Logic to change avatar's expression to happy
+            break;
+        case 'Thinking':
+            // Logic to change avatar's expression to thinking
+            break;
+        // Add more cases as needed
+    }
+}
+
+// S10-004: Motion Library
+function animateAvatarMotion(motion) {
+    switch (motion) {
+        case 'Wave':
+            // Implement wave animation
+            break;
+        case 'Jump':
+            // Implement jump animation
+            break;
+        // Additional motions here
+    }
+}
+
+// S10-005: Desktop Overlay
+const overlayWindow = document.createElement('div');
+overlayWindow.style.position = 'absolute';
+overlayWindow.style.zIndex = '9999';
+overlayWindow.style.pointerEvents = 'none'; // Enable click-through support
+
+// Event Handlers for moving, resizing, etc. goes here
+
+// S10-006: Speech Bubble
+function showSpeechBubble(content) {
+    const bubble = document.createElement('div');
+    bubble.textContent = content;
+    document.body.appendChild(bubble);
+
+    // Style bubble and set timeout for auto-hide
+}
+
+// S10-007: Interaction
+function setupMouseInteractions() {
+    window.addEventListener('click', onClick);
+    window.addEventListener('dblclick', onDoubleClick);
+    window.addEventListener('contextmenu', onRightClick);
+
+    function onClick(event) {
+        console.log('Single click at position', event.clientX, event.clientY);
+    }
+
+    function onDoubleClick(event) {
+        console.log('Double click at position', event.clientX, event.clientY);
+    }
+
+    function onRightClick(event) {
+        event.preventDefault();
+        // Show context menu
+        console.log('Right click at position', event.clientX, event.clientY);
+    }
+}
+
+// S10-008: Avatar Performance Benchmarking (Partial)
+function performanceBenchmark() {
+    let fps = 0;
+    setInterval(() => {
+        console.log(`FPS: ${fps}`);
+        fps = 0; 
+    }, 1000);
+
+    function tick() {
+        fps++;
+        requestAnimationFrame(tick);
+    }
+
+    tick();
+}
+
+// Initialize full setup
+initThreeJsAvatar();
+loadVRMModel('path/to/model.vrm');
+setupMouseInteractions();
+performanceBenchmark();
 ```

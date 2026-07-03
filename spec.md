@@ -1,177 +1,180 @@
-# 技術指示書: S5-012 AI PM CEO Dashboard
+Below is a technical instruction document structured in Markdown based on the task description provided.
 
-## 目次
-1. [概要](#概要)
-2. [ビジョン](#ビジョン)
-3. [ダッシュボードセクション](#ダッシュボードセクション)
-4. [CEOコントロール](#ceoコントロール)
-5. [レポート](#レポート)
-6. [データベース構成](#データベース構成)
-7. [テスト](#テスト)
-8. [ドキュメンテーション](#ドキュメンテーション)
-9. [受入基準](#受入基準)
-10. [制約](#制約)
-11. [納品物](#納品物)
+```markdown
+# Technical Instruction Document: S10-001 MUSA 3D Avatar Engine
 
-## 概要
-Musasabi OS開発のためのAI PM CEO Dashboardを実装します。このダッシュボードは、CEOがGitHubを開かずにAI開発プロセス全体を監視するための指令センターとして機能します。コーディングの知識は必要ありません。
+## Objective
 
-## ビジョン
-- CEO
-- AI PM Dashboard
-- スプリントステータス
-- GitHub
-- Codex
-- レビュー
-- Musasabi OS
+**Sprint Name:** Sprint 10 - MUSA 3D Avatar Engine
 
-## ダッシュボードセクション
-### 1. スプリント概要
-- アクティブスプリント
-- スプリント進捗（%）
-- スプリントETA
-- 残タスク
-- 完了タスク
-- ブロックされたタスク
-- 進捗バー: `██████□□□□ 62%`
+- **Purpose:** Develop the first fully interactive 3D desktop avatar for Musasabi OS. Transform MUSA from a static icon to a dynamic AI entity with interaction capabilities.
 
-### 2. 現在のタスク
-- タスクID
-- タイトル
-- ステータス
-- 担当者
-- ブランチ
-- プルリクエスト
-- 推定完了
+## Sprint Goal
 
-### 3. 開発パイプライン
-- スプリント
-- イシュー
-- 実装
-- ビルド
-- テスト
-- AI レビュー
-- PR 準備完了
-- マージ
-- 現在のステージをハイライト
+- Deliver a production-ready 3D desktop avatar.
+- Ensure compatibility for future support with VRM, Live2D, and Unity.
 
-### 4. Codexステータス
-- 現在のアクティビティ
-  - 待機中
-  - コーディング
-  - テスト
-  - レビュー
-  - 失敗
-- 表示:
-  - 経過時間
-  - 最終コミット
-  - 変更されたファイル
-  - 現在のブランチ
+## Sprint Tasks
 
-### 5. GitHubステータス
-- オープンイシュー
-- オープンプルリクエスト
-- レビューキュー
-- マージキュー
-- 失敗したワークフロー
+### Task S10-001: 3D Avatar Engine
 
-### 6. AI品質
-- ビルド成功率
-- テスト成功率
-- レビュースコア
-- ドキュメンテーションスコア
-- セキュリティスコア
-- 全体的な品質スコア
+- **Objective:** Implement the rendering engine.
+- **Preferred Technologies:** Three.js
+- **Future Support:** VRM, Unity, Live2D
 
-### 7. Musasabiアバター
-- コーディング: タイピングアニメーション
-- テスト中: 思考アニメーション
-- レビュー中: 読むアニメーション
-- 完了: お祝いアニメーション
-- 失敗: 心配そうな表情
+### Task S10-002: VRM Loader
 
-### 8. 通知
-- スプリント開始
-- タスク完了
-- レビュー必要
-- ビルド失敗
-- マージ準備完了
-- スプリント完了
+- **Objective:** Enable loading of `.vrm` avatar models.
+- **Additional Feature:** Support hot reload for dynamic updates.
 
-## CEOコントロール
-- スプリント開始
-- スプリント一時停止
-- スプリント再開
-- スプリント停止
-- 失敗したタスクの再試行
-- レポート生成
+### Task S10-003: Emotion Animation
 
-## レポート
-### 生成
-- デイリーデベロップメントレポート
-### 含む
-- 完了したタスク
-- 失敗したタスク
-- 品質スコア
-- スプリント進捗
-- 推定完了
-### エクスポート
-- PDF
-- Markdown
+- **Objective:** Synchronize avatar expressions with Emotion Engine.
+- **Emotion States:**
+  - Idle
+  - Happy
+  - Thinking
+  - Learning
+  - Working
+  - Warning
+  - Celebrating
+  - Sleeping
 
-## データベース構成
-### SQLite
-#### テーブル: development_reports
-- id
-- sprint_key
-- generated_at
-- report_type
-- summary
-- quality_score
+### Task S10-004: Motion Library
 
-## テスト
-- ダッシュボードレンダリング
-- スプリント進捗計算
-- パイプラインビジュアライゼーション
-- レポート生成
-- 通知表示
-- アバターステータス同期
+- **Objective:** Implement a variety of avatar motions, including:
+  - Idle
+  - Blink
+  - Breathing
+  - Wave
+  - Point
+  - Celebrate
+  - Stretch
+  - Shadow Boxing
+  - Jump
+  - Sit
+  - Sleep
+  - Roll
 
-## ドキュメンテーション
-### 作成
-- docs/CEO_DASHBOARD.md
-### 更新
-- README.md
-- CHANGELOG.md
-- docs/AI_PM.md
+### Task S10-005: Desktop Overlay
 
-## 受入基準
-- CEOダッシュボードが存在
-- スプリント進捗が表示
-- パイプラインステータスが表示
-- Codexステータスが表示
-- GitHubステータスが表示
-- アバターが開発状況に反応
-- レポートが生成
-- テストが合格
-- ドキュメントが更新
+- **Objective:** Create an always-on-top desktop window supporting:
+  - Dragging
+  - Resizing
+  - Opacity adjustments
+  - Position memorization
+  - Click-through mode
 
-## 制約
-- GitHubアクションを直接実行しない
-- プルリクエストを自動的にマージしない
-- AIレビューをバイパスしない
-- 機密情報を公開しない
+### Task S10-006: Speech Bubble
 
-## 納品物
-- 変更されたファイルのレポート
-- テスト結果
-- ダッシュボードスクリーンショット
-- サンプル開発レポート
-- 提案されたコミット
+- **Objective:** Display content related to:
+  - Coaching
+  - Learning
+  - GitHub notifications
+  - Sprint notifications
+  - Sales advice
 
-### 提案コミット
-```plaintext
-feat(ai-pm): implement CEO dashboard
+### Task S10-007: Interaction
+
+- **Mouse Interactions:**
+  - Single click, double click, drag, hover
+- **Right-click Menu Options:**
+  - Open Dashboard
+  - Sales Workspace
+  - Settings
+  - Learning Mode
+  - Support Mode
+  - Analysis Mode
+  - Exit
+
+### Task S10-008: Avatar Performance
+
+- **Objectives:**
+  - Target a frame rate of 60 FPS.
+  - Maintain RAM usage under 150MB.
+  - Enable GPU acceleration.
+  - Idle CPU usage below 2%.
+
+## Avatar Appearance Specifications
+
+- **Species:** Flying Squirrel (Musasabi)
+- **Name:** MUSA
+- **Style:** Fluffy, business-friendly, expressive, rounded proportions, 3 heads tall.
+- **Outfit Options:**
+  - Default: GRANT polo shirt
+  - Optional: Headset, Glasses, Suit
+
+## Emotion Integration
+
+- **Connect to:**
+  - Emotion Engine
+- **Personality:** Sales Brain, AI Employee
+
+## Future Compatibility
+
+- **Support Pre-Planning for:**
+  - Voice Engine
+  - Lip Sync
+  - Gesture Engine
+  - AutoCall
+  - AI Employees
+  - VRM, Unity
+
+## Tests
+
+- Implement tests for:
+  - VRM loading
+  - Animation switching
+  - Emotion synchronization
+  - Overlay positioning
+  - Click interaction
+  - Desktop persistence
+  - FPS benchmark
+
+## Documentation Updates
+
+- Update the following documents:
+  - README.md
+  - CHANGELOG.md
+  - docs/AVATAR_3D.md
+
+## Restrictions
+
+- Do not implement:
+  - Voice synthesis
+  - Speech recognition
+  - Customer conversation
+  - AutoCall execution
+  - Cloud rendering
+
+## Acceptance Criteria
+
+- Successful rendering of the 3D avatar.
+- Functional VRM loading.
+- Control of expressions by the Emotion Engine.
+- Operational motion library.
+- Effective desktop overlay functionality.
+- Working speech bubble feature.
+- Achievement of performance targets.
+- Passing of all included tests.
+- Updated documentation.
+
+## Deliverables
+
+- **Report Contents:**
+  - Changed files
+  - Test results
+  - Performance benchmark
+- **Suggested Commit:** 
+  ```
+  feat(avatar): implement MUSA 3D avatar engine
+  ```
+
+- **Note:** Do not push automatically.
+
+---
+
+Create the necessary `docs/sprints/Sprint-010.yaml` file and ensure all tasks and requirements are documented and tracked accordingly.
 ```
 
-この技術指示書に基づいてAI PM CEO Dashboardを正確に実装し、Musasabi OS開発を効率的に監視・管理できるようにします。
+This document serves as a detailed technical directive for the implementation of the MUSA 3D Avatar Engine based on your task description.
