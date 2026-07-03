@@ -1,258 +1,209 @@
-# 技術指示書: S6-006 マルチエージェントコラボレーションエンジン
+# 技術指示書: Company Brain Core 実装
 
-## 1. 概要
+## 概要
 
-### 目的
-マルチエージェントコラボレーションエンジンを実装します。Musasabi OSは複数のAIが連携可能なプラットフォームとして機能し、AI社員が共有タスクシステムを介して協働できることが求められます。このスプリントでは、協力タスクの実行、責任の割り当て、エージェント間のメッセージ送信、および共有コンテキストを導入します。
+この技術指示書は、Musasabi OS の中心的な知能層である Company Brain Core の実装に関するものです。Company Brain は、各AI従業員が参照する会社の知識、ポリシー、ワークフロー、標準、および目標を管理します。これにより、組織のデジタルオペレーティングマニュアルとして機能します。
 
-### ビジョン
+## ビジョン
 
-```
-CEO
-↓
-AI PM
-↓
-Task
-↓
-Multi-Agent Coordinator
-↓
-[Sales AI, Development AI, Accounting AI, Marketing AI, Support AI]
-↓
-Shared Company Brain
-↓
-Human Approval
-```
+次のフローに基づいて、Company Brain が最終的なAI知能を提供します:
 
-## 2. 必要モジュール
+1. Memory Engine
+2. Knowledge Graph
+3. Learning Engine
+4. Decision Engine
+5. Company Brain
+6. AI Employees
+7. Musasabi Avatar
 
-以下のモジュールを `packages/brain/src/multi-agent/` に実装します。
+## 必要なモジュール
 
-- MultiAgentCoordinator.ts
-- AgentRegistry.ts
-- AgentMessageBus.ts
-- AgentTaskDispatcher.ts
-- CollaborationEngine.ts
-- ContextSharing.ts
-- AgentStateManager.ts
-- index.ts
+`packages/brain/src/company/` ディレクトリ以下に、以下のモジュールを実装します:
+- `CompanyBrain.ts`
+- `CompanyRepository.ts`
+- `CompanyPolicyService.ts`
+- `WorkflowRepository.ts`
+- `KnowledgeSynchronizer.ts`
+- `CompanyContext.ts`
+- `BrainSearch.ts`
+- `CompanyRuleEngine.ts`
 
-## 3. データベース設計
+## データベース
 
-### SQLite
+SQLite を用いて以下のテーブルを作成します。
 
-#### ai_agents テーブル
+### company_policies
 
-| フィールド名      | データ型 | 説明         |
-|------------------|----------|--------------|
-| id               | INTEGER  | ID           |
-| agent_name       | TEXT     | エージェント名 |
-| department       | TEXT     | 部門         |
-| role             | TEXT     | 役割         |
-| status           | TEXT     | 状態         |
-| current_task     | TEXT     | 現在のタスク |
-| workload         | INTEGER  | ワークロード |
-| created_at       | DATETIME | 作成日時     |
-| updated_at       | DATETIME | 更新日時     |
+| Field      | Type |
+|------------|------|
+| id         | INTEGER PRIMARY KEY AUTOINCREMENT |
+| title      | TEXT |
+| category   | TEXT |
+| content    | TEXT |
+| version    | TEXT |
+| status     | TEXT |
+| created_at | DATETIME DEFAULT CURRENT_TIMESTAMP |
+| updated_at | DATETIME DEFAULT CURRENT_TIMESTAMP |
 
-#### agent_tasks テーブル
+### company_workflows
 
-| フィールド名      | データ型 | 説明         |
-|------------------|----------|--------------|
-| id               | INTEGER  | ID           |
-| task_key         | TEXT     | タスクキー   |
-| title            | TEXT     | タイトル     |
-| assigned_agent   | TEXT     | 担当エージェント |
-| priority         | INTEGER  | 優先度       |
-| status           | TEXT     | 状態         |
-| created_at       | DATETIME | 作成日時     |
-| updated_at       | DATETIME | 更新日時     |
+| Field          | Type |
+|----------------|------|
+| id             | INTEGER PRIMARY KEY AUTOINCREMENT |
+| workflow_name  | TEXT |
+| department     | TEXT |
+| workflow_json  | TEXT |
+| version        | TEXT |
+| created_at     | DATETIME DEFAULT CURRENT_TIMESTAMP |
+| updated_at     | DATETIME DEFAULT CURRENT_TIMESTAMP |
 
-ステータスオプション:
-- pending
-- assigned
-- working
-- waiting
-- review
-- completed
-- failed
+### company_decision_rules
 
-#### agent_messages テーブル
+| Field      | Type |
+|------------|------|
+| id         | INTEGER PRIMARY KEY AUTOINCREMENT |
+| rule_name  | TEXT |
+| condition  | TEXT |
+| action     | TEXT |
+| priority   | INTEGER |
+| enabled    | BOOLEAN |
+| created_at | DATETIME DEFAULT CURRENT_TIMESTAMP |
 
-| フィールド名   | データ型 | 説明         |
-|---------------|----------|--------------|
-| id            | INTEGER  | ID           |
-| sender_agent  | TEXT     | 送信エージェント |
-| receiver_agent| TEXT     | 受信エージェント |
-| message_type  | TEXT     | メッセージタイプ |
-| payload_json  | TEXT     | ペイロードJSON |
-| created_at    | DATETIME | 作成日時     |
+### company_objectives
 
-#### collaboration_sessions テーブル
+| Field      | Type |
+|------------|------|
+| id         | INTEGER PRIMARY KEY AUTOINCREMENT |
+| objective  | TEXT |
+| department | TEXT |
+| priority   | INTEGER |
+| status     | TEXT |
+| created_at | DATETIME DEFAULT CURRENT_TIMESTAMP |
+| updated_at | DATETIME DEFAULT CURRENT_TIMESTAMP |
 
-| フィールド名          | データ型 | 説明          |
-|----------------------|----------|---------------|
-| id                   | INTEGER  | ID            |
-| session_name         | TEXT     | セッション名  |
-| objective            | TEXT     | 目的          |
-| participating_agents | TEXT     | 参加エージェント |
-| status               | TEXT     | 状態          |
-| created_at           | DATETIME | 作成日時      |
-| updated_at           | DATETIME | 更新日時      |
+## 会社知識
 
-## 4. デフォルトAI社員
+以下の要素をサポートします:
+- ミッション
+- ビジョン
+- バリュー
+- 組織
+- 部門
+- 製品
+- サービス
+- SOPs (標準作業手順書)
+- セールスマニュアル
+- 開発標準
+- 会計ルール
+- 人事ポリシー
+- 内部文書
 
-以下のAI社員を作成します:
+## AI クエリアPI
 
-- AI PM
-- Sales AI
-- Development AI
-- Accounting AI
-- Support AI
-- Marketing AI
-- Executive AI
+以下のAPIを提供します:
+- `searchKnowledge()`
+- `searchPolicy()`
+- `searchWorkflow()`
+- `searchObjective()`
+- `searchRule()`
+- `searchDepartment()`
 
-## 5. エージェントの能力
+各AI従業員はこれらのAPIを使用します。
 
-### Sales AI
-- リード分析
-- アポイントメント戦略
-- セールスコーチング
+## ワークフロー統合
 
-### Development AI
-- コード分析
-- ドキュメント化
-- テスト
+以下のワークフロー統合を提供します:
 
-### Accounting AI
-- 財務ワークフロー
-- 請求書レビュー
+- セールス
+  - セールス SOP
+- 開発
+  - 開発 SOP
+- 会計
+  - 会計 SOP
+- サポート
+  - サポート SOP
+- 管理
+  - 管理 SOP
 
-### Support AI
-- チケット分析
-- FAQ生成
+## バージョン管理
 
-### Marketing AI
-- キャンペーン計画
-- コンテンツ生成
+すべての会社文書は以下のステータスをサポートします:
+- 草案
+- 現行
+- アーカイブ
 
-### Executive AI
-- KPI分析
-- ビジネスレポート
-- 意思決定推奨
+完全なバージョン履歴を保持します。
 
-## 6. コラボレーションフロー
+## ダッシュボード
 
-```
-Task
-↓
-Coordinator
-↓
-Assign Agent
-↓
-(If another specialty required)
-↓
-Send collaboration request
-↓
-Receive response
-↓
-Continue task
-↓
-Complete
-```
+### Company Brain Explorer
+以下を表示します:
+- ポリシー
+- ワークフロー
+- 目標
+- ルール
+- 最近の更新
+- バージョン履歴
+- 検索
 
-## 7. 共有コンテキスト
+## AI 統合
 
-### 共有する情報
-- 会社の頭脳
-- メモリエンジン
-- ナレッジグラフ
+各AI従業員はそれぞれの専門分野に従い以下を参照します:
+- セールスAI: セールスマニュアル
+- 開発AI: コーディングスタンダード
+- 会計AI: 会計ポリシー
+- 管理AI: 会社のKPI
+- アバター: 現在の会社のステータス
 
-### 個別に管理する情報
-- スキルレベル
-- 経験
-- タスクキュー
-- パフォーマンス履歴
+## テスト
 
-## 8. ダッシュボード
+以下のテストを実装します:
+- 知識ストレージ
+- ワークフロー取得
+- ポリシー検索
+- バージョン履歴
+- ルール検索
+- ダッシュボードレンダリング
 
-AI組織ダッシュボードを作成し、以下を表示:
+## ドキュメント
 
-- 組織図
-- 現在のタスク
-- 現在のステータス
-- アクティブなコラボレーション
-- 保留中のリクエスト
-- 完了したタスク
-- エージェントのワークロード
+以下のドキュメントを作成/更新します:
+- `docs/COMPANY_BRAIN.md` 作成
+- `README.md` 更新
+- `CHANGELOG.md` 更新
+- `docs/BRAIN_MEMORY_ENGINE.md` 更新
+- `docs/COMPANY_KNOWLEDGE_GRAPH.md` 更新
 
-## 9. アバター統合
+## 制限事項
 
-各AI社員に独自のMusasabiアバターを割り当てます。
-
-| エージェント     | アバター           |
-|-----------------|--------------------|
-| Sales           | 青いヘッドセット  |
-| Development     | 黒いフーディ      |
-| Accounting      | 緑のバイザー      |
-| Marketing       | 紫のノートブック  |
-| Support         | オレンジのヘッドセット |
-| Executive       | 金のネクタイ      |
-
-## 10. テスト
-
-以下の機能をテスト:
-
-- タスクの割り当て
-- コラボレーションリクエスト
-- 共有コンテキストの取得
-- エージェントメッセージング
-- ワークロードバランシング
-- 組織ダッシュボード
-
-## 11. ドキュメント
-
-以下のドキュメントを作成・更新:
-
-- `docs/MULTI_AGENT_ENGINE.md`
-- 更新: `README.md`
-- 更新: `CHANGELOG.md`
-- 更新: `docs/AI_EMPLOYEE_SKILL_ENGINE.md`
-
-## 12. 制限事項
-
-以下の機能は実装しないでください:
-
-- 独立した自律的実行
-- 外部メッセージング
+以下を実装しない:
 - クラウド同期
-- 自動コール実行
-- 自己改変エージェント
+- 外部ERP
+- 外部ドキュメントストレージ
+- 自動ポリシー修正
+- LLM自動ポリシー作成
 
-## 13. 受け入れ基準
+## 受入条件
 
-- 複数のAI社員が存在すること
-- タスクを割り当てられること
-- エージェントが協働すること
-- 共有コンテキストが機能すること
-- ダッシュボードが組織を表示すること
-- アバターの専門化が機能すること
-- テストが合格すること
-- ドキュメントが更新されること
+- Company Brain の存在
+- ポリシー、ワークフローの格納
+- ルールの検索
+- バージョン履歴の動作
+- ダッシュボードの動作
+- AI従業員による Company Brain のクエリ
+- テストの合格
+- ドキュメントの更新
 
-## 14. デリバラブル
+## デリバラブル
 
-### レポート内容
+### レポート
 
+以下を含む:
 - 変更されたファイル
 - テスト結果
-- 組織ダッシュボードのスクリーンショット
+- Company Brain ダッシュボードのスクリーンショット
 - 推奨コミット
 
-### 推奨コミットメッセージ
-```
-feat(brain): implement Multi-Agent Collaboration Engine
-```
+### 推奨コミット
 
---- 
-
-この技術指示書に基づいて、S6-006 マルチエージェントコラボレーションエンジンの実装を進めてください。
+`feat(brain): implement Company Brain Core`
