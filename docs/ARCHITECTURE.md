@@ -1,25 +1,48 @@
 # Musasabi OS アーキテクチャ
 
-このドキュメントは [docs/DEVELOPMENT_BIBLE.md](DEVELOPMENT_BIBLE.md) を最上位設計として、
+このドキュメントは [docs/COMPANY_GENOME.md](COMPANY_GENOME.md) と
+[docs/DEVELOPMENT_BIBLE.md](DEVELOPMENT_BIBLE.md) を最上位設計として、
 その内容をシステム設計・ディレクトリ構成・実装ロードマップに落とし込んだものである。
-矛盾が生じた場合は Development Bible が優先する。
+矛盾が生じた場合は Company Genome → Development Bible の順で優先する。
 
 ## 0. 設計ドキュメントの優先順位
 
 Development Bible 第30章に基づき、以下の優先順位で設計ドキュメントを参照する。
 
-1. Company Genome — **未策定**
+1. Company Genome — [docs/COMPANY_GENOME.md](COMPANY_GENOME.md)
 2. Development Bible — [docs/DEVELOPMENT_BIBLE.md](DEVELOPMENT_BIBLE.md)
-3. Organization Bible — **未策定**
-4. AI Employee Bible — **未策定**
-5. Department Playbooks — **未策定**
-6. Security Bible — **未策定**
-7. Plugin SDK Bible — **未策定**
+3. Organization Bible — [docs/ORGANIZATION_BIBLE.md](ORGANIZATION_BIBLE.md)
+4. AI Employee Bible — [docs/AI_EMPLOYEE_BIBLE.md](AI_EMPLOYEE_BIBLE.md)
+5. Department Playbooks — [docs/department-playbooks/](department-playbooks/)
+6. Security Bible — [docs/SECURITY_BIBLE.md](SECURITY_BIBLE.md)
+7. Plugin SDK Bible — [docs/PLUGIN_SDK_BIBLE.md](PLUGIN_SDK_BIBLE.md)
 
-現時点で存在するのは Development Bible のみ。新機能を実装する前には、
-存在するドキュメントとの整合性を必ず確認し、矛盾する場合は実装せず設計変更案を提示する
-(Development Bible 第4章・ユーザー指示)。未策定のドキュメントが必要になった場合は、
-先にドキュメント化を提案してから実装に着手する。
+新機能を実装する前には、上記ドキュメントとの整合性を必ず確認し、矛盾する場合は
+実装せず設計変更案を提示する(Development Bible 第4章・ユーザー指示)。
+
+## 0.1 Development Bible との整合性確認(Organization Bible 策定時)
+
+Organization Bible 策定にあたり、Development Bible 第21〜22章の8本部
+(経営企画/営業/マーケティング/開発/管理/人事/経理/カスタマーサクセス)と、
+新たに指定された8本部(企画/開発/営業/マーケティング/クリエイティブ/管理/
+サポート/研究開発)の間に差分が生じた。以下の通り整理し、Organization Bible
+(`docs/ORGANIZATION_BIBLE.md` 第1章)を正とする。
+
+| Development Bible 第22章 | Organization Bible | 扱い |
+|---|---|---|
+| 経営企画本部 | AI企画本部 | 名称統一(同一組織) |
+| 営業本部 | AI営業本部 | 名称統一(同一組織) |
+| マーケティング本部 | AIマーケティング本部 | 名称統一(同一組織) |
+| 開発本部 | AI開発本部 | 名称統一(同一組織) |
+| 管理本部 | AI管理本部 | 名称統一(同一組織) |
+| 人事本部 | AI管理本部 配下「人事部門」 | 独立本部から管理本部内の部門に統合 |
+| 経理本部 | AI管理本部 配下「経理部門」 | 独立本部から管理本部内の部門に統合 |
+| カスタマーサクセス本部 | AIサポート本部 | 改称(同一組織) |
+| (なし) | AIクリエイティブ本部 | 新設(UI/UX・ブランド・モーションデザイン) |
+| (なし) | AI研究開発本部 | 新設(Memory/Vision/Automation/Self Improvement の研究) |
+
+矛盾ではなく Organization Bible による具体化・再編として扱う。Development Bible
+本文(第21〜22章)は歴史的経緯として残し、実運用は Organization Bible に従う。
 
 ## 1. システム構成
 
@@ -78,16 +101,17 @@ plugins/               Plugin SDK 準拠のプラグイン
 
 ## 3. 組織モデル(AI Company System)
 
-`packages/ai-company` が Development Bible 第21〜26章の組織モデルを型として提供する。
+`packages/ai-company` が Organization Bible の組織モデルを型として提供する。
 
-- `OrganizationUnit` — 会社/本部/部門/部署/チームの階層(第21〜22章)
-- `EmployeeRank` — CEO〜研修社員の8階級(第23章)
-- `AIEmployee` — Role/Department/Authority/KPI を持つAI社員(第24章)
-- `APPROVAL_CHAIN` — 社員→主任→課長→部長→本部長→CEOの承認順(第25章)
+- `OrganizationUnit` — 会社/本部/部門/部署/チームの階層(Organization Bible 第1・3章の
+  8本部: AI企画/AI開発/AI営業/AIマーケティング/AIクリエイティブ/AI管理/AIサポート/AI研究開発)
+- `EmployeeRank` — CEO〜研修社員の8階級・権限レベル(Organization Bible 第2章)
+- `AIEmployee` — Role/Department/Authority/KPI を持つAI社員(Organization Bible 第3章)
+- `APPROVAL_CHAIN` — 社員→主任→課長→部長→本部長→CEOの承認順(Organization Bible 第5章)
 
-Epic β-001 で実装する AI Sales Employee(`packages/ai-core`)は、営業本部・営業部に
+Epic β-001 で実装する AI Sales Employee(`packages/ai-core`)は、AI営業本部・営業部に
 所属する `AIEmployee` として扱う。永続化・承認ワークフローの実行・Organization
-Dashboard(第29章)は、Epic β-001完了後の次フェーズで実装する。
+Dashboard(Development Bible 第29章)は、Epic β-001完了後の次フェーズで実装する。
 
 ## 4. Epic β-001 ロードマップ(短期)
 
@@ -142,10 +166,10 @@ Bibleの優先順位どおりに着手する。
 - **Automation** — `packages/automation` に操作記録→学習→再実行→改善のループを実装する
 - **Self Improvement** — `packages/self-improvement` にリファクタリング/改善提案エンジンを実装する
 - **AI Company System の本格実装** — `packages/ai-company` の永続化、承認ワークフローの実行、
-  Organization Dashboard(第29章)を実装し、営業本部以外の本部・部署にもAI社員を展開する
+  Organization Dashboard(第29章)を実装し、Organization Bible の8本部すべてにAI社員を展開する
 
-これらは未策定の Organization Bible / AI Employee Bible / Department Playbooks の
-整備と合わせて計画する。
+これらは AI Employee Bible・Department Playbooks・Security Bible・Plugin SDK Bible
+の整備と合わせて計画する。
 
 ## 6. 経緯(Phase 0 remediation)
 

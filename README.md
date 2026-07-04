@@ -3,9 +3,19 @@
 Musasabi OS は、AIが人の代わりに仕事を理解し自律的に実行する Windows AI社員
 プラットフォームである。現在の最優先目標は **Epic β-001「営業部運用版完成」** 。
 
-設計の最上位ドキュメントは [docs/DEVELOPMENT_BIBLE.md](docs/DEVELOPMENT_BIBLE.md)
-(Musasabi OS Development Bible)。実装・設計判断はすべてこれを最優先で参照し、
-システム設計への落とし込みは [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) を参照する。
+設計ドキュメントは以下の優先順位で参照する(詳細は
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 第0章)。
+
+1. [docs/COMPANY_GENOME.md](docs/COMPANY_GENOME.md) — Mission/Vision/Values/行動原則
+2. [docs/DEVELOPMENT_BIBLE.md](docs/DEVELOPMENT_BIBLE.md) — 開発の絶対ルール
+3. [docs/ORGANIZATION_BIBLE.md](docs/ORGANIZATION_BIBLE.md) — 組織構造(8本部)
+4. [docs/AI_EMPLOYEE_BIBLE.md](docs/AI_EMPLOYEE_BIBLE.md) — AI社員個々の定義
+5. [docs/department-playbooks/](docs/department-playbooks/) — 部門別運用書
+6. [docs/SECURITY_BIBLE.md](docs/SECURITY_BIBLE.md) — セキュリティルール
+7. [docs/PLUGIN_SDK_BIBLE.md](docs/PLUGIN_SDK_BIBLE.md) — プラグイン拡張仕様
+
+システム設計・実装ロードマップへの落とし込みは
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) を参照する。
 
 ## 現在のステータス: Phase 0(基盤整備中)
 
@@ -44,8 +54,14 @@ packages/
   self-improvement/   Self Improvement Engine
   shared/             IPC プロトコル・型定義・共通ユーティリティ
 docs/
-  DEVELOPMENT_BIBLE.md  最上位設計ドキュメント
-  ARCHITECTURE.md       システム設計・実装ロードマップ
+  COMPANY_GENOME.md       Mission/Vision/Values/行動原則
+  DEVELOPMENT_BIBLE.md    開発の絶対ルール
+  ORGANIZATION_BIBLE.md   組織構造(8本部)
+  AI_EMPLOYEE_BIBLE.md    AI社員個々の定義
+  department-playbooks/  部門別運用書
+  SECURITY_BIBLE.md       セキュリティルール
+  PLUGIN_SDK_BIBLE.md     プラグイン拡張仕様
+  ARCHITECTURE.md         システム設計・実装ロードマップ
 tests/                横断的な統合・E2Eテスト
 scripts/              ビルド・リリース・開発補助スクリプト
 config/               環境別設定
