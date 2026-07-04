@@ -1,11 +1,13 @@
 name: Autonomous AI Developer Loop
 
-# DISABLED (Epic β-001 Phase 0 remediation):
+# DISABLED (Epic β-001 Phase 0 remediation, fixed independently on both this
+# branch and main - see docs/ai-handoff/STATUS.md and docs/ARCHITECTURE.md
+# section 6 for the full history):
 # This workflow overwrote main_app.py/spec.md on every issue and auto-opened
-# a new "[NEXT] ..." issue afterwards, without ever accumulating real code.
-# The commit history it produced ("AI Auto-Commit: Completed task ...") does
-# not reflect working features. Trigger changed to manual-only so it can no
-# longer spawn issues or overwrite files on its own. See docs/ARCHITECTURE.md.
+# a new "[NEXT] ..." issue afterwards, without ever accumulating real code,
+# and could auto-close decision-needed issues (e.g. #166) meant for human/
+# ChatGPT review. Trigger changed to manual-only so it can no longer spawn
+# issues or overwrite files on its own.
 on:
   workflow_dispatch: {}
 
