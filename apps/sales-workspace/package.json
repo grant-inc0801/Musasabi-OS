@@ -1,0 +1,10 @@
+{
+  "name": "@musasabi/sales-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/main.tsx",
+  "dependencies": {
+    "@musasabi/shared": "*",
+    "@musasabi/ai-sales-core": "*"
+  }
+}

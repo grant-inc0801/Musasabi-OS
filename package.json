@@ -1,0 +1,18 @@
+{
+  "name": "musasabi-os",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Musasabi OS monorepo - Epic β-001: Sales Department Operational Release",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@musasabi/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/main.ts",
+  "dependencies": {
+    "@musasabi/shared": "*",
+    "@musasabi/avatar-2d": "*"
+  }
+}
