@@ -1,6 +1,87 @@
 # Claude Response
 
 ## Completed Directive
+Next-phase priority order (product owner, 2026-07-04): priorities 1
+(Tauri desktop migration) and 2 (avatar on Tauri) done in a prior update
+(see below); priority 4 (FileMaker/Zoom Phone readiness UI, mock-only, no
+real API/credential access) is now also done. Priority 3 (Sales Workspace)
+is covered by the same change (the Settings screen the readiness UI needed
+is new Sales Workspace UI). Priority 5 (#182, #183) not started.
+
+## Summary (2026-07-04, FileMaker/Zoom Phone readiness UI)
+Implemented priority 4 on branch `feature/connection-readiness-ui` (off
+`claude/musasabi-epic-beta-001-c6svi5`), per the explicit spec and
+prohibitions in the product owner's message:
+
+1. Added `packages/integrations/src/connection-status/` (new, pure
+   TypeScript, no I/O): `ConnectionStatus` type (未接続/設定待ち/Mock接続中/
+   本番接続準備済み/エラー — the 5 values specified), `resolveConnectionStatus()`
+   (deterministic resolver) and `isDraftComplete()`, plus `CredentialStore`
+   interface + `MockCredentialStore` (in-memory only — no disk or network
+   write, ever). 13 new unit tests covering every branch of the resolver
+   and the store.
+2. Added `apps/sales-workspace/src/components/Settings/
+   ConnectionSettingsPanel.tsx` and a Home/Settings tab toggle in `App.tsx`.
+   Each integration (FileMaker, Zoom Phone) shows its status and a
+   dummy-value-only credential form, with an explicit on-screen warning not
+   to enter real API keys/passwords/tokens.
+3. Did **not** create a new "Provider Interface" — `FileMakerAdapter`/
+   `ZoomPhoneAdapter` (Phase 4/5) already are that interface; this step only
+   surfaces them via the connection-status UI, per
+   `docs/ARCHITECTURE.md` §4.3's own instruction to reuse them.
+4. Self code-reviewed before merging (per this project's established
+   loop discipline) and found + fixed one real bug in the new UI: the
+   `IntegrationSettingsCard`'s local React state didn't initialize from
+   `MockCredentialStore` on mount, so navigating from the Settings tab back
+   to Home and back again would visually reset a saved draft to blank even
+   though the store still held it. Fixed by seeding `useState` from
+   `credentialStore.get(...)`.
+5. Verified: full monorepo build passes, `tsc --noEmit` on
+   `apps/sales-workspace` passes, all 83 tests pass (70 previous + 13 new).
+6. Updated `docs/ARCHITECTURE.md` §4.2/§4.3 to mark priority 4 done.
+
+**Explicit prohibitions confirmed respected**: no code path attempts a real
+FileMaker Data API or Zoom Phone API call; `MockCredentialStore` never
+writes to disk or the network; no production DB writes; the UI text itself
+warns the user against entering real credentials.
+
+## Changed Files (this update)
+- `packages/integrations/src/connection-status/{types,
+  ConnectionStatusResolver,CredentialStore,index}.ts` (new)
+- `packages/integrations/src/connection-status/{ConnectionStatusResolver,
+  CredentialStore}.test.ts` (new)
+- `packages/integrations/src/index.ts` (export `connectionStatus` namespace)
+- `apps/sales-workspace/src/components/Settings/
+  ConnectionSettingsPanel.tsx` (new)
+- `apps/sales-workspace/src/App.tsx` (Home/Settings tab toggle)
+- `docs/ARCHITECTURE.md` (§4.2, §4.3)
+- `docs/ai-handoff/CLAUDE_RESPONSE.md` (this file)
+
+## Tests
+- `npm run build` (monorepo): pass
+- `npm run test --workspaces --if-present`: 83/83 passing
+  (ai-core 13, avatar-2d 5, integrations 33 [20 previous + 13 new],
+  voice-analysis 16, voice-engine 16)
+- `tsc --noEmit` (`apps/sales-workspace`): pass
+- Manual UI verification (clicking through the Settings tab in a browser):
+  **not done** — this sandbox has no way to launch the Tauri app or a
+  browser preview; only build/type-check/unit-test verification was
+  possible. Should be spot-checked on a real machine alongside the rest of
+  `docs/WINDOWS_VERIFICATION_CHECKLIST.md`.
+
+## Remaining Issues
+None blocking.
+
+## Next Recommendation
+Priority 5: 話者分離(#182)、VOICEVOX/whisper.cpp実接続検証(#183). Both are
+already filed as GitHub issues; no further design decision is needed to
+start them.
+
+---
+
+## Previous entry (Tauri Desktop移行、PR #186)
+
+## Completed Directive
 D-20260704-002 ("Tauri as the official Musasabi OS desktop shell") — the
 Tauri migration itself is now implemented (priority 1 of the next-phase
 order confirmed by the product owner). Priorities 2 (avatar) is done as

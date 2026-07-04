@@ -9,8 +9,12 @@ import { LeadTable } from "./components/LeadTable";
 import { RecommendedActionsList } from "./components/RecommendedActionsList";
 import { MusaActionsPanel } from "./components/MusaActionsPanel";
 import { CallAnalysisPanel } from "./components/CallAnalysisPanel";
+import { ConnectionSettingsPanel } from "./components/Settings/ConnectionSettingsPanel";
+
+type Tab = "home" | "settings";
 
 export function App() {
+  const [tab, setTab] = useState<Tab>("home");
   // window.musasabi はTauriデスクトップアプリ内(apps/desktop、desktopBridge.ts)での
   // みインストールされる。ブラウザ単体での `vite dev` 実行時はundefinedなので、
   // 静的モックにフォールバックする(FileMaker/Zoom Phone連携が未接続の間の既定データでもある)。
@@ -33,12 +37,26 @@ export function App() {
   return (
     <main style={{ fontFamily: "sans-serif", padding: "2rem" }}>
       <h1>Musasabi OS — Sales Workspace</h1>
-      <MusaActionsPanel onCallAnalysisComplete={setCallAnalysis} />
-      <CallAnalysisPanel summary={callAnalysis} />
-      <KpiDashboard kpi={kpi} />
-      <DailyPlanBoard plan={plan} />
-      <RecommendedActionsList actions={actions} leadsById={leadsById} />
-      <LeadTable leads={leads} />
+      <nav style={{ marginBottom: "1.5rem" }}>
+        <button type="button" onClick={() => setTab("home")} disabled={tab === "home"}>
+          ホーム
+        </button>{" "}
+        <button type="button" onClick={() => setTab("settings")} disabled={tab === "settings"}>
+          設定
+        </button>
+      </nav>
+      {tab === "settings" ? (
+        <ConnectionSettingsPanel />
+      ) : (
+        <>
+          <MusaActionsPanel onCallAnalysisComplete={setCallAnalysis} />
+          <CallAnalysisPanel summary={callAnalysis} />
+          <KpiDashboard kpi={kpi} />
+          <DailyPlanBoard plan={plan} />
+          <RecommendedActionsList actions={actions} leadsById={leadsById} />
+          <LeadTable leads={leads} />
+        </>
+      )}
     </main>
   );
 }
