@@ -2,6 +2,7 @@ import { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain } from "electron";
 import * as path from "path";
 import { AvatarStateMachine, isAvatarState, type AvatarState } from "@musasabi/avatar-2d";
 import { IPC_CHANNELS } from "@musasabi/shared";
+import { getSeededLeads, runDemoCallAnalysis, synthesizeCoachingMessage } from "./callOrchestrator";
 
 // Phase 1(docs/ARCHITECTURE.md): Electron main process, Windowsトレイ常駐、
 // ログイン時自動起動。Phase 2: MUSA常駐アバターのオーバーレイウィンドウとIPC連携。
@@ -24,6 +25,13 @@ const AVATAR_STATE_EMOJI: Record<AvatarState, string> = {
 
 const ICON_PATH = path.join(__dirname, "..", "assets", "icon.png");
 
+// パッケージ後はelectron-builderのextraResources設定でresources/sales-workspaceに
+// コピーされる。開発時はsales-workspaceパッケージのビルド成果物を直接参照する
+// (docs/ARCHITECTURE.md Phase 8)。
+const SALES_WORKSPACE_INDEX = app.isPackaged
+  ? path.join(process.resourcesPath, "sales-workspace", "index.html")
+  : path.join(__dirname, "..", "..", "sales-workspace", "dist", "index.html");
+
 function createMainWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1024,
@@ -37,12 +45,7 @@ function createMainWindow(): void {
     },
   });
 
-  mainWindow.loadURL(
-    `data:text/html,${encodeURIComponent(
-      "<title>Musasabi OS</title><body style='font-family:sans-serif;padding:2rem'>" +
-        "<h1>Musasabi OS</h1><p>Sales Workspace は今後のフェーズで接続されます。</p></body>",
-    )}`,
-  );
+  mainWindow.loadFile(SALES_WORKSPACE_INDEX);
 
   mainWindow.on("close", (event) => {
     // Xボタンではアプリを終了せず、トレイに常駐させる(Development Bible 第8章: 常駐アバター)。
@@ -151,4 +154,20 @@ ipcMain.handle(IPC_CHANNELS.avatarSetState, (_event, state: string) => {
     throw new Error(`Unknown avatar state: ${state}`);
   }
   return avatarStateMachine.transition(state);
+});
+
+// Phase 8: FileMaker Mockアダプタでシードしたリード一覧をSales Workspaceに渡す。
+ipcMain.handle(IPC_CHANNELS.getLeads, () => getSeededLeads());
+
+// Phase 8: Voice Analysis(Phase 6)のデモ実行。結果に応じてアバター状態も遷移させる。
+ipcMain.handle(IPC_CHANNELS.runDemoCallAnalysis, () => {
+  const { summary, avatarState } = runDemoCallAnalysis();
+  avatarStateMachine.transition(avatarState);
+  return summary;
+});
+
+// Phase 8: Voice Engine(Phase 7)のTTS/visemeデモ実行。
+ipcMain.handle(IPC_CHANNELS.speakCoachingMessage, async (_event, text: string) => {
+  const result = await synthesizeCoachingMessage(text);
+  return { durationMs: result.durationMs, visemeCount: result.visemes.length };
 });
