@@ -1,8 +1,14 @@
 name: Autonomous AI Developer Loop
 
+# DISABLED: this workflow overwrote main_app.py/spec.md on every issue and
+# auto-opened a new "[NEXT] ..." issue afterwards, without ever accumulating
+# real code, and could auto-close decision-needed issues (e.g. #166) meant
+# for human/ChatGPT review. Trigger changed to manual-only. See
+# docs/ai-handoff/STATUS.md and the Epic β-001 branch's docs/ARCHITECTURE.md
+# section 6 for the full history of this fix (already applied there;
+# applying here to main since main never had it).
 on:
-  issues:
-    types: [opened]
+  workflow_dispatch: {}
 
 jobs:
   ai_pipeline:
