@@ -8,7 +8,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace=@musasabi/shared --workspace=@musasabi/avatar-2d --workspace=@musasabi/ai-core --if-present && npm run build --workspaces --if-present",
+    "build": "npm run build --workspace=@musasabi/shared --workspace=@musasabi/avatar-2d --workspace=@musasabi/ai-core --workspace=@musasabi/integrations --if-present && npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"
   },
