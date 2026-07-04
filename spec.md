@@ -1,196 +1,213 @@
-以下は、AutoCall Mode β の技術指示書です。Markdown形式でまとめています。
-
 ```markdown
-# 技術指示書: S7-006 AutoCall Mode β
+# Technical Specification: Sales Department Dashboard (S7-007)
 
-## 目的
-Musasabi OSにおける最初のプロダクション向け自律型アウトバウンドコールモード「AutoCall Mode β」を実装します。このシステムは、承認されたキャンペーンを利用してアウトバウンドコールを行う一方、管理者によって完全に制御されます。Learning ModeとAutoCall Modeは手動で切り替えでき、セーフティ条件が違反された場合は直ちに停止します。
+## Objective
 
-## ビジョン
-1. Learning Mode
-2. Sales Brain
-3. AutoCall Mode
-4. Outbound Calls
-5. Conversation Intelligence
-6. Learning
-7. Company Brain
+Implement the Sales Department Dashboard to serve as the central daily operating screen for the sales department manager and CEO. The dashboard will display real-time sales activity, learning mode progress, AutoCall mode status, appointment performance, AI coaching impact, and team productivity.
 
-## 要求モジュール
-ディレクトリ: `packages/autocall/src/runtime/`
+## Vision
 
-- `AutoCallController.ts`
-- `CampaignManager.ts`
-- `CallQueueManager.ts`
-- `AppointmentLimiter.ts`
-- `SafetyMonitor.ts`
-- `EmergencyStop.ts`
-- `AutoCallDashboard.ts`
-- `RuntimeStatistics.ts`
+The dashboard integrates the following components:
+- Zoom Phone
+- FileMaker
+- Sales Workspace
+- Learning Mode
+- AutoCall Mode
+- Sales Brain
+- Sales Department Dashboard
 
-## モード
-サポートするモード：
+## Dashboard Sections
 
-- **Learning Mode**
-  - 観察
-  - 学習
-  - 推奨
-  - 顧客との会話なし
+### 1. Today Overview
 
-- **AutoCall Mode**
-  - 自律型アウトバウンドコール
-  - 承認済みキャンペーンに従う
-  - 各通話後に学習
-  - セーフティポリシーを尊重
+Display real-time data including:
+- Calls Today
+- Appointments Today
+- Appointment Rate
+- Callbacks Scheduled
+- Interested Leads
+- No Answer Count
+- AutoCall Status
+- Learning Mode Status
 
-モードスイッチには管理者の許可が必要です。
+### 2. Team Performance
 
-## キャンペーン管理
-サポートする機能：
+Display performance metrics for each operator:
+- Calls
+- Appointments
+- Appointment Rate
+- Average Call Score
+- Coaching Usage
+- Learning Contributions
 
-- キャンペーン選択
-- オペレーター割り当て
-- 営業時間
-- 対象リスト
-- 再試行ポリシー
-- コールバックポリシー
+### 3. AI Performance
 
-## コールキュー
-サポートするステータス：
+Display AI-related metrics:
+- MUSA Coaching Suggestions
+- Suggestion Usage Rate
+- Suggestion Success Rate
+- AutoCall Calls
+- AutoCall Appointments
+- AutoCall Appointment Rate
+- AI Confidence
 
-- 保留
-- 呼び出し中
-- 完了
-- 失敗
-- コールバック
-- ブロック済み
+### 4. Lead Pipeline
 
-## アポイントメント制限
-管理者が設定可能：
+Display the sales lead pipeline stages:
+- New Leads
+- Calling
+- Callback
+- Interested
+- Closed
+- Excluded
 
-- 毎日のアポイントメント制限
-- 例: 5、10、20
+### 5. Learning Insights
 
-制限に達した場合：
+Display insights into the learning process:
+- Top Objections
+- Top Rebuttals
+- Best Opening
+- Best Closing
+- New Knowledge Candidates
+- Approved Learning
 
-- 新しいアウトバウンドコールを停止
-- アクティブな通話のみ完了
-- 管理者に通知
+### 6. Forecast
 
-コールの試行回数には制限はありません。制限されるのはアポイントメント取得のみです。
+Display projected sales figures:
+- Expected Calls
+- Expected Appointments
+- End-of-day Forecast
+- Monthly Forecast
+- Target Gap
 
-## セーフティルール
-以下の場合、AutoCall を直ちに停止：
+### 7. Risk Alerts
 
-- 非常停止ボタンが押された場合
-- 営業時間終了
-- キャンペーン無効
-- 承認取り消し
-- システムエラー検出
+Detect and display risk alerts for:
+- Low call volume
+- Low appointment rate
+- High no-answer rate
+- Missed callbacks
+- AutoCall stopped
+- Learning confidence low
+- FileMaker sync failed
+- Zoom sync failed
 
-すべての停止イベントをログ記録します。
+## Required Modules
 
-## ランタイムダッシュボード
-表示項目：
+Modules to be implemented in `packages/sales-dashboard/src/`:
+- `SalesDashboardService.ts`
+- `TeamPerformanceService.ts`
+- `AIPerformanceService.ts`
+- `SalesForecastService.ts`
+- `SalesRiskDetector.ts`
+- `SalesDashboardRepository.ts`
+- `index.ts`
 
-- 現在のキャンペーン
-- 現在の通話
-- 本日の通話数
-- 本日のアポイントメント数
-- アポイントメント制限
-- 成功率
-- キューサイズ
-- AI 信頼度
-- ランタイムステータス
+## Database Schema
 
-## 学習ループ
-以下のプロセスを実行：
+### SQLite
 
-1. 完了した通話ごとに
-2. 会話解析
-3. 学習エンジン
-4. セールスブレイン
-5. 会社ブレイン
-6. 将来の通話改善
+Create the following tables:
 
-## アバター統合
-- **Learning Mode:** ノートブック
-- **AutoCall Mode:** ヘッドセット
-- **Calling:** 話すアニメーション
-- **Appointment:** 祝福アニメーション
-- **Emergency Stop:** 警告アニメーション
+#### sales_dashboard_snapshots
 
-## 管理者コントロール
-ボタン：
+Fields:
+- id
+- snapshot_date
+- calls_today
+- appointments_today
+- appointment_rate
+- autocall_status
+- learning_status
+- forecast_json
+- risk_json
+- created_at
 
-- AutoCall開始
-- 一時停止
-- 再開
-- 停止
-- 非常停止
-- Learning Modeへ切り替え
+#### sales_team_performance
 
-## ロギング
-記録：
+Fields:
+- id
+- operator
+- report_date
+- calls
+- appointments
+- appointment_rate
+- average_score
+- coaching_usage
+- learning_count
+- created_at
 
-- キャンペーン
-- リード
-- 期間
-- 結果
-- アポイントメント
-- 学習結果
-- 信頼度
+## User Interface
 
-## テスト
-実装：
+Design and layout of the Sales Department Dashboard:
+- KPI cards
+- Charts
+- Operator table
+- AI performance panel
+- Risk alerts panel
+- Forecast panel
+- Learning insights panel
 
-- モード切り替え
-- アポイントメント制限
-- 非常停止
-- キュー処理
-- ランタイムダッシュボード
-- ロギング
-- 学習統合
+## Avatar Integration
 
-## ドキュメンテーション
-作成：
+Implement avatar reactions:
+- Celebration for target achievement
+- Warning for risk alerts
+- Concerned when AutoCall stops
+- Happy when learning improves
 
-- `docs/AUTOCALL_MODE_BETA.md`
+## Testing
 
-更新：
+Implement tests for:
+- KPI calculation
+- Team performance calculation
+- AI performance calculation
+- Forecast calculation
+- Risk detection
+- Dashboard rendering
+- Avatar event integration
 
+## Documentation
+
+Create new documentation:
+- `docs/SALES_DEPARTMENT_DASHBOARD.md`
+
+Update existing documentation:
 - `README.md`
 - `CHANGELOG.md`
 
-## 制限
-**行ってはいけないこと：**
+## Restrictions
 
-- 管理者承認の無視
-- 営業時間の無視
-- 非常停止の無視
-- アポイントメント制限を超える
-- 未サポートキャンペーンタイプの実行
+This implementation should not include any of the following:
+- External BI tools
+- Cloud analytics
+- Paid forecasting services
+- Autonomous management actions
 
-## 受け入れ基準
-- 正確にモードが切り替わる
-- 管理者承認が必要
-- アポイントメント制限が遵守されている
-- 非常停止が機能する
-- ダッシュボードがリアルタイムで更新される
-- 各通話後に学習が続く
-- Avatar が現在のモードを反映する
-- テストを通過
-- ドキュメンテーションが更新されている
+## Acceptance Criteria
 
-## 成果物
-レポート：
+The final implementation must meet the following criteria:
+- Sales Department Dashboard is functional
+- Today Overview works correctly
+- Team Performance section works correctly
+- AI Performance section functions as expected
+- Learning Insights are displayed correctly
+- Forecasting functions accurately
+- Risk Alerts are effective
+- Avatar reactions are linked to dashboard status
+- All tests pass successfully
+- Documentation is updated
 
-- 変更されたファイル
-- テスト結果
-- ランタイムダッシュボードのスクリーンショット
-- 推奨コミット
+## Deliverables
 
-**推奨コミット：**
+Provide the following:
+- Report of changed files
+- Test results
+- Screenshot of the dashboard
+- Suggested commit message
+
+Suggested Commit Message:
 ```
-feat(autocall): implement AutoCall Mode beta
+feat(sales): implement Sales Department Dashboard
 ```
 ```

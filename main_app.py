@@ -1,116 +1,70 @@
 ```typescript
-// AutoCallController.ts
-export class AutoCallController {
-  private mode: 'Learning' | 'AutoCall';
-  constructor() {
-    this.mode = 'Learning';
-  }
-
-  toggleMode() {
-    if (isAdminApproved()) {
-      this.mode = this.mode === 'Learning' ? 'AutoCall' : 'Learning';
-    }
-  }
-
-  startAutoCall() {
-    if (this.mode === 'AutoCall' && isModeAllowed()) {
-      // Start AutoCall operations
-    }
-  }
-
-  stopAutoCall() {
-    // Logic to stop AutoCall
-  }
-
-  emergencyStop() {
-    // Immediate stop operations
-    logEvent('Emergency Stop triggered');
-  }
+// packages/sales-dashboard/src/SalesDashboardService.ts
+export class SalesDashboardService {
+  getTodayOverview() { /* Implementation here. */ }
+  getTeamPerformance() { /* Implementation here. */ }
+  getAIPerformance() { /* Implementation here. */ }
+  getLeadPipeline() { /* Implementation here. */ }
+  getLearningInsights() { /* Implementation here. */ }
+  getForecast() { /* Implementation here. */ }
+  getRiskAlerts() { /* Implementation here. */ }
 }
 
-// CampaignManager.ts
-export class CampaignManager {
-  private campaign: any;
-  
-  selectCampaign(campaignId: string) {
-    // Logic to select a campaign
-  }
-
-  assignOperator(operatorId: string) {
-    // Logic for operator assignment
-  }
-
-  validateCampaign() {
-    // Check if current campaign is valid
-  }
+// packages/sales-dashboard/src/TeamPerformanceService.ts
+export class TeamPerformanceService {
+  calculatePerformance() { /* Implementation here. */ }
 }
 
-// CallQueueManager.ts
-export class CallQueueManager {
-  private queue: any[];
-  
-  constructor() {
-    this.queue = [];
-  }
-
-  addToQueue(call: any) {
-    this.queue.push(call);
-  }
-
-  processQueue() {
-    // Logic to process call queue
-  }
+// packages/sales-dashboard/src/AIPerformanceService.ts
+export class AIPerformanceService {
+  calculateAIPerformance() { /* Implementation here. */ }
 }
 
-// AppointmentLimiter.ts
-export class AppointmentLimiter {
-  private dailyLimit: number;
-  private currentAppointments: number;
-
-  constructor(limit: number) {
-    this.dailyLimit = limit;
-    this.currentAppointments = 0;
-  }
-
-  canScheduleAppointment() {
-    return this.currentAppointments < this.dailyLimit;
-  }
-
-  scheduleAppointment() {
-    if (this.canScheduleAppointment()) {
-      this.currentAppointments++;
-    }
-  }
+// packages/sales-dashboard/src/SalesForecastService.ts
+export class SalesForecastService {
+  calculateForecast() { /* Implementation here. */ }
 }
 
-// SafetyMonitor.ts
-export class SafetyMonitor {
-  checkSafetyConditions() {
-    if (isEmergencyStopTriggered() || !isWithinBusinessHours()) {
-      logEvent('Safety Condition Violated');
-      // Stop operations
-    }
-  }
+// packages/sales-dashboard/src/SalesRiskDetector.ts
+export class SalesRiskDetector {
+  detectRisks() { /* Implementation here. */ }
 }
 
-// EmergencyStop.ts
-export class EmergencyStop {
-  triggerEmergencyStop() {
-    // Logic to trigger emergency stop
-  }
+// packages/sales-dashboard/src/SalesDashboardRepository.ts
+export class SalesDashboardRepository {
+  fetchDashboardSnapshots() { /* Implementation here. */ }
+  fetchTeamPerformance() { /* Implementation here. */ }
 }
 
-// AutoCallDashboard.ts
-export class AutoCallDashboard {
-  updateDashboard() {
-    // Logic to update runtime dashboard
-  }
-}
+// packages/sales-dashboard/src/index.ts
+import { SalesDashboardService } from './SalesDashboardService';
 
-// RuntimeStatistics.ts
-export class RuntimeStatistics {
-  gatherStatistics() {
-    // Logic to gather and report runtime statistics
-  }
-}
+// SQLite table creation scripts
+/*
+CREATE TABLE sales_dashboard_snapshots (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  snapshot_date TEXT,
+  calls_today INTEGER,
+  appointments_today INTEGER,
+  appointment_rate REAL,
+  autocall_status TEXT,
+  learning_status TEXT,
+  forecast_json TEXT,
+  risk_json TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sales_team_performance (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  operator TEXT,
+  report_date TEXT,
+  calls INTEGER,
+  appointments INTEGER,
+  appointment_rate REAL,
+  average_score REAL,
+  coaching_usage INTEGER,
+  learning_count INTEGER,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+*/
 ```
