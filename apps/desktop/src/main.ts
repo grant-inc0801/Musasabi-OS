@@ -80,8 +80,15 @@ function createAvatarWindow(): void {
     `data:text/html,${encodeURIComponent(renderAvatarHtml(avatarStateMachine.getState()))}`,
   );
 
+  avatarWindow.on("closed", () => {
+    avatarWindow = null;
+  });
+
   avatarStateMachine.onChange((state) => {
-    avatarWindow?.loadURL(`data:text/html,${encodeURIComponent(renderAvatarHtml(state))}`);
+    if (!avatarWindow || avatarWindow.isDestroyed()) {
+      return;
+    }
+    avatarWindow.loadURL(`data:text/html,${encodeURIComponent(renderAvatarHtml(state))}`);
   });
 }
 
