@@ -121,11 +121,13 @@ Development Bible 第4章の優先順位(Windows Desktop → Sales Workspace →
 対象とする。Memory / Vision / Automation / Self Improvement は Epic β-001 完了後、
 Bibleの優先順位どおりに着手する。
 
-### Phase 1 — Windows デスクトップアプリ化(`apps/desktop`)
-- Electron main/preload(contextIsolation)
-- `electron-builder` で NSIS installer
-- Windows ログイン時自動起動、トレイ常駐
-- 受け入れ基準: `.exe` インストーラが生成され、自動起動・トレイ操作が動作する
+### Phase 1 — Windows デスクトップアプリ化(`apps/desktop`)【実装着手済み】
+- Electron main/preload(contextIsolation) — 実装済み、`tsc` ビルド成功
+- `electron-builder` で NSIS installer 設定 — 実装済み(実機ビルド未検証)
+- Windows ログイン時自動起動、トレイ常駐 — 実装済み(実機起動未検証)
+- 受け入れ基準: `.exe` インストーラが生成され、自動起動・トレイ操作が動作する。
+  現在の開発コンテナはegressポリシー上Electronバイナリを取得できず未検証
+  (`apps/desktop/README.md` 参照)。Windows実機/CIでの確認が残作業
 
 ### Phase 2 — MUSA 常駐アバター(`packages/avatar-2d`)
 - 透過・最前面・枠なしのオーバーレイウィンドウ
