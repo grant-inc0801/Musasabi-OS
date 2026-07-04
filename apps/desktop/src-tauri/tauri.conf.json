@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Musasabi OS",
+  "version": "0.1.0",
+  "identifier": "com.musasabi.desktop",
+  "build": {
+    "frontendDist": "../../sales-workspace/dist",
+    "beforeDevCommand": "npm --prefix ../sales-workspace run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Musasabi OS",
+        "width": 1024,
+        "height": 720,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "displayLanguageSelector": false
+      }
+    },
+    "android": {
+      "debugApplicationIdSuffix": ".debug"
+    }
+  }
+}
