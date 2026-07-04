@@ -1,2 +1,9 @@
-// Sales Workspace β UI(React + Vite)。日次計画・リード管理・KPI ダッシュボード。Phase 6 で実装。
-export {};
+import { createRoot } from "react-dom/client";
+import { App } from "./App";
+
+const container = document.getElementById("root");
+if (!container) {
+  throw new Error("root element not found");
+}
+
+createRoot(container).render(<App />);
