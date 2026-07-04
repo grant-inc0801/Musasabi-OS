@@ -1,0 +1,17 @@
+{
+  "name": "@musasabi/ai-core",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "npm --prefix ../shared run build && tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/*.test.js"
+  },
+  "dependencies": {
+    "@musasabi/shared": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
