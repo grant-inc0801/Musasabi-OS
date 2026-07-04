@@ -1,186 +1,196 @@
+以下は、AutoCall Mode β の技術指示書です。Markdown形式でまとめています。
+
 ```markdown
-# 技術指示書: S7-005 AutoCall Preparation Center
+# 技術指示書: S7-006 AutoCall Mode β
 
 ## 目的
-AutoCall Preparation Centerの実装。Musasabi AIのアウトバウンドコールの準備として、知識、スクリプト、承認、安全ルールを検証する。このスプリントではAutoCallの実行は行わない。準備、検証、シミュレーション、および承認のワークフローに焦点を当てる。
+Musasabi OSにおける最初のプロダクション向け自律型アウトバウンドコールモード「AutoCall Mode β」を実装します。このシステムは、承認されたキャンペーンを利用してアウトバウンドコールを行う一方、管理者によって完全に制御されます。Learning ModeとAutoCall Modeは手動で切り替えでき、セーフティ条件が違反された場合は直ちに停止します。
 
 ## ビジョン
-1. 学習モード
-2. セールスブレイン
-3. 会話インテリジェンス
-4. AutoCall Preparation Center
-5. 安全性の検証
-6. マネージャーの承認
-7. AutoCall モードβ
+1. Learning Mode
+2. Sales Brain
+3. AutoCall Mode
+4. Outbound Calls
+5. Conversation Intelligence
+6. Learning
+7. Company Brain
 
-## 必要モジュール
+## 要求モジュール
+ディレクトリ: `packages/autocall/src/runtime/`
 
-`packages/autocall/src/preparation/`
+- `AutoCallController.ts`
+- `CampaignManager.ts`
+- `CallQueueManager.ts`
+- `AppointmentLimiter.ts`
+- `SafetyMonitor.ts`
+- `EmergencyStop.ts`
+- `AutoCallDashboard.ts`
+- `RuntimeStatistics.ts`
 
-- `AutoCallPreparationService.ts`
-- `ScriptValidator.ts`
-- `SafetyValidator.ts`
-- `ApprovalWorkflow.ts`
-- `SimulationEngine.ts`
-- `ReadinessCalculator.ts`
-- `PreparationRepository.ts`
+## モード
+サポートするモード：
 
-## SQLite テーブル設計
+- **Learning Mode**
+  - 観察
+  - 学習
+  - 推奨
+  - 顧客との会話なし
 
-### autocall_profiles
+- **AutoCall Mode**
+  - 自律型アウトバウンドコール
+  - 承認済みキャンペーンに従う
+  - 各通話後に学習
+  - セーフティポリシーを尊重
 
-| フィールド名       | 型            |
-|------------------|--------------|
-| id               | INTEGER PRIMARY KEY |
-| profile_name     | TEXT          |
-| campaign_name    | TEXT          |
-| target_type      | TEXT          |
-| script_version   | TEXT          |
-| status           | TEXT          |
-| readiness_score  | INTEGER       |
-| created_at       | DATETIME      |
-| updated_at       | DATETIME      |
+モードスイッチには管理者の許可が必要です。
 
-### autocall_simulations
+## キャンペーン管理
+サポートする機能：
 
-| フィールド名       | 型            |
-|------------------|--------------|
-| id               | INTEGER PRIMARY KEY |
-| profile_id       | INTEGER       |
-| simulation_name  | TEXT          |
-| expected_result  | TEXT          |
-| confidence       | DECIMAL       |
-| risk_level       | TEXT          |
-| created_at       | DATETIME      |
+- キャンペーン選択
+- オペレーター割り当て
+- 営業時間
+- 対象リスト
+- 再試行ポリシー
+- コールバックポリシー
 
-### autocall_approvals
+## コールキュー
+サポートするステータス：
 
-| フィールド名       | 型            |
-|------------------|--------------|
-| id               | INTEGER PRIMARY KEY |
-| profile_id       | INTEGER       |
-| approver         | TEXT          |
-| approval_status  | TEXT          |
-| comments         | TEXT          |
-| approved_at      | DATETIME      |
+- 保留
+- 呼び出し中
+- 完了
+- 失敗
+- コールバック
+- ブロック済み
 
-**ステータス**
-- ドラフト (draft)
-- 保留中 (pending)
-- 承認済み (approved)
-- 却下 (rejected)
+## アポイントメント制限
+管理者が設定可能：
 
-## 準備状態の評価
+- 毎日のアポイントメント制限
+- 例: 5、10、20
 
-### 計算項目
-- スクリプトの質
-- セールスブレインの信頼度
-- 異議対策の完全さ
-- コンプライアンスの確認
-- 知識の充実度
-- 学習の完成度
-- リスクスコア
+制限に達した場合：
 
-### 指標
-- 準備状態スコア：0〜100
+- 新しいアウトバウンドコールを停止
+- アクティブな通話のみ完了
+- 管理者に通知
 
-## スクリプト検証
+コールの試行回数には制限はありません。制限されるのはアポイントメント取得のみです。
 
-### 検証項目
-- 挨拶
-- 資格確認
-- 異議対策
-- クロージング
-- 法的免責事項
-- コールバックの処理
+## セーフティルール
+以下の場合、AutoCall を直ちに停止：
 
-欠落部分を強調表示。
+- 非常停止ボタンが押された場合
+- 営業時間終了
+- キャンペーン無効
+- 承認取り消し
+- システムエラー検出
 
-## 安全性の検証
+すべての停止イベントをログ記録します。
 
-### 検証項目
-- 人の承認があること
-- 承認されたキャンペーンであること
-- 承認されたスクリプトであること
-- 承認された営業時間内であること
-- 承認されたコールターゲットであること
+## ランタイムダッシュボード
+表示項目：
 
-必要要件が欠けている場合は拒否。
+- 現在のキャンペーン
+- 現在の通話
+- 本日の通話数
+- 本日のアポイントメント数
+- アポイントメント制限
+- 成功率
+- キューサイズ
+- AI 信頼度
+- ランタイムステータス
 
-## シミュレーションモード
-- バーチャルコールシミュレーションをサポート
-- 期待される会話の流れ、異議、推奨される応答、信頼度、予想成約率を表示
-- 実際のコールは行わない
+## 学習ループ
+以下のプロセスを実行：
 
-## 承認ワークフロー
-
-- マネージャーは承認、却下、修正依頼が可能
-- 承認履歴を保存すること
-
-## ダッシュボード
-
-### 作成内容
-AutoCall Preparation Dashboard
-
-### 表示項目
-- 準備状態スコア
-- スクリプトステータス
-- 安全ステータス
-- シミュレーション結果
-- 保留中の承認
-- 承認履歴
+1. 完了した通話ごとに
+2. 会話解析
+3. 学習エンジン
+4. セールスブレイン
+5. 会社ブレイン
+6. 将来の通話改善
 
 ## アバター統合
+- **Learning Mode:** ノートブック
+- **AutoCall Mode:** ヘッドセット
+- **Calling:** 話すアニメーション
+- **Appointment:** 祝福アニメーション
+- **Emergency Stop:** 警告アニメーション
 
-- **準備:** ノートブックアニメーション
-- **シミュレーション:** 考えているアニメーション
-- **承認済み:** 祝福アニメーション
-- **却下:** 懸念のアニメーション
+## 管理者コントロール
+ボタン：
+
+- AutoCall開始
+- 一時停止
+- 再開
+- 停止
+- 非常停止
+- Learning Modeへ切り替え
+
+## ロギング
+記録：
+
+- キャンペーン
+- リード
+- 期間
+- 結果
+- アポイントメント
+- 学習結果
+- 信頼度
 
 ## テスト
-以下をテスト形式で実装：
-- 準備状態の計算
-- スクリプトの検証
-- 安全性の検証
-- シミュレーションの生成
-- 承認ワークフロー
-- ダッシュボードのレンダリング
+実装：
 
-## ドキュメント
+- モード切り替え
+- アポイントメント制限
+- 非常停止
+- キュー処理
+- ランタイムダッシュボード
+- ロギング
+- 学習統合
 
-- `docs/AUTOCALL_PREPARATION_CENTER.md` を作成
-- `README.md` と `CHANGELOG.md` を更新
+## ドキュメンテーション
+作成：
 
-## 制約
+- `docs/AUTOCALL_MODE_BETA.md`
 
-以下は実装しない：
-- 実際のアウトバウンドコール
-- 音声合成
-- 音声認識
-- 顧客とのインタラクション
-- 自動キャンペーンの実行
-- 自動承認
+更新：
 
-## 受入基準
+- `README.md`
+- `CHANGELOG.md`
 
-- Preparation Centerが実装されていること
-- 準備状態スコアが計算されていること
-- シミュレーションが動作すること
-- 承認ワークフローが動作すること
-- ダッシュボードが動作すること
-- アバターが正しく反応すること
-- テストがすべて通過すること
-- ドキュメントが更新されていること
+## 制限
+**行ってはいけないこと：**
+
+- 管理者承認の無視
+- 営業時間の無視
+- 非常停止の無視
+- アポイントメント制限を超える
+- 未サポートキャンペーンタイプの実行
+
+## 受け入れ基準
+- 正確にモードが切り替わる
+- 管理者承認が必要
+- アポイントメント制限が遵守されている
+- 非常停止が機能する
+- ダッシュボードがリアルタイムで更新される
+- 各通話後に学習が続く
+- Avatar が現在のモードを反映する
+- テストを通過
+- ドキュメンテーションが更新されている
 
 ## 成果物
+レポート：
 
-- 変更されたファイルのレポート
+- 変更されたファイル
 - テスト結果
-- ダッシュボードのスクリーンショット
+- ランタイムダッシュボードのスクリーンショット
 - 推奨コミット
 
-### 推奨コミット
+**推奨コミット：**
 ```
-feat(autocall): implement AutoCall Preparation Center
+feat(autocall): implement AutoCall Mode beta
 ```
 ```

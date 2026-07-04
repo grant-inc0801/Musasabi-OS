@@ -1,103 +1,116 @@
 ```typescript
-// AutoCallPreparationService.ts
-export class AutoCallPreparationService {
-    // Methods go here
-}
+// AutoCallController.ts
+export class AutoCallController {
+  private mode: 'Learning' | 'AutoCall';
+  constructor() {
+    this.mode = 'Learning';
+  }
 
-// ScriptValidator.ts
-export class ScriptValidator {
-    validate(script: string): boolean {
-        // Validation logic
-        return true;
+  toggleMode() {
+    if (isAdminApproved()) {
+      this.mode = this.mode === 'Learning' ? 'AutoCall' : 'Learning';
     }
-}
+  }
 
-// SafetyValidator.ts
-export class SafetyValidator {
-    validate(profile: any): boolean {
-        // Validation logic
-        return true;
+  startAutoCall() {
+    if (this.mode === 'AutoCall' && isModeAllowed()) {
+      // Start AutoCall operations
     }
+  }
+
+  stopAutoCall() {
+    // Logic to stop AutoCall
+  }
+
+  emergencyStop() {
+    // Immediate stop operations
+    logEvent('Emergency Stop triggered');
+  }
 }
 
-// ApprovalWorkflow.ts
-export class ApprovalWorkflow {
-    // Methods for managing approvals
+// CampaignManager.ts
+export class CampaignManager {
+  private campaign: any;
+  
+  selectCampaign(campaignId: string) {
+    // Logic to select a campaign
+  }
+
+  assignOperator(operatorId: string) {
+    // Logic for operator assignment
+  }
+
+  validateCampaign() {
+    // Check if current campaign is valid
+  }
 }
 
-// SimulationEngine.ts
-export class SimulationEngine {
-    simulate(profile: any): any {
-        // Simulation logic
-        return {};
+// CallQueueManager.ts
+export class CallQueueManager {
+  private queue: any[];
+  
+  constructor() {
+    this.queue = [];
+  }
+
+  addToQueue(call: any) {
+    this.queue.push(call);
+  }
+
+  processQueue() {
+    // Logic to process call queue
+  }
+}
+
+// AppointmentLimiter.ts
+export class AppointmentLimiter {
+  private dailyLimit: number;
+  private currentAppointments: number;
+
+  constructor(limit: number) {
+    this.dailyLimit = limit;
+    this.currentAppointments = 0;
+  }
+
+  canScheduleAppointment() {
+    return this.currentAppointments < this.dailyLimit;
+  }
+
+  scheduleAppointment() {
+    if (this.canScheduleAppointment()) {
+      this.currentAppointments++;
     }
+  }
 }
 
-// ReadinessCalculator.ts
-export class ReadinessCalculator {
-    calculate(profile: any): number {
-        // Readiness calculation
-        return 100;
+// SafetyMonitor.ts
+export class SafetyMonitor {
+  checkSafetyConditions() {
+    if (isEmergencyStopTriggered() || !isWithinBusinessHours()) {
+      logEvent('Safety Condition Violated');
+      // Stop operations
     }
+  }
 }
 
-// PreparationRepository.ts
-export class PreparationRepository {
-    // Database interaction methods
+// EmergencyStop.ts
+export class EmergencyStop {
+  triggerEmergencyStop() {
+    // Logic to trigger emergency stop
+  }
 }
 
-import sqlite3 from 'sqlite3';
-const db = new sqlite3.Database(':memory:');
-
-db.serialize(() => {
-    db.run(`CREATE TABLE autocall_profiles (
-        id INTEGER PRIMARY KEY,
-        profile_name TEXT,
-        campaign_name TEXT,
-        target_type TEXT,
-        script_version TEXT,
-        status TEXT,
-        readiness_score INTEGER,
-        created_at DATETIME,
-        updated_at DATETIME
-    )`);
-
-    db.run(`CREATE TABLE autocall_simulations (
-        id INTEGER PRIMARY KEY,
-        profile_id INTEGER,
-        simulation_name TEXT,
-        expected_result TEXT,
-        confidence DECIMAL,
-        risk_level TEXT,
-        created_at DATETIME
-    )`);
-
-    db.run(`CREATE TABLE autocall_approvals (
-        id INTEGER PRIMARY KEY,
-        profile_id INTEGER,
-        approver TEXT,
-        approval_status TEXT,
-        comments TEXT,
-        approved_at DATETIME
-    )`);
-});
-
-class AutoCallPreparationDashboard {
-    render() {
-        // Dashboard rendering logic
-    }
+// AutoCallDashboard.ts
+export class AutoCallDashboard {
+  updateDashboard() {
+    // Logic to update runtime dashboard
+  }
 }
 
-const autoCallPreparationService = new AutoCallPreparationService();
-const scriptValidator = new ScriptValidator();
-const safetyValidator = new SafetyValidator();
-const approvalWorkflow = new ApprovalWorkflow();
-const simulationEngine = new SimulationEngine();
-const readinessCalculator = new ReadinessCalculator();
-const preparationRepository = new PreparationRepository();
-
-function runTests() {
-    console.log('Running tests...');
-    // Test logic
+// RuntimeStatistics.ts
+export class RuntimeStatistics {
+  gatherStatistics() {
+    // Logic to gather and report runtime statistics
+  }
 }
 ```
