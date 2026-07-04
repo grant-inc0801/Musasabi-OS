@@ -2,6 +2,32 @@
 
 Chronological record of directives and their outcomes. Newest entries at the top.
 
+## 2026-07-04 — D-20260704-003: Musasabi OS の標準言語は日本語
+
+人間プロダクトオーナーの指示(2026-07-04)により、**Musasabi OS の標準言語を
+日本語とする**。以降のすべての報告・質問・コミュニケーション、および以下の
+ドキュメント・成果物は日本語で記述する。
+
+**日本語で記述するもの:**
+- チャットでの回答すべて
+- GitHub Issue、Pull Request(タイトル・本文)、Commit 以外の説明
+- `docs/ai-handoff/CLAUDE_RESPONSE.md`
+- `docs/ai-handoff/CLAUDE_QUESTIONS.md`
+- `docs/ai-handoff/NEXT_ACTION.md`
+- ChatGPT への質問、実装完了報告、エラー報告、テスト結果、進捗報告
+
+**英語のままで構わないもの:**
+- ライブラリ名・API名・クラス名・関数名・ディレクトリ名・ファイル名・Git コマンド
+
+**報告フォーマット**(該当項目のみ記載):
+`## 実装内容` / `## 修正内容` / `## テスト結果` / `## 発見した問題` /
+`## 今後の課題` / `## 次に実施する内容` / `## ChatGPTへの確認事項(ある場合のみ)`
+
+**自動実行ルール:** ChatGPT への設計判断が不要な場合は自動で次のタスクへ進む。
+設計判断・セキュリティ・認証・アーキテクチャ変更が必要な場合のみ停止し、
+GitHub Issue(ラベル `chatgpt-decision-needed`)および
+`docs/ai-handoff/CLAUDE_QUESTIONS.md` に日本語で内容を記載する。
+
 ## 2026-07-04 — D-20260704-002 supersedes the earlier Electron resolution: Tauri is now official
 
 `docs/ai-handoff/CHATGPT_DIRECTIVE.md` (Directive ID D-20260704-002, "Adopt
