@@ -2,13 +2,96 @@
 
 ## Completed Directive
 Next-phase priority order (product owner, 2026-07-04): priorities 1
-(Tauri desktop migration) and 2 (avatar on Tauri) done in a prior update
-(see below); priority 4 (FileMaker/Zoom Phone readiness UI, mock-only, no
-real API/credential access) is now also done. Priority 3 (Sales Workspace)
-is covered by the same change (the Settings screen the readiness UI needed
-is new Sales Workspace UI). Priority 5 (#182, #183) not started.
+(Tauri desktop migration), 2 (avatar on Tauri), and 4 (FileMaker/Zoom
+Phone readiness UI) are done (see entries below). Priority 3 (Sales
+Workspace) is covered by the Settings screen added for priority 4.
+Priority 5 is half done: issue #182 (diarization) is implemented; issue
+#183 (VOICEVOX/whisper.cpp real-engine connection verification) is **not
+started** — it requires real engine processes (a running VOICEVOX Engine,
+a whisper.cpp server) that do not exist in this sandbox, so it cannot be
+genuinely verified here. It needs a real machine or CI environment with
+those engines installed.
 
-## Summary (2026-07-04, FileMaker/Zoom Phone readiness UI)
+## Summary (2026-07-04, diarization bridge, Issue #182)
+Implemented priority 5's diarization half on branch
+`feature/voice-diarization-bridge` (off
+`claude/musasabi-epic-beta-001-c6svi5`):
+
+1. Added `packages/voice-analysis/src/DiarizationBridge.ts`: a
+   deterministic bridge (Development Bible "deterministic before LLM")
+   assuming channel-separated audio (e.g. Zoom Phone's inbound/outbound
+   channels) — no voice-print/ML speaker identification. It defines
+   `DiarizedTranscriptChunk`, a type structurally compatible with
+   `@musasabi/voice-engine`'s `TranscriptChunk` (voice-analysis does not
+   take a hard dependency on voice-engine in production code, only in
+   tests), and converts a stream of per-channel final chunks into
+   `TranscriptSegment[]` that `generateCallSummary` already accepts.
+2. **Design bug caught by my own unit test, not by inspection**: my first
+   version tracked each speaker's "previous utterance end time"
+   independently, so every speaker's *first* utterance was always assigned
+   `timestampMs: 0` — meaning two different speakers' first utterances
+   always compared equal and lost their real chronological order (rep's
+   greeting could sort *after* the customer's reply). Fixed by using the
+   chunk's own `timestampMs` (the shared call timeline, since both
+   channels' STT sessions start together at call connect) as the
+   utterance's *end* time, and estimating the utterance's *start* time by
+   subtracting a character-count-based duration estimate — reusing the
+   exact `MS_PER_CHARACTER = 120` constant already established in
+   `voice-engine`'s `MockTtsProvider`, for consistency. Rewrote the unit
+   tests to match the corrected design; all pass.
+3. Added an integration test (`DiarizationBridge.integration.test.ts`,
+   `@musasabi/voice-engine` as a test-only devDependency of
+   voice-analysis) driving two `MockSttProvider` channel sessions (rep,
+   customer) through the bridge and feeding the resulting
+   `TranscriptSegment[]` straight into `generateCallSummary` — this is
+   exactly issue #182's stated acceptance criterion.
+4. Updated `docs/ARCHITECTURE.md` §4.2/§4.3 area and `apps/desktop/
+   README.md`'s known-gaps section to mark #182 done and #183 still
+   pending (env-blocked).
+5. Verified: full monorepo build passes, all 90 tests pass (83 previous +
+   7 new: 5 unit + 1 integration... actually 6 unit tests + 1 integration
+   test = 7 new tests, 83+7=90).
+
+**#183 is explicitly not attempted**: it requires a real VOICEVOX Engine
+process and a real whisper.cpp server, neither of which exist in this
+sandbox, and there is no way to genuinely verify an HTTP connection
+without them. Fabricating a "pass" here would be dishonest; this is
+reported as blocked-on-environment, matching how Windows real-machine
+verification and real FileMaker/Zoom Phone connections have been handled
+throughout this project.
+
+## Changed Files (this update)
+- `packages/voice-analysis/src/DiarizationBridge.ts` (new)
+- `packages/voice-analysis/src/DiarizationBridge.test.ts` (new)
+- `packages/voice-analysis/src/DiarizationBridge.integration.test.ts` (new)
+- `packages/voice-analysis/src/index.ts` (export `DiarizationBridge`)
+- `packages/voice-analysis/package.json` (devDependency on
+  `@musasabi/voice-engine`, build script pre-builds it)
+- `docs/ARCHITECTURE.md`, `apps/desktop/README.md`,
+  `docs/WINDOWS_VERIFICATION_CHECKLIST.md`
+- `docs/ai-handoff/CLAUDE_RESPONSE.md` (this file)
+
+## Tests
+- `npm run build` (monorepo): pass
+- `npm run test --workspaces --if-present`: 90/90 passing
+  (ai-core 13, avatar-2d 5, integrations 33, voice-analysis 23
+  [16 previous + 6 unit + 1 integration], voice-engine 16)
+
+## Remaining Issues
+Issue #183 remains open and blocked on environment (needs real VOICEVOX/
+whisper.cpp processes). No product decision needed to unblock it — it's a
+tooling/environment gap, not a design question.
+
+## Next Recommendation
+Nothing further is safely actionable in this sandbox for the current
+next-phase priority list. Remaining work (#183, real FileMaker/Zoom Phone
+API implementation, Windows real-machine verification) all require
+resources (real engines, real credentials, real hardware) this environment
+does not have.
+
+---
+
+## Previous entry (2026-07-04, FileMaker/Zoom Phone readiness UI)
 Implemented priority 4 on branch `feature/connection-readiness-ui` (off
 `claude/musasabi-epic-beta-001-c6svi5`), per the explicit spec and
 prohibitions in the product owner's message:
