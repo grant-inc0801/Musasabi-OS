@@ -9,11 +9,14 @@ export function calculateKpi(calls: CallRecord[]): KpiSnapshot {
   const appointmentsSet = calls.filter((c) => c.outcome === "appointment_set").length;
   const dealsWon = calls.filter((c) => c.outcome === "closed_won").length;
 
+  // dealsWon/appointmentsSet はどちらも同じ `calls` の集計期間内に限定されるため、
+  // 成約に至った商談のアポイントが期間外(例: 先週設定・今週成約)だと分子が分母を
+  // 超えうる。ダッシュボード表示が100%を超えないようクランプする。
   return {
     callsMade,
     appointmentsSet,
     dealsWon,
-    appointmentRate: callsMade === 0 ? 0 : appointmentsSet / callsMade,
-    winRate: appointmentsSet === 0 ? 0 : dealsWon / appointmentsSet,
+    appointmentRate: callsMade === 0 ? 0 : Math.min(1, appointmentsSet / callsMade),
+    winRate: appointmentsSet === 0 ? 0 : Math.min(1, dealsWon / appointmentsSet),
   };
 }

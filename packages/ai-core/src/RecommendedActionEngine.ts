@@ -73,6 +73,11 @@ export function recommendActions(leads: Lead[], now: Date = new Date()): Recomme
         break;
       case "lost":
         break;
+      default: {
+        // LeadStatus に新しい値を追加した際、このswitchの更新漏れをコンパイルエラーで検出する。
+        const exhaustiveCheck: never = lead.status;
+        void exhaustiveCheck;
+      }
     }
   }
 
