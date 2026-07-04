@@ -64,17 +64,19 @@
 ## 6. FileMaker / Zoom Phone 連携(Mockのみ、実接続はしない)
 
 - [ ] Mockアダプタ経由でのデータ取得・表示が正しく動作する
+- [ ] 設定タブの連携準備UI(接続ステータス表示、ダミー値専用の入力フォーム)が
+  表示・操作できる
 - [ ] **実際のFileMaker Data API / Zoom Phone APIへの接続は行わないこと**
-  (本フェーズでは未対応。次フェーズで連携準備UIを追加予定)
+  (本フェーズでは未対応。実接続の実装は次フェーズ以降)
 
 ## 7. Voice Engine / Voice Analysis(Mock入力)
 
 - [ ] Mock音声入力に対してSTT結果(モック)が処理される
 - [ ] Voice Analysisの感情分析・キーワード抽出結果が表示される
+- [ ] 話者分離ブリッジ(`DiarizationBridge`、Issue #182)はユニット/結合テストで
+  検証済み。実通話音声(チャネル分離済み)での実地確認は次フェーズ
 - [ ] **VOICEVOX / whisper.cpp の実エンジンとの接続は次フェーズ Issue
   [#183](https://github.com/grant-inc0801/Musasabi-OS/issues/183) で検証する**
-- [ ] 話者分離(ダイアライゼーション)は未実装(次フェーズ Issue
-  [#182](https://github.com/grant-inc0801/Musasabi-OS/issues/182))
 
 ## 8. インストーラー確認
 
