@@ -1,5 +1,5 @@
 {
-  "name": "@musasabi/ai-sales-core",
+  "name": "@musasabi/ai-core",
   "version": "0.1.0",
   "private": true,
   "main": "src/index.ts",
