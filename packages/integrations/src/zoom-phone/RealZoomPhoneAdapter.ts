@@ -10,6 +10,19 @@ interface ZoomApiCallLog {
   date_time: string;
 }
 
+/**
+ * Zoom Phone Data APIのfrom/toはYYYY-MM-DD形式の日付のみを受け付ける。
+ * Date#toISOString()はUTCへ変換するため、JST(UTC+9)の深夜0時台の呼び出しでは
+ * 日付が1日前にずれる。営業担当のローカルタイムゾーン(日本)のカレンダー日を
+ * そのまま使うため、UTC変換を経ないローカル日付コンポーネントで整形する。
+ */
+export function formatDateOnly(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function toCallLogEntry(raw: ZoomApiCallLog): ZoomCallLogEntry {
   return {
     id: raw.id,
@@ -66,8 +79,8 @@ export class RealZoomPhoneAdapter implements ZoomPhoneAdapter {
   async listCallLogs(from: Date, to: Date): Promise<ZoomCallLogEntry[]> {
     const token = await this.getAccessToken();
     const params = new URLSearchParams({
-      from: from.toISOString().slice(0, 10),
-      to: to.toISOString().slice(0, 10),
+      from: formatDateOnly(from),
+      to: formatDateOnly(to),
       page_size: "100",
     });
     const res = await fetch(`${API_BASE_URL}/phone/call_logs?${params.toString()}`, {
