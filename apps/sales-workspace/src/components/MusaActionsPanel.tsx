@@ -38,7 +38,7 @@ export function MusaActionsPanel({
     return (
       <section aria-label="MUSAアクション">
         <h2>MUSAアクション</h2>
-        <p>Electronアプリ外で表示されているため、デモアクションは利用できません。</p>
+        <p>デスクトップアプリ外で表示されているため、デモアクションは利用できません。</p>
       </section>
     );
   }

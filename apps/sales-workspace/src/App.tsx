@@ -11,9 +11,9 @@ import { MusaActionsPanel } from "./components/MusaActionsPanel";
 import { CallAnalysisPanel } from "./components/CallAnalysisPanel";
 
 export function App() {
-  // window.musasabi はElectron(apps/desktop)のpreload経由でのみ存在する。
-  // ブラウザ単体での `vite dev` 実行時はundefinedなので、静的モックにフォールバックする
-  // (FileMaker/Zoom Phone連携が未接続の間の既定データでもある)。
+  // window.musasabi はTauriデスクトップアプリ内(apps/desktop、desktopBridge.ts)での
+  // みインストールされる。ブラウザ単体での `vite dev` 実行時はundefinedなので、
+  // 静的モックにフォールバックする(FileMaker/Zoom Phone連携が未接続の間の既定データでもある)。
   const [leads, setLeads] = useState<Lead[]>(MOCK_LEADS);
   const [callAnalysis, setCallAnalysis] = useState<CallAnalysisSummary | null>(null);
 
