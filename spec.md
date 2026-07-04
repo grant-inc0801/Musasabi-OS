@@ -1,213 +1,235 @@
 ```markdown
-# Technical Specification: Sales Department Dashboard (S7-007)
+# 技術指示書: S7-008 Musasabi AI Employee Production Release
 
-## Objective
+## 概要
 
-Implement the Sales Department Dashboard to serve as the central daily operating screen for the sales department manager and CEO. The dashboard will display real-time sales activity, learning mode progress, AutoCall mode status, appointment performance, AI coaching impact, and team productivity.
+Musasabi AI Employeeの初期バージョンを社内販売業務向けにリリースする。本スプリントでは、これまで完了したすべてのスプリントを統合し、運用可能なAI社員を開発する。結果は社内で最初の内部ベータ版として展開される。
 
-## Vision
+---
 
-The dashboard integrates the following components:
+## ビジョン
+
+- Musasabi OS
+- Learning Mode
+- Sales Brain
+- Company Brain
+- Executive AI
+- AutoCall β
+- Musasabi AI Employee
+- Sales Department
+
+---
+
+## 統合システム
+
+以下のシステムとの連携を確認:
+
+- AI PM
+- Company Brain
+- Memory Engine
+- Knowledge Graph
+- Learning Engine
+- Decision Engine
+- Sales Brain
+- Executive AI
 - Zoom Phone
 - FileMaker
-- Sales Workspace
-- Learning Mode
-- AutoCall Mode
-- Sales Brain
-- Sales Department Dashboard
+- Avatar Engine
+- Dashboard
+- AutoCall β
 
-## Dashboard Sections
+---
 
-### 1. Today Overview
+## プロダクションチェックリスト
 
-Display real-time data including:
-- Calls Today
-- Appointments Today
-- Appointment Rate
-- Callbacks Scheduled
-- Interested Leads
-- No Answer Count
-- AutoCall Status
-- Learning Mode Status
+- Learning Mode: ✔ 動作確認済
+- Sales Coach: ✔ 動作確認済
+- Conversation Intelligence: ✔ 動作確認済
+- Dashboard: ✔ 動作確認済
+- Company Brain: ✔ 動作確認済
+- Memory Engine: ✔ 動作確認済
+- Executive Dashboard: ✔ 動作確認済
+- Avatar: ✔ 動作確認済
+- AutoCall β: ✔ 準備完了
 
-### 2. Team Performance
+---
 
-Display performance metrics for each operator:
-- Calls
-- Appointments
-- Appointment Rate
-- Average Call Score
-- Coaching Usage
-- Learning Contributions
+## 内部ベータモード
 
-### 3. AI Performance
+### サポート
 
-Display AI-related metrics:
-- MUSA Coaching Suggestions
-- Suggestion Usage Rate
-- Suggestion Success Rate
-- AutoCall Calls
-- AutoCall Appointments
-- AutoCall Appointment Rate
-- AI Confidence
+運用者の操作:
 
-### 4. Lead Pipeline
+- Learning Modeの有効化
+- コーチングの有効化
+- ダッシュボードの表示
+- 学習内容のレビュー
+- 推薦事項のレビュー
 
-Display the sales lead pipeline stages:
-- New Leads
-- Calling
-- Callback
-- Interested
-- Closed
-- Excluded
+管理者の操作:
 
-### 5. Learning Insights
+- AutoCallの有効化/一時停止
+- 予約制限の設定
+- AIのパフォーマンスの確認
+- ログのレビュー
 
-Display insights into the learning process:
-- Top Objections
-- Top Rebuttals
-- Best Opening
-- Best Closing
-- New Knowledge Candidates
-- Approved Learning
+---
 
-### 6. Forecast
+## プロダクションダッシュボード
 
-Display projected sales figures:
-- Expected Calls
-- Expected Appointments
-- End-of-day Forecast
-- Monthly Forecast
-- Target Gap
+### システムステータス
 
-### 7. Risk Alerts
+- オンライン
+- CPU
+- メモリ
+- データベース
+- キュー
+- AIの状態
 
-Detect and display risk alerts for:
-- Low call volume
-- Low appointment rate
-- High no-answer rate
-- Missed callbacks
-- AutoCall stopped
-- Learning confidence low
-- FileMaker sync failed
-- Zoom sync failed
+### 学習
 
-## Required Modules
+- アクティブセッション
+- 追加された知識
+- 学習の信頼度
 
-Modules to be implemented in `packages/sales-dashboard/src/`:
-- `SalesDashboardService.ts`
-- `TeamPerformanceService.ts`
-- `AIPerformanceService.ts`
-- `SalesForecastService.ts`
-- `SalesRiskDetector.ts`
-- `SalesDashboardRepository.ts`
-- `index.ts`
+### セールス
 
-## Database Schema
+- コール数
+- 予約数
+- コンバージョン率
+- コーチング成功率
 
-### SQLite
+### AI
 
-Create the following tables:
+- 現在の状態
+- 信頼度
+- 知識数
+- 決定回数
 
-#### sales_dashboard_snapshots
+### AutoCall
 
-Fields:
-- id
-- snapshot_date
-- calls_today
-- appointments_today
-- appointment_rate
-- autocall_status
-- learning_status
-- forecast_json
-- risk_json
-- created_at
+- ステータス
+- キュー
+- 予約制限
+- 今日の結果
 
-#### sales_team_performance
+### アバター
 
-Fields:
-- id
-- operator
-- report_date
-- calls
-- appointments
-- appointment_rate
-- average_score
-- coaching_usage
-- learning_count
-- created_at
+- 現在の感情
+- 現在のモード
+- 現在の活動
+- アニメーションFPS
 
-## User Interface
+---
 
-Design and layout of the Sales Department Dashboard:
-- KPI cards
-- Charts
-- Operator table
-- AI performance panel
-- Risk alerts panel
-- Forecast panel
-- Learning insights panel
+## ヘルスモニター
 
-## Avatar Integration
+全体のシステム健康度（0-100）を計算
 
-Implement avatar reactions:
-- Celebration for target achievement
-- Warning for risk alerts
-- Concerned when AutoCall stops
-- Happy when learning improves
+基準:
 
-## Testing
+- データベース
+- AI モジュール
+- ダッシュボード
+- 同期
+- 学習
+- AutoCall
+- メモリ
+- 脳
 
-Implement tests for:
-- KPI calculation
-- Team performance calculation
-- AI performance calculation
-- Forecast calculation
-- Risk detection
-- Dashboard rendering
-- Avatar event integration
+---
 
-## Documentation
+## リリースレポート
 
-Create new documentation:
-- `docs/SALES_DEPARTMENT_DASHBOARD.md`
+内部リリースレポートを生成し、内容には次の要素を含む:
 
-Update existing documentation:
-- `README.md`
-- `CHANGELOG.md`
+- スプリント概要
+- 機能
+- 既知の問題
+- パフォーマンス
+- リスク
+- 次のスプリント
 
-## Restrictions
+形式としてMarkdownとPDFにエクスポート
 
-This implementation should not include any of the following:
-- External BI tools
-- Cloud analytics
-- Paid forecasting services
-- Autonomous management actions
+---
 
-## Acceptance Criteria
+## 管理者コンソール
 
-The final implementation must meet the following criteria:
-- Sales Department Dashboard is functional
-- Today Overview works correctly
-- Team Performance section works correctly
-- AI Performance section functions as expected
-- Learning Insights are displayed correctly
-- Forecasting functions accurately
-- Risk Alerts are effective
-- Avatar reactions are linked to dashboard status
-- All tests pass successfully
-- Documentation is updated
+サポート:
 
-## Deliverables
+- AIモジュールの再起動
+- 設定の再読み込み
+- ログのエクスポート
+- データベースのバックアップ
+- データベースの復元
+- メンテナンスモードの有効化
 
-Provide the following:
-- Report of changed files
-- Test results
-- Screenshot of the dashboard
-- Suggested commit message
+---
 
-Suggested Commit Message:
+## テスト
+
+以下のテストを実装:
+
+- フル統合テスト
+- ダッシュボード統合
+- 学習統合
+- アバター統合
+- AutoCall統合
+- プロダクション起動テスト
+- プロダクション終了テスト
+- ヘルスモニターテスト
+
+---
+
+## ドキュメンテーション
+
+以下を作成または更新:
+
+- 新規: docs/PRODUCTION_RELEASE_S7.md
+- 更新: README.md, CHANGELOG.md, docs/OPERATIONS.md
+
+---
+
+## 制約
+
+以下をしてはならない:
+
+- 管理者の承認を削除
+- セーフティールールの無視
+- 監査ログの無効化
+- 無制限のAutoCallを有効化
+
+---
+
+## 受け入れ基準
+
+- 全てのSprint 7モジュールが統合されていること
+- 内部ベータが正常に開始されること
+- ヘルスモニターの動作確認
+- ダッシュボードの動作確認
+- アバターの同期
+- Learning Modeの動作確認
+- AutoCall βの動作確認
+- プロダクションレポートの生成
+- テスト合格
+- ドキュメンテーションの更新
+
+---
+
+## デリバラブル
+
+以下を含むレポートを提供:
+
+- 変更されたファイル
+- 統合テスト結果
+- プロダクションダッシュボードのスクリーンショット
+- 内部リリースレポート
+- 推奨コミット
+
+### 推奨コミット
+
 ```
-feat(sales): implement Sales Department Dashboard
+release(v0.7.0): internal beta release of Musasabi AI Employee
 ```
 ```
