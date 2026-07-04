@@ -18,6 +18,7 @@ class WhisperCppHttpSttSession implements SttSession {
   constructor(
     private readonly baseUrl: string,
     private readonly onTranscript: (chunk: TranscriptChunk) => void,
+    private readonly onError: (error: unknown) => void,
   ) {}
 
   pushAudio(chunk: Buffer): void {
@@ -32,7 +33,10 @@ class WhisperCppHttpSttSession implements SttSession {
       return;
     }
     this.stopped = true;
-    void this.flush();
+    // stop()はSttSessionインターフェース上同期メソッドのため、flush()の失敗を
+    // 呼び出し元に投げ返せない。catchせずvoidで投げ捨てるとuncaught rejectionで
+    // プロセス全体が落ちるため、onErrorへ回して握りつぶす。
+    this.flush().catch((error) => this.onError(error));
   }
 
   private async flush(): Promise<void> {
@@ -50,9 +54,13 @@ class WhisperCppHttpSttSession implements SttSession {
 }
 
 export class WhisperCppHttpSttProvider implements SttProvider {
-  constructor(private readonly baseUrl: string = "http://localhost:8080") {}
+  constructor(
+    private readonly baseUrl: string = "http://localhost:8080",
+    private readonly onError: (error: unknown) => void = (error) =>
+      console.error("[WhisperCppHttpSttProvider] transcription failed:", error),
+  ) {}
 
   startStreaming(onTranscript: (chunk: TranscriptChunk) => void): SttSession {
-    return new WhisperCppHttpSttSession(this.baseUrl, onTranscript);
+    return new WhisperCppHttpSttSession(this.baseUrl, onTranscript, this.onError);
   }
 }
