@@ -48,7 +48,13 @@ async function setAvatarState(state: AvatarState): Promise<AvatarState> {
   }
   const { emit, once } = await import("@tauri-apps/api/event");
   return new Promise<AvatarState>((resolve, reject) => {
+    let unlisten: (() => void) | undefined;
     const timeout = setTimeout(() => {
+      // アバターウィンドウが応答しない場合、登録済みのリスナーを解除しておかないと
+      // 次にどこかで stateChanged が発火した際に古いPromiseへ届こうとし続け、
+      // リスナーが永久に残り続けてしまう(長時間起動するデスクトップアプリでの
+      // リーク要因になる)。
+      unlisten?.();
       reject(new Error("avatar window did not respond to setAvatarState"));
     }, AVATAR_STATE_RESPONSE_TIMEOUT_MS);
 
@@ -56,9 +62,13 @@ async function setAvatarState(state: AvatarState): Promise<AvatarState> {
       clearTimeout(timeout);
       resolve(event.payload);
     })
-      .then(() => emit(AVATAR_EVENTS.setState, state))
+      .then((unlistenFn) => {
+        unlisten = unlistenFn;
+        return emit(AVATAR_EVENTS.setState, state);
+      })
       .catch((error) => {
         clearTimeout(timeout);
+        unlisten?.();
         reject(error);
       });
   });
@@ -82,7 +92,16 @@ function buildMusasabiApi(): MusasabiWindowApi {
     getLeads,
     async runDemoCallAnalysis(): Promise<CallAnalysisSummary> {
       const summary = generateCallSummary("demo-call-001", SAMPLE_TRANSCRIPT);
-      await setAvatarState(resolveAvatarStateForSentiment(summary.overallSentiment));
+      // アバター表示への反映は付随的な演出であり、分析結果そのものではない。
+      // アバターウィンドウの起動待ちなどで同期が失敗しても、既に計算済みの
+      // 分析結果は呼び出し元に返す(Electron版は同一プロセス内の同期処理だった
+      // ため失敗し得なかったが、Tauri版はウィンドウ間のイベント往復になったため
+      // タイムアウトし得る)。
+      try {
+        await setAvatarState(resolveAvatarStateForSentiment(summary.overallSentiment));
+      } catch (error) {
+        console.warn("avatar state sync failed after demo call analysis", error);
+      }
       return summary;
     },
     async speakCoachingMessage(text: string) {

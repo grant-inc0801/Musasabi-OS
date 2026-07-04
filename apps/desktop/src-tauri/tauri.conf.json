@@ -5,7 +5,7 @@
   "identifier": "com.musasabi.desktop",
   "build": {
     "frontendDist": "../../sales-workspace/dist",
-    "beforeDevCommand": "npm --prefix ../../sales-workspace run build"
+    "beforeDevCommand": "npm --prefix ../sales-workspace run build"
   },
   "app": {
     "windows": [
