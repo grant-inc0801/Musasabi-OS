@@ -81,7 +81,15 @@ export function toFileMakerFieldData(
 
   if (lead.name !== undefined) fieldData[mapping.name] = lead.name;
   if (lead.company !== undefined) fieldData[mapping.company] = lead.company;
-  if (lead.status !== undefined) fieldData[mapping.status] = reverseStatusMapping[lead.status];
+  if (lead.status !== undefined) {
+    const fmStatus = reverseStatusMapping[lead.status];
+    if (!fmStatus) {
+      // statusMappingがLeadStatusの全値をカバーしていない場合、undefinedがセットされ
+      // JSON.stringify時にキーごと消えて更新がサイレントに欠落するため、明示的にエラーにする。
+      throw new Error(`No FileMaker status mapping for LeadStatus "${lead.status}"`);
+    }
+    fieldData[mapping.status] = fmStatus;
+  }
   if (lead.priorityScore !== undefined) fieldData[mapping.priorityScore] = lead.priorityScore;
   if (lead.lastContactedAt !== undefined && lead.lastContactedAt !== null) {
     fieldData[mapping.lastContactedAt] = lead.lastContactedAt;

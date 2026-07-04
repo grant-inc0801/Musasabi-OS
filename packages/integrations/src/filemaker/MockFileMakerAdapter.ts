@@ -1,7 +1,5 @@
 import type { FileMakerAdapter, FileMakerFieldData, FileMakerFindQuery, FileMakerRecord } from "./types";
 
-let nextId = 1;
-
 function matchesQuery(fieldData: FileMakerFieldData, query: Array<Record<string, string>>): boolean {
   // FileMaker find query はOR条件の配列。各要素内はAND条件(部分一致)。
   return query.some((clause) =>
@@ -17,11 +15,12 @@ function matchesQuery(fieldData: FileMakerFieldData, query: Array<Record<string,
  */
 export class MockFileMakerAdapter implements FileMakerAdapter {
   private recordsByLayout = new Map<string, FileMakerRecord[]>();
+  private nextId = 1;
 
   seed(layout: string, records: FileMakerFieldData[]): void {
     const existing = this.recordsByLayout.get(layout) ?? [];
     const seeded = records.map((fieldData) => ({
-      recordId: String(nextId++),
+      recordId: String(this.nextId++),
       modId: "0",
       fieldData,
     }));
@@ -37,7 +36,7 @@ export class MockFileMakerAdapter implements FileMakerAdapter {
   }
 
   async create(layout: string, fieldData: FileMakerFieldData): Promise<FileMakerRecord> {
-    const record: FileMakerRecord = { recordId: String(nextId++), modId: "0", fieldData };
+    const record: FileMakerRecord = { recordId: String(this.nextId++), modId: "0", fieldData };
     const existing = this.recordsByLayout.get(layout) ?? [];
     this.recordsByLayout.set(layout, [...existing, record]);
     return record;
@@ -54,5 +53,9 @@ export class MockFileMakerAdapter implements FileMakerAdapter {
       fieldData: { ...records[index].fieldData, ...fieldData },
       modId: String(Number(records[index].modId) + 1),
     };
+  }
+
+  async close(): Promise<void> {
+    // インメモリ実装にセッションは無いため何もしない。
   }
 }

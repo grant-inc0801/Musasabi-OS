@@ -88,6 +88,20 @@ export class RealFileMakerDataApiAdapter implements FileMakerAdapter {
     return { recordId: body.response.recordId, modId: body.response.modId, fieldData };
   }
 
+  /**
+   * FileMaker Serverのセッションを解放する。呼び出し側は使い終わったら必ず呼ぶこと。
+   * セッションを解放しないまま長時間稼働するプロセスがアダプタを作り続けると、
+   * FileMaker Server側の同時セッション数上限に達し、以降のログインが失敗する。
+   */
+  async close(): Promise<void> {
+    if (!this.token) {
+      return;
+    }
+    const token = this.token;
+    this.token = null;
+    await fetch(`${this.baseUrl}/sessions/${encodeURIComponent(token)}`, { method: "DELETE" });
+  }
+
   async update(layout: string, recordId: string, fieldData: FileMakerFieldData): Promise<void> {
     await this.request(
       `/layouts/${encodeURIComponent(layout)}/records/${encodeURIComponent(recordId)}`,

@@ -44,3 +44,11 @@ test("toFileMakerFieldData omits fields that were not provided", () => {
   const fieldData = toFileMakerFieldData({ name: "田中太郎" });
   assert.deepEqual(Object.keys(fieldData), ["Name"]);
 });
+
+test("toFileMakerFieldData throws rather than silently dropping Status for an incomplete custom statusMapping", () => {
+  const incompleteMapping = { New: "new" as const }; // "lost" 等が未定義
+  assert.throws(
+    () => toFileMakerFieldData({ status: "lost" }, undefined, incompleteMapping),
+    /No FileMaker status mapping/,
+  );
+});

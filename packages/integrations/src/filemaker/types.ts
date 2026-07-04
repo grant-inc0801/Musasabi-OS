@@ -27,4 +27,9 @@ export interface FileMakerAdapter {
   find(request: FileMakerFindQuery): Promise<FileMakerRecord[]>;
   create(layout: string, fieldData: FileMakerFieldData): Promise<FileMakerRecord>;
   update(layout: string, recordId: string, fieldData: FileMakerFieldData): Promise<void>;
+  /**
+   * FileMaker Serverのセッションを明示的に解放する。呼び出し側は使い終わったアダプタで
+   * 必ず呼ぶこと(セッション数上限に達すると以降のログインが失敗する)。
+   */
+  close(): Promise<void>;
 }
