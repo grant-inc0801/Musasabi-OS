@@ -4,7 +4,7 @@
 Q-20260704-001
 
 ## Status
-waiting_for_chatgpt
+resolved (2026-07-04, decided directly by the human product owner in-session — option 1, keep Electron)
 
 ## Context
 Working on branch `claude/musasabi-epic-beta-001-c6svi5` (the branch this Claude
@@ -67,7 +67,7 @@ state it in the directive so it can be weighed against the rework cost.
 Q-20260704-002
 
 ## Status
-waiting_for_chatgpt
+resolved (2026-07-04, decided directly by the human product owner in-session — option 1, docs/*.md canonical, folding in useful ideas from the other set later)
 
 ## Context
 Two independent sets of foundational design documents currently exist:
