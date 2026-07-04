@@ -1,3 +1,6 @@
 // IPC プロトコル・型定義・共通ユーティリティを置く場所。
-// 実装は Phase 1 以降、他パッケージの通信要件が固まり次第追加する。
-export {};
+export const IPC_CHANNELS = {
+  avatarSetState: "musasabi:avatar:setState",
+  avatarStateChanged: "musasabi:avatar:stateChanged",
+  getAppVersion: "musasabi:getAppVersion",
+} as const;
