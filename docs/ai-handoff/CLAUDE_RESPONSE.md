@@ -1,5 +1,43 @@
 # Claude Response
 
+> 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
+> 記述する。それ以前のエントリは英語のまま履歴として残す。
+
+## 2026-07-04 — 標準言語を日本語に設定(D-20260704-003)
+
+### 実装内容
+- 人間プロダクトオーナーの指示により、Musasabi OS の標準言語を日本語とする
+  ルールを `docs/ai-handoff/DECISION_LOG.md`(D-20260704-003)に記録した
+- 以降の報告・質問・コミュニケーション、および `CLAUDE_RESPONSE.md` /
+  `CLAUDE_QUESTIONS.md` / `NEXT_ACTION.md` / GitHub Issue / PR 本文などを
+  すべて日本語で記述する運用に切り替えた
+- 指定された報告フォーマット(実装内容/修正内容/テスト結果/発見した問題/
+  今後の課題/次に実施する内容/ChatGPTへの確認事項)を今後の報告に適用する
+
+### 修正内容
+- `docs/ai-handoff/NEXT_ACTION.md` を最新状況を反映した日本語版に書き換えた
+  (解決済みの Q-20260704-001/002 を指す古い内容を更新)
+
+### テスト結果
+- ドキュメントのみの変更のためコード変更なし。ビルド・テストへの影響なし
+
+### 発見した問題
+- なし
+
+### 今後の課題
+- 次フェーズ優先順位の残作業(Issue #183、FileMaker/Zoom Phone 本番接続、
+  Windows実機検証)はいずれも環境依存でこの環境では実施不可(詳細は下記の
+  英語エントリおよび `NEXT_ACTION.md` を参照)
+
+### 次に実施する内容
+- ChatGPT の設計判断が必要な項目は現時点でなし。実機・実エンジン・実アカウントが
+  必要な残作業は環境が整い次第着手する
+
+### ChatGPTへの確認事項(ある場合のみ)
+- なし
+
+---
+
 ## Completed Directive
 Next-phase priority order (product owner, 2026-07-04): priorities 1
 (Tauri desktop migration), 2 (avatar on Tauri), and 4 (FileMaker/Zoom
