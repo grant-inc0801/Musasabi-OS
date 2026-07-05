@@ -1,0 +1,46 @@
+name: Beta Build
+
+# β版評価ビルドの生成。手動実行のみ(workflow_dispatch)。自動トリガーは持たない。
+# secrets を必要とせず、成果物を artifact として保存する。実配信・署名は行わない。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Build desktop app (if defined)
+        run: npm run build:desktop-app --if-present
+
+      - name: Package Windows installer (if defined)
+        run: npm run package:windows --if-present
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: musasabi-beta-build-${{ github.sha }}
+          path: |
+            apps/sales-workspace/dist
+            apps/desktop/src-tauri/target/release/bundle
+          if-no-files-found: warn
+          retention-days: 14
