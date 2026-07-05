@@ -3,6 +3,40 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-05 — β-002 優先順位①「Tauri製品版の完成」
+
+### 実装内容
+- **製品化フロントエンド基盤(PR #195)**: `packages/shared` に `Logger`(レベルフィルタ・
+  リングバッファ・差し替え可能シンク・時刻インジェクト)と初回セットアップ判定
+  (`setupState`)を追加。`apps/sales-workspace` に `ErrorBoundary`(日本語エラー画面)、
+  `FirstRunSetup`(初回セットアップウィザード)、共有ロガー・永続化を追加
+- **Windows Installer(msi)(PR #197)**: `tauri.conf.json` の `bundle.targets` を
+  `["nsis", "msi"]` に明示し、.exe(NSIS)に加えて .msi(WiX)を生成する設定に変更
+
+### 修正内容
+- なし
+
+### テスト結果
+- `npm run build`(モノレポ全体): 成功
+- `npm run test --workspaces`: 105/105 成功(shared に15件追加)
+- `tsc --noEmit`(sales-workspace): エラーなし
+- `tauri.conf.json`: JSON妥当性・`bundle.targets` のスキーマ適合を確認
+
+### 発見した問題
+- なし
+
+### 今後の課題(Pending として Issue 化済み)
+- Auto Update(`tauri-plugin-updater`)有効化: 署名鍵・配信サーバーが必要(Issue #196)
+- msi/exe インストーラの実生成確認(`tauri build`): Windows実機/CI が必要(Issue #191)
+- ログ画面UI: 優先順位④(Settings拡張)で実装予定
+
+### 次に実施する内容
+- 優先順位②「MUSAアバターシステム(VRM)」に着手。`packages/avatar-3d` に
+  `three.js` + `@pixiv/three-vrm` による VRM 対応基盤、Avatar Manager、感情システムを実装
+
+### ChatGPTへの確認事項(ある場合のみ)
+- なし
+
 ## 2026-07-04 — Phase β-002 へ移行(方針記録)
 
 ### 実装内容
