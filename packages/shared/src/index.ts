@@ -11,3 +11,24 @@ export const AVATAR_EVENTS = {
   setState: "musasabi://avatar/set-state",
   stateChanged: "musasabi://avatar/state-changed",
 } as const;
+
+// 製品化フェーズ(Phase β-002 優先順位①)の共通ユーティリティ。
+export {
+  Logger,
+  ConsoleLogSink,
+  type LogLevel,
+  type LogEntry,
+  type LogSink,
+  type LoggerOptions,
+} from "./logger";
+export {
+  SETUP_STEPS,
+  initialSetupState,
+  isStepComplete,
+  nextIncompleteStep,
+  isSetupComplete,
+  markStepComplete,
+  parseSetupState,
+  type SetupStepId,
+  type SetupState,
+} from "./setupState";
