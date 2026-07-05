@@ -343,12 +343,17 @@ Epic β-001 完了後の製品化フェーズ(DECISION_LOG.md D-20260704-004)。
 - **②-2 実レンダラー(Pending、WebGL 依存)**: `three.js` + `@pixiv/three-vrm` による
   `VrmRenderer` 実装、VRoid Studio 製 VRM の読み込み・描画、Tauri アバターウィンドウの
   2D絵文字→VRM 置き換え、吹き出しUI(発話テキスト表示)。WebGL 実描画はこの環境で
-  検証できないため、実 VRM 読み込み・描画確認は Windows実機/ブラウザで行う
+  検証できないため、実 VRM 読み込み・描画確認は Windows実機/ブラウザで行う(Issue #200)
 
-### ③ AI Company System
-- `packages/ai-company` に Organization Bible の組織モデル(会社/本部/部門/部署/チーム、
-  役職、AI社員、承認チェーン)を型・データとして実装
-- Company Genome / Organization Bible の内容をシステムが参照できる形に反映
+### ③ AI Company System(実装済み)
+- `packages/ai-company` に Organization Bible の組織モデルを実装:
+  - `types.ts` — 組織階層レベル、役職ランク→権限レベル(`RANK_AUTHORITY_LEVEL`)、
+    AI社員、承認チェーン
+  - `organization.ts` — 8本部と部門/部署のマスタデータ(Organization Bible 第1・3章)
+  - `orgQueries.ts` — 組織ツリー探索(親子・祖先・所属本部の解決、循環データ耐性)
+  - `approval.ts` — 承認フロー(次の承認者、承認可否、承認経路。第5章)
+- 決定論的な純粋関数として実装しユニットテスト済み。永続化・承認ワークフロー実行・
+  Organization Dashboard は次フェーズ(第5章)
 
 ### ④ Settings(設定画面のみ、実接続なし)
 - FileMaker/Zoom Phone連携準備(β-001の連携準備UIを拡張)、VOICEVOX/Whisper/OpenAI/
