@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560" role="img" aria-label="祖母の菓子店の温もりの記憶と、硝子の檻に立つ現在の令子">
+  <defs>
+    <radialGradient id="warm05b" cx="0.5" cy="0.55" r="0.6">
+      <stop offset="0" stop-color="#ffe6b0"/>
+      <stop offset="0.5" stop-color="#e79a52"/>
+      <stop offset="1" stop-color="#5a2f22" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cold05b" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a2740"/>
+      <stop offset="1" stop-color="#0b1220"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="560" fill="#080a12"/>
+  <!-- RIGHT: cold present — the glass cage -->
+  <rect x="18" y="18" width="864" height="524" fill="url(#cold05b)"/>
+  <!-- LEFT: warm memory glow bleeding in -->
+  <rect x="18" y="18" width="430" height="524" fill="url(#cold05b)"/>
+  <ellipse cx="230" cy="300" rx="250" ry="260" fill="url(#warm05b)" opacity="0.9"/>
+  <!-- memory side: little shop window with a child silhouette -->
+  <g transform="translate(150,250)">
+    <!-- shop awning -->
+    <rect x="-6" y="-80" width="200" height="18" fill="#7a3a2a" opacity="0.85"/>
+    <text x="94" y="-66" text-anchor="middle" font-family="'Yu Mincho','Hiragino Mincho ProN',serif" font-size="15" fill="#ffe9c0" letter-spacing="6">スミレ</text>
+    <!-- window frame -->
+    <rect x="0" y="-60" width="188" height="150" fill="#3a2418" opacity="0.6"/>
+    <rect x="10" y="-50" width="168" height="130" fill="#ffdca0" opacity="0.55"/>
+    <line x1="94" y1="-50" x2="94" y2="80" stroke="#3a2418" stroke-width="4" opacity="0.6"/>
+    <line x1="10" y1="15" x2="178" y2="15" stroke="#3a2418" stroke-width="4" opacity="0.6"/>
+    <!-- little girl silhouette inside, reaching for a madeleine -->
+    <g fill="#4a2c1a">
+      <path d="M60,80 c0,-30 8,-46 24,-46 c16,0 24,16 24,46 z"/>
+      <circle cx="84" cy="26" r="12"/>
+      <path d="M96,34 l26,-14 l6,10 l-26,14 z"/>
+    </g>
+    <!-- glowing madeleine -->
+    <ellipse cx="130" cy="18" rx="11" ry="8" fill="#ffe27a"/>
+    <ellipse cx="130" cy="18" rx="5" ry="4" fill="#fff7dc"/>
+    <!-- aroma sparkles -->
+    <g fill="#fff2c4">
+      <path d="M150,-10 l2,7 l7,2 l-7,2 l-2,7 l-2,-7 l-7,-2 l7,-2 z"/>
+      <path d="M170,30 l1.6,5 l5,1.6 l-5,1.6 l-1.6,5 l-1.6,-5 l-5,-1.6 l5,-1.6 z"/>
+    </g>
+  </g>
+  <!-- divider: a pane of glass down the middle -->
+  <line x1="450" y1="30" x2="450" y2="512" stroke="#7fa8d0" stroke-width="2" opacity="0.5"/>
+  <g stroke="#bcd8f0" stroke-width="1" opacity="0.25">
+    <line x1="430" y1="60" x2="470" y2="120"/>
+    <line x1="470" y1="200" x2="432" y2="270"/>
+    <line x1="438" y1="360" x2="466" y2="430"/>
+  </g>
+  <!-- RIGHT: present Reiko standing behind glass, in the cage -->
+  <!-- birdcage motif -->
+  <g stroke="#5f7ba0" stroke-width="2" fill="none" opacity="0.55" transform="translate(660,290)">
+    <path d="M-120,150 L120,150 L120,-70 C120,-150 -120,-150 -120,-70 Z"/>
+    <path d="M0,-150 L0,-176 M-14,-176 a14,10 0 0 1 28,0"/>
+    <line x1="-80" y1="150" x2="-80" y2="-120"/>
+    <line x1="-40" y1="150" x2="-40" y2="-142"/>
+    <line x1="0" y1="150" x2="0" y2="-150"/>
+    <line x1="40" y1="150" x2="40" y2="-142"/>
+    <line x1="80" y1="150" x2="80" y2="-120"/>
+    <path d="M-120,10 L120,10 M-116,-70 L116,-70"/>
+  </g>
+  <!-- Reiko silhouette, cold blue rim light, holding a single warm light in cupped hands -->
+  <g transform="translate(660,300)">
+    <g fill="#0c1626">
+      <path d="M0,-2 c-17,0 -28,13 -28,30 l0,90 c0,7 6,12 14,12 l28,0 c8,0 14,-5 14,-12 l0,-90 c0,-17 -11,-30 -28,-30 z"/>
+      <circle cx="0" cy="-20" r="19"/>
+      <!-- long hair -->
+      <path d="M-18,-28 c-18,12 -24,50 -18,92 l11,0 c-3,-36 4,-66 18,-78 z" fill="#25344a"/>
+      <path d="M18,-28 c18,12 24,50 18,92 l-11,0 c3,-36 -4,-66 -18,-78 z" fill="#25344a"/>
+      <!-- cupped hands lower, holding warmth -->
+      <path d="M-30,70 c-4,-16 8,-28 30,-30 c22,2 34,14 30,30 c-8,-10 -20,-15 -30,-15 c-10,0 -22,5 -30,15 z"/>
+    </g>
+    <!-- the small warm ember she cradles (memory of スミレ) -->
+    <circle cx="0" cy="56" r="26" fill="#e79a52" opacity="0.35"/>
+    <circle cx="0" cy="56" r="11" fill="#ffe27a"/>
+    <circle cx="0" cy="56" r="5" fill="#fff7dc"/>
+    <!-- cold rim light on her -->
+    <path d="M-19,-39 a19,19 0 0 1 8,3" stroke="#8fb8e0" stroke-width="2" fill="none" opacity="0.7"/>
+  </g>
+  <rect x="18" y="502" width="864" height="40" fill="#000000" opacity="0.42"/>
+  <text x="36" y="529" font-family="'Yu Mincho','Hiragino Mincho ProN',serif" font-size="19" fill="#ffe9c0" letter-spacing="2">――好きなものを、好きと言える子で、いなさいね。</text>
+  <rect x="18" y="18" width="864" height="524" fill="none" stroke="#7fa8d0" stroke-width="1.5" opacity="0.5"/>
+</svg>
