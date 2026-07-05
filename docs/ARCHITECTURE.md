@@ -335,12 +335,15 @@ Epic β-001 完了後の製品化フェーズ(DECISION_LOG.md D-20260704-004)。
   設定を有効化しない。Issue #196 で待機管理)
 
 ### ② MUSAアバターシステム(VRM)
-- `packages/avatar-3d` に VRM対応基盤(`three.js` + `@pixiv/three-vrm`)
-- VRoid Studio で作成した VRM ファイルを読み込める `AvatarManager`(ロード・切替)
-- 感情システム(`packages/avatar-2d` の状態機械を拡張・共通化)、待機モーション、
-  吹き出しUI(発話テキスト表示)
-- レンダリングはTauri WebView上で行う。アバターウィンドウ(既存の第2ウィンドウ)を
-  2D絵文字からVRM表示へ段階的に置き換える
+- **②-1 レンダラー非依存ロジック層(実装済み)**: `packages/avatar-3d` に、three.js に
+  依存しない `VrmRenderer` インターフェース、`AvatarState`→VRM 表情プリセットの決定論的
+  マッピング、呼吸・まばたきの待機モーション、これらを束ねる `AvatarManager` を実装
+  (ユニットテスト済み)。感情システムは `avatar-2d` の状態機械を共有し、表現方法だけを
+  差し替える設計
+- **②-2 実レンダラー(Pending、WebGL 依存)**: `three.js` + `@pixiv/three-vrm` による
+  `VrmRenderer` 実装、VRoid Studio 製 VRM の読み込み・描画、Tauri アバターウィンドウの
+  2D絵文字→VRM 置き換え、吹き出しUI(発話テキスト表示)。WebGL 実描画はこの環境で
+  検証できないため、実 VRM 読み込み・描画確認は Windows実機/ブラウザで行う
 
 ### ③ AI Company System
 - `packages/ai-company` に Organization Bible の組織モデル(会社/本部/部門/部署/チーム、
