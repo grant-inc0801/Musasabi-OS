@@ -1,80 +1,72 @@
 # ChatGPT Directive
 
 ## Directive ID
-D-20260704-002
+D-20260705-002
 
 ## Title
-Adopt Tauri as the official Musasabi OS desktop shell
+日本語ログ運用を反映し、β版出力と製品化フェーズを進める
 
-## Related Context
-Claude Code asked whether to proceed with Electron or wait for GitHub-side confirmation. The product owner has confirmed that Musasabi OS should proceed with **Tauri**, not Electron.
+## 決定
+Claude Codeは、今後の報告・Issue・PR・handoff docsを日本語中心で記述してください。
 
-## Decision
-Use **Tauri + React + TypeScript** as the official Windows Desktop App foundation for Musasabi OS.
+あわせて、Musasabi OSは次の実装フェーズとして、β版評価ビルドの出力準備と製品化フェーズを進めます。
 
-Electron is not the preferred production direction for Musasabi OS. Any existing Electron references should be treated as legacy wording unless they describe compatibility notes or migration history.
+## 理由
+現時点でサンドボックス環境内で安全に進められる主要実装は進んでいます。次は、ユーザーが実際に触れるβ版を出力し、Windows実機で確認できる状態に近づける必要があります。
 
-## Reason
-Tauri is better aligned with Musasabi OS goals:
+## 実装指示
 
-- Lightweight desktop runtime
-- Lower memory usage than Electron
-- Better fit for a resident desktop AI avatar
-- Strong Windows desktop packaging path
-- Rust backend extensibility
-- Good long-term fit for local-first AI employee OS
+1. 最新のmainをpullする。
+2. `docs/ai-governance/Japanese_Log_Policy.md` を読む。
+3. 今後のClaude Code実行報告・Issue・PR・handoff docsを日本語中心にする。
+4. `docs/ai-handoff/CLAUDE_RESPONSE.md` を日本語フォーマットで更新する。
+5. β版評価ビルドに必要な手順を整理する。
+6. 可能な範囲で、β版評価ビルド用のスクリプト・README・チェックリストを整備する。
+7. Windows実機・実API・実エンジンが必要な項目はPending Issueとして管理する。
+8. 実装可能な範囲は自律的に進める。
 
-## Implementation Instruction
-Claude Code must proceed as follows:
+## 現在の優先順位
 
-1. Treat Tauri as the canonical desktop shell.
-2. Update architecture docs to state Tauri is official:
-   - `docs/architecture/ARCHITECTURE.md`
-   - `docs/architecture/SYSTEM_OVERVIEW.md`
-   - any desktop-related docs discovered during implementation
-3. If any document says Electron is the main desktop shell, replace that with Tauri unless explicitly marked as legacy.
-4. Continue Phase1 Windows Desktop App implementation using Tauri.
-5. Do not wait on Issue #166 or older Electron wording before continuing.
-6. Keep `docs/**/*.md` as formal design documents.
-7. Continue the ChatGPT ↔ Claude Code GitHub handoff loop.
-8. If new questions arise, write them to `docs/ai-handoff/CLAUDE_QUESTIONS.md` and create a `chatgpt-decision-needed` issue.
+1. Tauri Desktop Productization
+2. β版評価ビルドの出力準備
+3. MUSA Avatar System
+4. AI Company System
+5. Settings readiness UI
+6. Plugin System
 
-## Current Priority
-Continue Epic β-001 in this order:
+## Pendingとして扱う項目
 
-1. Windows Desktop App using Tauri
-2. MUSA resident avatar
-3. Sales Workspace beta polish
-4. FileMaker sync
-5. Zoom Phone sync
-6. Voice Analysis
-7. Voice Engine
-8. 3D Avatar
-9. Beta v0.9 installer
+以下は環境依存のため、この環境では実装完了扱いにしない。
 
-## Safety Rules
-Claude Code must not:
+- Windows実機検証
+- MSI / EXE 実生成
+- Auto Update有効化
+- three.js実レンダラー・実VRM描画
+- VOICEVOX / whisper.cpp 実接続
+- FileMaker / Zoom Phone 実接続
 
-- Force push.
-- Expose secrets.
-- Enable AutoCall execution.
-- Delete major modules without directive.
-- Close issues #88, #93, or #120 without explicit directive.
-- Overwrite production FileMaker data.
-- Reintroduce runaway issue-open workflow automation.
+## 安全ルール
 
-## PR and Issue Direction
-- PR #168 may be merged because it disables the runaway issue-open workflow.
-- Issue #167 should not become the next implementation priority. It may be closed as `not planned` or deferred because authentication is not part of the immediate Epic β-001 MVP path.
+Claude Codeは以下を行わないこと。
 
-## Acceptance Criteria
-This directive is complete when:
+- force push
+- secretsの表示
+- AutoCall実行
+- FileMaker本番DBへの書き込み
+- Zoom Phone本番APIへの接続
+- 実認証情報の保存
+- runaway workflowの再導入
 
-- Tauri is documented as the official desktop shell.
-- Electron is removed from current architecture as the primary shell.
-- Phase1 implementation continues on the Tauri path.
-- Claude Code updates `CLAUDE_RESPONSE.md` with what changed.
-- Claude Code continues toward Epic β-001.
+## 完了条件
 
-## Next Action
-Pull latest main, read this directive, update docs to confirm Tauri, then continue Phase1 Windows Desktop App implementation.
+このDirectiveは以下を満たしたら完了。
+
+- 日本語ログ運用が反映されている。
+- β版評価ビルドの手順が整理されている。
+- Pending項目が明確にIssueまたはdocsで管理されている。
+- `CLAUDE_RESPONSE.md` が日本語で更新されている。
+- テストが通る。
+
+## 次のアクション
+
+最新のmainをpullし、このDirectiveと `Japanese_Log_Policy.md` を読んだ上で、β版評価ビルドの出力準備と製品化フェーズを進めてください。
