@@ -2,6 +2,37 @@
 
 Chronological record of directives and their outcomes. Newest entries at the top.
 
+## 2026-07-04 — D-20260704-004: Phase β-002 へ移行、標準構成を Tauri + VRoid/VRM に確定
+
+人間プロダクトオーナーの指示(2026-07-04)により、Epic β-001 の実装は完了と判断し、
+**Phase β-002「Windows Desktop Productization」**へ移行する。あわせて Musasabi OS の
+標準構成を以下に確定する。
+
+- **正式デスクトップ基盤: Tauri**(D-20260704-002 を継承・確定)
+- **正式アバター基盤: VRoid Studio + VRM**。VRoid Studio で作成した VRM ファイルを
+  読み込める設計とする(`packages/avatar-3d` の three.js + VRM 基盤を正式採用。
+  従来の `packages/avatar-2d` 絵文字プレースホルダーは暫定表示として残置)
+
+### β-002 優先順位
+1. **Tauri製品版の完成** — Windows Installer(msi)、Auto Update対応準備、設定画面整理、
+   ログ管理、エラー画面、初回セットアップ
+2. **MUSAアバターシステム** — VRM対応基盤、VRoid Studio連携基盤、Avatar Manager、
+   感情システム、待機モーション、吹き出しUI
+3. **AI Company System** — 部署/部門/役職/AI社員/Company Genome/Organization Bible を
+   システムへ反映(`packages/ai-company`)
+4. **Settings** — FileMaker/Zoom Phone連携準備、VOICEVOX/Whisper/OpenAI/Claude設定、
+   ログ画面。**すべて設定画面のみ実装し、実アカウント・実API接続は行わない**
+5. **Plugin System** — 将来機能をPlugin化できる基盤(Plugin SDK Bible準拠)
+
+### Pending(環境依存、実装ではなく待機状態として Issue を維持)
+- Windows実機検証 / VOICEVOX実接続 / whisper.cpp実接続(Issue #183) /
+  FileMaker実接続 / Zoom Phone実接続
+
+### 自動実行ルール(継続)
+実装・テスト・Commit・Push・PR・ドキュメント更新は自動で進める。停止条件は
+**設計変更・アーキテクチャ変更・認証情報・外部サービス契約・Windows実機が必要**の
+場合のみ。それ以外は継続する。
+
 ## 2026-07-04 — D-20260704-003: Musasabi OS の標準言語は日本語
 
 人間プロダクトオーナーの指示(2026-07-04)により、**Musasabi OS の標準言語を

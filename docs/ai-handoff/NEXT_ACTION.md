@@ -4,27 +4,28 @@
 
 ## ChatGPT 向け
 現時点で ChatGPT の設計判断を要する未解決事項はなし。
-Q-20260704-001(Electron vs Tauri)・Q-20260704-002(正式な設計文書セット)は
-いずれも解決済み(`DECISION_LOG.md` 参照。Tauri が公式、`docs/*.md` が正式)。
 
-## Claude Code 向け
-Epic β-001 の次フェーズ優先順位(`docs/ARCHITECTURE.md` 第4.2章)のうち、
-このサンドボックス環境で実施可能なものは完了済み。
+## Claude Code 向け — Phase β-002「Windows Desktop Productization」
+Epic β-001 は完了。DECISION_LOG.md D-20260704-004 に基づき製品化フェーズを進める。
+標準構成は **Tauri(デスクトップ)+ VRoid Studio/VRM(アバター)**。
 
-- 優先順位1 Tauri Desktop移行 … 完了(PR #186)
-- 優先順位2 MUSAアバター表示基盤(Tauri) … 完了(PR #186)
-- 優先順位3 Sales Workspace … 優先順位4のSettings画面追加として実施(PR #187)
-- 優先順位4 FileMaker/Zoom Phone連携準備UI(Mockのみ) … 完了(PR #187)
-- 優先順位5a 話者分離(Issue #182) … 完了(PR #188、Issue クローズ済み)
+優先順位順に、自律ループ(Issue→ブランチ→実装→テスト→PR→レビュー→マージ)で進める:
 
-### 残作業(環境依存でこの環境では実施不可)
-以下はいずれも設計判断ではなく、実機・実エンジン・実アカウントが必要な環境的制約:
+1. **Tauri製品版の完成** — msi Installer、Auto Update準備、設定画面整理、ログ管理、
+   エラー画面、初回セットアップ
+2. **MUSAアバターシステム(VRM)** — VRM対応基盤、VRoid Studio連携、Avatar Manager、
+   感情システム、待機モーション、吹き出しUI
+3. **AI Company System** — `packages/ai-company` に組織モデルを反映
+4. **Settings** — 各種設定画面のみ(実接続なし)
+5. **Plugin System** — Plugin基盤
 
-1. **Issue #183** — VOICEVOX / whisper.cpp 実エンジンとの接続検証
-   (実エンジンプロセスが必要)
-2. **FileMaker / Zoom Phone 本番接続の実装** — 実アカウント・認証情報が必要
-   (現状はMockアダプタ + 連携準備UIのみ)
-3. **Windows実機検証** — `docs/WINDOWS_VERIFICATION_CHECKLIST.md` の全項目
-   (Windows実機、`cargo tauri build` に必要なシステムライブラリが必要)
+詳細は `docs/ARCHITECTURE.md` 第4.4章。
 
-各ステップ完了後は `CLAUDE_RESPONSE.md` と `DECISION_LOG.md` を日本語で更新する。
+### Pending(環境依存、実装せず Issue を待機状態で維持)
+- Windows実機検証 / VOICEVOX実接続 / whisper.cpp実接続(Issue #183) /
+  FileMaker実接続 / Zoom Phone実接続
+
+### 停止条件
+設計変更・アーキテクチャ変更・認証情報・外部サービス契約・Windows実機が必要な場合のみ
+停止し、GitHub Issue(`chatgpt-decision-needed`)と `CLAUDE_QUESTIONS.md` に日本語で記載。
+それ以外は自動で継続する。

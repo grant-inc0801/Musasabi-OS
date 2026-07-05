@@ -106,12 +106,12 @@ Development Bible 第5章に、`ai-company` を追加した構成。
 
 ```
 apps/
-  desktop/            Desktop Application(Electron、Windowsインストーラ、トレイ常駐)
-  sales-workspace/    Sales Workspace β 版 UI(React + Vite)
+  desktop/            Desktop Application(Tauri、Windowsインストーラ、トレイ常駐)
+  sales-workspace/    Sales Workspace β 版 UI(React + Vite。Tauriのフロントエンド)
 
 packages/
-  avatar-2d/          MUSA常駐アバター(2Dオーバーレイ、状態機械)
-  avatar-3d/          3Dアバター(three.js + VRM、リップシンク)
+  avatar-2d/          MUSA常駐アバター(2Dオーバーレイ、状態機械。暫定表示)
+  avatar-3d/          MUSAアバター正式基盤(three.js + VRM、VRoid Studio製VRM対応、リップシンク)
   voice-engine/       TTS/STT(発話合成・音声認識)
   voice-analysis/     通話音声解析(感情分析・キーワード抽出)
   ai-core/            AI Sales Employee ロジック(旧 ai-sales-core)
@@ -317,6 +317,45 @@ Mockアダプタ(`MockFileMakerAdapter`/`MockZoomPhoneAdapter`)は引き続き
 `main`ブランチへの統合は、Epic β-001の主要フェーズが完了し次第、
 別途ユーザーに確認の上で行う(Security Bible 第1章、可逆性の低い操作は慎重に扱う)。
 質問や設計判断が必要な場合のみループを止め、それ以外は自律的に継続する。
+
+## 4.4 Phase β-002 ロードマップ(Windows Desktop Productization)
+
+Epic β-001 完了後の製品化フェーズ(DECISION_LOG.md D-20260704-004)。標準構成は
+**Tauri(デスクトップ基盤)+ VRoid Studio/VRM(アバター基盤)**。優先順位順に進める。
+
+### ① Tauri製品版の完成
+- Windows Installer(msi) — `tauri.conf.json` の `bundle.targets` に `msi`(WiX)を追加
+- Auto Update対応準備 — `tauri-plugin-updater` の設定雛形(実際の配信サーバー・署名鍵は
+  Pending。設定の枠のみ)
+- 設定画面整理・ログ管理・エラー画面・初回セットアップ(フロントエンド側で実装)
+
+### ② MUSAアバターシステム(VRM)
+- `packages/avatar-3d` に VRM対応基盤(`three.js` + `@pixiv/three-vrm`)
+- VRoid Studio で作成した VRM ファイルを読み込める `AvatarManager`(ロード・切替)
+- 感情システム(`packages/avatar-2d` の状態機械を拡張・共通化)、待機モーション、
+  吹き出しUI(発話テキスト表示)
+- レンダリングはTauri WebView上で行う。アバターウィンドウ(既存の第2ウィンドウ)を
+  2D絵文字からVRM表示へ段階的に置き換える
+
+### ③ AI Company System
+- `packages/ai-company` に Organization Bible の組織モデル(会社/本部/部門/部署/チーム、
+  役職、AI社員、承認チェーン)を型・データとして実装
+- Company Genome / Organization Bible の内容をシステムが参照できる形に反映
+
+### ④ Settings(設定画面のみ、実接続なし)
+- FileMaker/Zoom Phone連携準備(β-001の連携準備UIを拡張)、VOICEVOX/Whisper/OpenAI/
+  Claude の設定画面、ログ画面
+- **すべて設定画面のみ。実アカウント・実API接続・実credential保存は行わない**
+  (D-20260704-004、Security Bible 第4章)
+
+### ⑤ Plugin System
+- Plugin SDK Bible 準拠のプラグイン基盤(`plugins/` ディレクトリ、Plugin Manifest、
+  ロード機構)を実装し、将来機能をPlugin化できるようにする
+
+### Pending(環境依存、実装せず Issue を待機状態で維持)
+Windows実機検証 / VOICEVOX実接続 / whisper.cpp実接続(Issue #183) / FileMaker実接続 /
+Zoom Phone実接続。これらは実機・実エンジン・実アカウントが必要なため、この開発環境では
+実装・検証しない。
 
 ## 5. Epic β-001 以降(Bible優先順位に基づく中長期)
 
