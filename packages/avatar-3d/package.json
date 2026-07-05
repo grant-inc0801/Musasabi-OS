@@ -2,9 +2,18 @@
   "name": "@musasabi/avatar-3d",
   "version": "0.1.0",
   "private": true,
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "npm --prefix ../avatar-2d run build && tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/*.test.js"
+  },
   "dependencies": {
-    "@musasabi/shared": "*"
+    "@musasabi/shared": "*",
+    "@musasabi/avatar-2d": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.5.4"
   }
 }
