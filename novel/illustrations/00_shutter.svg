@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560" role="img" aria-label="夕暮れ、シャッターの下りた商店街に立つ少年">
+  <defs>
+    <linearGradient id="sky00" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b2136"/>
+      <stop offset="0.45" stop-color="#6d3b4b"/>
+      <stop offset="0.75" stop-color="#c56a4e"/>
+      <stop offset="1" stop-color="#e7a765"/>
+    </linearGradient>
+    <linearGradient id="shutter00" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4a4a52"/>
+      <stop offset="1" stop-color="#6b5350"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="560" fill="#1c1620"/>
+  <rect x="18" y="18" width="864" height="524" fill="url(#sky00)"/>
+  <!-- distant setting sun -->
+  <circle cx="450" cy="300" r="70" fill="#f2c47a" opacity="0.85"/>
+  <circle cx="450" cy="300" r="120" fill="#f2c47a" opacity="0.15"/>
+  <!-- silhouetted rooftops of shopping street receding -->
+  <g fill="#241b28">
+    <polygon points="18,300 130,300 130,220 200,220 200,300 320,300 320,542 18,542"/>
+    <polygon points="580,300 700,300 700,225 770,225 770,300 882,300 882,542 580,542"/>
+    <rect x="120" y="250" width="10" height="292"/>
+    <rect x="770" y="250" width="10" height="292"/>
+  </g>
+  <!-- the closed shutter, center — glowing red-grey from sunset -->
+  <g>
+    <rect x="352" y="300" width="196" height="200" fill="url(#shutter00)"/>
+    <g stroke="#2b2229" stroke-width="3" opacity="0.7">
+      <line x1="352" y1="318" x2="548" y2="318"/>
+      <line x1="352" y1="336" x2="548" y2="336"/>
+      <line x1="352" y1="354" x2="548" y2="354"/>
+      <line x1="352" y1="372" x2="548" y2="372"/>
+      <line x1="352" y1="390" x2="548" y2="390"/>
+      <line x1="352" y1="408" x2="548" y2="408"/>
+      <line x1="352" y1="426" x2="548" y2="426"/>
+      <line x1="352" y1="444" x2="548" y2="444"/>
+      <line x1="352" y1="462" x2="548" y2="462"/>
+      <line x1="352" y1="480" x2="548" y2="480"/>
+    </g>
+    <!-- sunset glow catching the shutter -->
+    <rect x="352" y="300" width="196" height="200" fill="#e8804d" opacity="0.18"/>
+    <!-- faded signboard -->
+    <rect x="356" y="270" width="188" height="34" fill="#2a2028"/>
+    <text x="450" y="294" text-anchor="middle" font-family="'Yu Mincho','Hiragino Mincho ProN',serif" font-size="20" fill="#c9a06a" letter-spacing="6">灰谷乾物店</text>
+  </g>
+  <!-- ground -->
+  <rect x="18" y="500" width="864" height="42" fill="#171019"/>
+  <!-- boy silhouette, back to us, looking up at the shutter -->
+  <g fill="#0d0910">
+    <ellipse cx="450" cy="500" rx="34" ry="8" opacity="0.5"/>
+    <path d="M450 388
+             c-13,0 -22,10 -22,24
+             c0,10 5,17 12,21
+             l-6,52
+             c-1,9 6,15 16,15
+             c10,0 17,-6 16,-15
+             l-6,-52
+             c7,-4 12,-11 12,-21
+             c0,-14 -9,-24 -22,-24 z"/>
+    <circle cx="450" cy="372" r="15"/>
+  </g>
+  <!-- caption ribbon -->
+  <rect x="18" y="502" width="864" height="40" fill="#000000" opacity="0.35"/>
+  <text x="36" y="529" font-family="'Yu Mincho','Hiragino Mincho ProN',serif" font-size="19" fill="#f0dcc0" letter-spacing="2">――あの灰色を、俺は忘れない。</text>
+  <rect x="18" y="18" width="864" height="524" fill="none" stroke="#e7a765" stroke-width="1.5" opacity="0.6"/>
+</svg>

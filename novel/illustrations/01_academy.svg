@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560" role="img" aria-label="丘の上にそびえる星霜経営学園と、坂の下から見上げる少年">
+  <defs>
+    <linearGradient id="sky01" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#afcbe6"/>
+      <stop offset="1" stop-color="#e9eef2"/>
+    </linearGradient>
+    <linearGradient id="hill01" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8fae7a"/>
+      <stop offset="1" stop-color="#5f7f52"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="560" fill="#1c1620"/>
+  <rect x="18" y="18" width="864" height="524" fill="url(#sky01)"/>
+  <!-- clouds -->
+  <g fill="#ffffff" opacity="0.7">
+    <ellipse cx="200" cy="110" rx="70" ry="20"/>
+    <ellipse cx="260" cy="120" rx="55" ry="16"/>
+    <ellipse cx="700" cy="90" rx="80" ry="22"/>
+  </g>
+  <!-- hill -->
+  <path d="M18,420 C260,300 420,250 560,258 C700,266 820,330 882,420 L882,542 L18,542 Z" fill="url(#hill01)"/>
+  <path d="M18,470 C300,400 600,400 882,470 L882,542 L18,542 Z" fill="#4a6741"/>
+  <!-- academy on the hill (white academy) -->
+  <g transform="translate(470,150)">
+    <!-- central tower -->
+    <rect x="-24" y="-40" width="48" height="150" fill="#f4f1ea"/>
+    <polygon points="-32,-40 32,-40 0,-92" fill="#7a90a8"/>
+    <rect x="-6" y="-72" width="12" height="34" fill="#c9a06a"/>
+    <circle cx="0" cy="-96" r="6" fill="#e7c66a"/>
+    <!-- wings -->
+    <rect x="-140" y="30" width="116" height="80" fill="#eae5db"/>
+    <rect x="24" y="30" width="116" height="80" fill="#eae5db"/>
+    <polygon points="-140,30 -24,30 -82,4" fill="#8fa3b8"/>
+    <polygon points="24,30 140,30 82,4" fill="#8fa3b8"/>
+    <!-- windows -->
+    <g fill="#6f86a0">
+      <rect x="-128" y="48" width="14" height="24"/><rect x="-104" y="48" width="14" height="24"/>
+      <rect x="-80" y="48" width="14" height="24"/><rect x="-56" y="48" width="14" height="24"/>
+      <rect x="42" y="48" width="14" height="24"/><rect x="66" y="48" width="14" height="24"/>
+      <rect x="90" y="48" width="14" height="24"/><rect x="114" y="48" width="14" height="24"/>
+      <rect x="-14" y="0" width="12" height="22"/><rect x="2" y="0" width="12" height="22"/>
+      <rect x="-14" y="34" width="12" height="22"/><rect x="2" y="34" width="12" height="22"/>
+    </g>
+  </g>
+  <!-- winding path up the hill -->
+  <path d="M450,520 C440,470 470,430 452,400 C436,372 468,340 460,300" fill="none" stroke="#d8cdb6" stroke-width="14" stroke-linecap="round" opacity="0.9"/>
+  <!-- lone student at the bottom of the slope, bag on shoulder, looking up -->
+  <g fill="#161018" transform="translate(450,470)">
+    <ellipse cx="0" cy="46" rx="22" ry="6" opacity="0.4"/>
+    <path d="M0,-30 c-11,0 -18,8 -18,20 l-4,44 c-1,7 5,12 13,12 l18,0 c8,0 14,-5 13,-12 l-4,-44 c0,-12 -7,-20 -18,-20 z"/>
+    <circle cx="0" cy="-42" r="12"/>
+    <!-- boston bag -->
+    <rect x="10" y="-6" width="30" height="20" rx="4" fill="#3a2c22"/>
+    <path d="M12,-6 q13,-10 26,0" fill="none" stroke="#3a2c22" stroke-width="3"/>
+  </g>
+  <rect x="18" y="502" width="864" height="40" fill="#000000" opacity="0.35"/>
+  <text x="36" y="529" font-family="'Yu Mincho','Hiragino Mincho ProN',serif" font-size="19" fill="#f0dcc0" letter-spacing="2">――ここに、答えがある。それだけだ。</text>
+  <rect x="18" y="18" width="864" height="524" fill="none" stroke="#7a90a8" stroke-width="1.5" opacity="0.7"/>
+</svg>
