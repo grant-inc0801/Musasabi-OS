@@ -2,6 +2,21 @@
 
 Chronological record of directives and their outcomes. Newest entries at the top.
 
+## 2026-07-05 — D-20260705-001: 日本語ログ運用ポリシーの正式採用
+
+人間プロダクトオーナーの指示(2026-07-05)により、`main` で新設された
+`docs/ai-governance/Japanese_Log_Policy.md` を epic ブランチへ取り込み、**Musasabi OS の
+正式な日本語ログ運用ポリシー**として遵守する。D-20260704-003(標準言語=日本語)を
+具体化・強化するもの。
+
+- 実行ログ・進捗メッセージ・報告・エラー説明・テスト結果要約・GitHub Issue/PR本文/
+  レビューコメント・handoff docs・`docs/**/*.md` はすべて日本語で記述する
+- コード識別子(クラス名/関数名/変数名/ファイル名/API名/ライブラリ名/Gitコマンド/
+  npmコマンド)や外部ツールの自動英語ログは英語のままでよい
+- 報告フォーマット(実装完了報告/テスト結果/エラー報告)は本ポリシーの雛形に従う
+- デバッグ目的のログには `[DEBUG]` を付す
+- 詳細は `docs/ai-governance/Japanese_Log_Policy.md`
+
 ## 2026-07-04 — D-20260704-004: Phase β-002 へ移行、標準構成を Tauri + VRoid/VRM に確定
 
 人間プロダクトオーナーの指示(2026-07-04)により、Epic β-001 の実装は完了と判断し、
