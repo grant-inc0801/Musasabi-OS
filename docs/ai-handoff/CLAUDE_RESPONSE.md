@@ -3,6 +3,43 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-05 — β-002 優先順位②-2 Pending化・③「AI Company System」
+
+### 実装内容
+- **②-2 Pending化**: three.js + @pixiv/three-vrm の実レンダラー・実VRM描画は WebGL
+  依存でこの環境では検証不可のため、Issue #200 として Pending 管理に切り出した
+- **③ AI Company System(PR #201)**: `packages/ai-company` に Organization Bible
+  (docs/ORGANIZATION_BIBLE.md)の組織モデルを実装
+  - `types.ts` — 組織階層レベル、役職ランク→権限レベル、AI社員、承認チェーン
+  - `organization.ts` — 8本部と部門/部署のマスタデータ(第1・3章)
+  - `orgQueries.ts` — 組織ツリー探索(親子・祖先・所属本部の解決、循環データ耐性)
+  - `approval.ts` — 承認フロー(次の承認者・承認可否・承認経路、第5章)
+  - すべて決定論的な純粋関数として実装、ユニットテスト18件を追加
+  - 未実装の `@musasabi/memory` への依存を package.json から除去
+
+### 修正内容
+- なし
+
+### テスト結果
+- `npm run build`(モノレポ全体): 成功
+- `npm run test --workspaces`: 140/140 成功(ai-company に18件追加)
+
+### 発見した問題
+- なし
+
+### 今後の課題
+- ④ 各種設定画面(FileMaker/Zoom Phone/VOICEVOX/whisper.cpp/OpenAI/Claude の
+  readiness、ログ・診断・接続状態表示。実API接続・実認証情報保存はしない)
+- ⑤ Plugin System(registry/manifest/permissions/lifecycle/有効化・無効化)
+- 別途、GitHub Actions による安全なCI/CD自律開発ループ基盤の追加(ユーザー指示)
+
+### 次に実施する内容
+- 本③のマージ後、ユーザー指示の GitHub Actions 基盤(ci / chatgpt-directive-check /
+  decision-needed / beta-build / handoff-status)を安全設計で追加し、その後④⑤を継続
+
+### ChatGPTへの確認事項(ある場合のみ)
+- なし
+
 ## 2026-07-05 — β-002 優先順位①「Tauri製品版の完成」
 
 ### 実装内容
