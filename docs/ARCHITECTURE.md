@@ -324,10 +324,15 @@ Epic β-001 完了後の製品化フェーズ(DECISION_LOG.md D-20260704-004)。
 **Tauri(デスクトップ基盤)+ VRoid Studio/VRM(アバター基盤)**。優先順位順に進める。
 
 ### ① Tauri製品版の完成
-- Windows Installer(msi) — `tauri.conf.json` の `bundle.targets` に `msi`(WiX)を追加
-- Auto Update対応準備 — `tauri-plugin-updater` の設定雛形(実際の配信サーバー・署名鍵は
-  Pending。設定の枠のみ)
-- 設定画面整理・ログ管理・エラー画面・初回セットアップ(フロントエンド側で実装)
+- **Windows Installer(msi)** — 実装済み。`tauri.conf.json` の `bundle.targets` を
+  `["nsis", "msi"]` に明示し、NSIS(.exe)に加えて WiX による msi インストーラを生成する。
+  実ビルド(`tauri build`)による生成物確認は Windows実機/CIで行う(Pending、Issue #191)
+- **ログ管理・エラー画面・初回セットアップ** — 実装済み(PR #195)。`packages/shared` の
+  `Logger`/`setupState` と、`apps/sales-workspace` の `ErrorBoundary`/`FirstRunSetup`
+- **設定画面整理** — 基本のタブ構造(ホーム/設定)は実装済み。各種設定の拡張は優先順位④
+- **Auto Update対応準備** — `tauri-plugin-updater` による自動更新。**Pending**(有効化には
+  署名鍵の生成と更新配信サーバーが必要。秘密鍵をリポジトリに置けないため、この環境では
+  設定を有効化しない。Issue #196 で待機管理)
 
 ### ② MUSAアバターシステム(VRM)
 - `packages/avatar-3d` に VRM対応基盤(`three.js` + `@pixiv/three-vrm`)
