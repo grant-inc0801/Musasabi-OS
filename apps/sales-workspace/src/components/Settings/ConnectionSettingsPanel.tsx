@@ -1,27 +1,30 @@
 import { useState } from "react";
 import { connectionStatus } from "@musasabi/integrations";
+import { appLogger } from "../../lib/appLogger";
 
 const {
   resolveConnectionStatus,
   isDraftComplete,
+  isSecretField,
   CONNECTION_STATUS_LABEL_JA,
   REQUIRED_CREDENTIAL_FIELDS,
+  INTEGRATION_IDS,
+  INTEGRATION_LABEL_JA,
+  INTEGRATION_CATEGORY,
+  INTEGRATION_CATEGORY_LABEL_JA,
   MockCredentialStore,
 } = connectionStatus;
 
 type IntegrationId = connectionStatus.IntegrationId;
+type IntegrationCategory = connectionStatus.IntegrationCategory;
 type CredentialDraft = connectionStatus.CredentialDraft;
 
 // 実接続は行わないため、保存先はメモリ上のみのMockCredentialStore
 // (docs/ARCHITECTURE.md 第4.3章)。アプリを再起動すれば内容は失われる。
 const credentialStore = new MockCredentialStore();
 
-const INTEGRATION_LABELS_JA: Record<IntegrationId, string> = {
-  filemaker: "FileMaker",
-  zoom_phone: "Zoom Phone",
-};
-
-const FIELD_LABELS_JA: Record<IntegrationId, Record<string, string>> = {
+// 各サービスのフィールド表示ラベル。未定義のフィールドはフィールド名をそのまま使う。
+const FIELD_LABELS_JA: Partial<Record<IntegrationId, Record<string, string>>> = {
   filemaker: {
     host: "サーバーURL(例: https://filemaker.example.com)",
     database: "データベース名",
@@ -33,14 +36,33 @@ const FIELD_LABELS_JA: Record<IntegrationId, Record<string, string>> = {
     clientId: "Client ID",
     clientSecret: "Client Secret",
   },
+  voicevox: {
+    endpoint: "エンドポイントURL(例: http://127.0.0.1:50021)",
+  },
+  whisper_cpp: {
+    endpoint: "エンドポイントURL(例: http://127.0.0.1:8080)",
+  },
+  openai: {
+    apiKey: "APIキー(ダミー値のみ)",
+    model: "モデル名(例: gpt-4o)",
+  },
+  claude: {
+    apiKey: "APIキー(ダミー値のみ)",
+    model: "モデル名(例: claude-sonnet-5)",
+  },
 };
 
-const SECRET_FIELD_PATTERN = /password|secret/i;
+function fieldLabel(integrationId: IntegrationId, field: string): string {
+  return FIELD_LABELS_JA[integrationId]?.[field] ?? field;
+}
 
-/** FileMakerのhostフィールドのみ、最低限の形式チェックを行う(その他は完全性のみ判定)。 */
-function validateDraftFormat(integrationId: IntegrationId, draft: CredentialDraft): boolean {
-  if (integrationId === "filemaker" && draft.host) {
-    return draft.host.startsWith("http://") || draft.host.startsWith("https://");
+// URL 形式が必要なフィールド(host/endpoint)は http(s):// で始まることを最低限確認する。
+function validateDraftFormat(_integrationId: IntegrationId, draft: CredentialDraft): boolean {
+  for (const field of ["host", "endpoint"]) {
+    const value = draft[field];
+    if (value && !(value.startsWith("http://") || value.startsWith("https://"))) {
+      return false;
+    }
   }
   return true;
 }
@@ -69,6 +91,7 @@ function IntegrationSettingsCard({ integrationId }: { integrationId: Integration
 
   function handleSave(): void {
     credentialStore.save(integrationId, draft);
+    appLogger.info("connection settings draft saved (dummy values)", { integrationId });
   }
 
   function handleReset(): void {
@@ -76,13 +99,14 @@ function IntegrationSettingsCard({ integrationId }: { integrationId: Integration
     setDraft({});
     setSetupStarted(false);
     setWasReset(true);
+    appLogger.info("connection settings draft reset", { integrationId });
   }
 
   return (
     <fieldset style={{ marginBottom: "1.5rem" }}>
-      <legend>{INTEGRATION_LABELS_JA[integrationId]}</legend>
+      <legend>{INTEGRATION_LABEL_JA[integrationId]}</legend>
       <p>
-        ステータス: <strong>{CONNECTION_STATUS_LABEL_JA[status]}</strong>
+        接続ステータス: <strong>{CONNECTION_STATUS_LABEL_JA[status]}</strong>
       </p>
       <p style={{ color: "#555", fontSize: "0.9rem", maxWidth: "36rem" }}>
         本番接続は次フェーズで実装予定です。ここには<strong>ダミー値のみ</strong>
@@ -92,10 +116,10 @@ function IntegrationSettingsCard({ integrationId }: { integrationId: Integration
       {requiredFields.map((field) => (
         <div key={field} style={{ marginBottom: "0.5rem" }}>
           <label>
-            {FIELD_LABELS_JA[integrationId][field]}
+            {fieldLabel(integrationId, field)}
             <br />
             <input
-              type={SECRET_FIELD_PATTERN.test(field) ? "password" : "text"}
+              type={isSecretField(field) ? "password" : "text"}
               value={draft[field] ?? ""}
               onChange={(event) => handleFieldChange(field, event.target.value)}
               placeholder="ダミー値"
@@ -113,12 +137,27 @@ function IntegrationSettingsCard({ integrationId }: { integrationId: Integration
   );
 }
 
+const CATEGORY_ORDER: IntegrationCategory[] = ["external", "voice_engine", "ai_provider"];
+
 export function ConnectionSettingsPanel() {
   return (
-    <section aria-label="連携設定">
-      <h2>連携設定(準備UI)</h2>
-      <IntegrationSettingsCard integrationId="filemaker" />
-      <IntegrationSettingsCard integrationId="zoom_phone" />
+    <section aria-label="連携・プロバイダ設定">
+      <h2>連携・プロバイダ設定(準備UI)</h2>
+      <p style={{ color: "#555", fontSize: "0.9rem", maxWidth: "40rem" }}>
+        FileMaker / Zoom Phone / VOICEVOX / whisper.cpp / OpenAI / Claude の接続設定を
+        準備します。このフェーズでは<strong>実API接続・実認証情報の保存は行いません</strong>。
+      </p>
+      {CATEGORY_ORDER.map((category) => {
+        const ids = INTEGRATION_IDS.filter((id) => INTEGRATION_CATEGORY[id] === category);
+        return (
+          <div key={category} style={{ marginBottom: "2rem" }}>
+            <h3>{INTEGRATION_CATEGORY_LABEL_JA[category]}</h3>
+            {ids.map((id) => (
+              <IntegrationSettingsCard key={id} integrationId={id} />
+            ))}
+          </div>
+        );
+      })}
     </section>
   );
 }
