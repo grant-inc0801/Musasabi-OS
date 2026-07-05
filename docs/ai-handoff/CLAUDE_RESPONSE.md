@@ -3,6 +3,50 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-05 — 安全なGitHub Actions CI/CD自律開発ループ基盤
+
+### 実装内容
+ユーザー指示により、runaway を再発させない安全設計で GitHub Actions を追加した(PR #202)。
+
+- **ワークフロー**(`.github/workflows/`):
+  - `ci.yml` — PR/push 時に検証(`npm ci`/`npm test`/`npm run build`、必須docs存在、
+    conflict marker、secrets露出)。`contents: read` の最小権限で、コミット・push・
+    Issue生成は一切しない
+  - `chatgpt-directive-check.yml` — `CHATGPT_DIRECTIVE.md` 更新時に必須handoff docsを
+    検証し、handoff状態(次アクション)をジョブサマリに出力
+  - `decision-needed.yml` — `chatgpt-decision-needed` ラベル付与時のみ、確認待ちの
+    テンプレコメントを投稿(`issues.opened` では動かない=実装を開始しない)
+  - `beta-build.yml` — `workflow_dispatch` のみ。test/build/(存在すれば)desktop-app/
+    windows パッケージを実行し artifact を保存
+  - `handoff-status.yml` — `workflow_dispatch` のみ。handoff docs の現在状態を出力
+- **スクリプト**(`scripts/ci/`): `check-required-docs.js` / `check-conflict-markers.js` /
+  `check-secret-patterns.js`(値は出力せずファイル:行のみ報告) / `handoff-status.js`
+
+### 安全設計(runaway再発防止)
+- `issues.opened` で実装を開始しない(decision-needed は labeled のみ)
+- main へ直接 push しない/force push しない/Issue を自動生成しない
+- 自動実行は PR/push 検証と手動 `workflow_dispatch` のみ
+- secrets 値は絶対に出力しない(検出時もファイル:行とパターン名のみ)
+- 旧 runaway `ai-pipeline.yml` は Phase 0 で `workflow_dispatch` 専用に無効化済み(据え置き)
+
+### テスト結果
+- 4スクリプトすべてローカル実行で正常終了(必須docs 9件OK、conflict/secret 検出なし、
+  handoff-status 出力OK)
+- ワークフロー5本すべて YAML 妥当性を確認
+- モノレポ全体の `npm run test --workspaces`: 140/140 成功(既存)
+
+### 発見した問題
+- なし
+
+### 今後の課題
+- ④ 各種設定画面(readiness/ログ/診断)、⑤ Plugin System
+
+### 次に実施する内容
+- 本CI基盤のマージ後、④ 各種設定画面 → ⑤ Plugin System を継続
+
+### ChatGPTへの確認事項(ある場合のみ)
+- なし
+
 ## 2026-07-05 — β-002 優先順位②-2 Pending化・③「AI Company System」
 
 ### 実装内容

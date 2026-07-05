@@ -1,0 +1,25 @@
+name: Handoff Status
+
+# handoff docs の現在状態(最新Directive ID / 最新Claude Response / Pending Questions /
+# Current Next Action)を確認する。手動実行のみ(workflow_dispatch)。出力は
+# ジョブサマリに書き出す。secrets は扱わない。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Handoff status summary
+        run: node scripts/ci/handoff-status.js >> "$GITHUB_STEP_SUMMARY"
