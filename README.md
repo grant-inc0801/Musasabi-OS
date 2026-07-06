@@ -99,11 +99,29 @@ npm install
 npm run dev:desktop     # フロントをビルドして Tauri ウィンドウで起動
 ```
 
-Windows インストーラ(NSIS/MSI)の作成:
+Windows インストーラ(NSIS `.exe` / MSI `.msi`)の作成:
 
 ```
-npm run package:win
+npm run build:desktop    # = npm run package:win(tauri build)
 ```
+
+成果物は `apps/desktop/src-tauri/target/release/bundle/nsis/*.exe` および
+`bundle/msi/*.msi` に出力される。
+
+### 3. GitHub Actions でインストーラを取得(ローカルにRust環境が無い場合)
+
+1. GitHub リポジトリの **Actions → Beta Build** を開き、**Run workflow** で手動実行する
+   (`workflow_dispatch` のみ。自動トリガーは無い)
+2. 完了後、実行結果ページの **Artifacts** から
+   `musasabi-beta-windows-<sha>`(`.exe` / `.msi`)をダウンロードする
+3. β版として配布する場合は、artifact の内容を確認したうえで GitHub Releases に
+   手動でアップロードする(自動公開・署名は行わない)
+
+### アプリアイコン
+
+β版では白黒ムササビの仮アイコンを採用している(`apps/desktop/src-tauri/icons/`)。
+再生成は `node scripts/generate-beta-icon.js`(依存パッケージ不要)。
+正式アイコンへの差し替えは後続フェーズで行う。
 
 ### 2. ブラウザで起動(Rust 環境が無い場合の代替)
 

@@ -80,9 +80,13 @@
 
 ## 8. インストーラー確認
 
-- [ ] `tauri build` による NSIS インストーラーがビルドできる
-  (`apps/desktop/src-tauri/tauri.conf.json` の `bundle.windows.nsis`)
+- [ ] `npm run build:desktop`(= `tauri build`)で NSIS `.exe` / MSI `.msi` がビルドできる
+  (出力先: `apps/desktop/src-tauri/target/release/bundle/{nsis,msi}/`)
+- [ ] GitHub Actions **Beta Build** の手動実行で `musasabi-beta-windows-<sha>`
+  artifact(`.exe` / `.msi`)がダウンロードできる
 - [ ] インストーラーからのインストール → 起動 → アンインストールが正常に行える
+- [ ] タスクバー・ウィンドウ・インストーラに白黒ムササビの仮アイコンが表示される
+  (`apps/desktop/src-tauri/icons/`。正式アイコンは後続フェーズ)
 
 ## 9. β版評価ビルドの画面操作確認(D-20260706-002)
 
