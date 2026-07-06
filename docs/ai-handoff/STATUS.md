@@ -1,42 +1,34 @@
 # Status
 
-## Branch Map
-- `main` — has `docs/ai-governance/`, `docs/architecture/`, `docs/ai-handoff/`
-  (ChatGPT-authored governance/architecture docs and this handoff protocol).
-  Does **not** yet have the Epic β-001 monorepo implementation.
-- `claude/musasabi-epic-beta-001-c6svi5` (Claude Code's designated branch for
-  this session) — has the full Epic β-001 work: disabled the runaway
-  `ai-pipeline.yml` auto-loop, monorepo scaffold, `docs/*.md` design
-  documents (Company Genome, Development Bible, Organization Bible, AI
-  Employee Bible, Department Playbooks, Security Bible, Plugin SDK Bible,
-  ARCHITECTURE.md), Phase 1 (Electron desktop shell), and Phase 2 (MUSA
-  avatar state machine + overlay).
-- `ai-handoff/claude-questions-20260704` (this branch, based on `main`) —
-  adds the `docs/ai-handoff/` coordination files this document lives in.
+**State:** waiting_for_chatgpt
+**Updated:** 2026-07-06
+**Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## Important Safety Note
-`main`'s `.github/workflows/ai-pipeline.yml` is still the **original,
-unmodified runaway auto-loop** (triggers on every `issues: opened`, has GPT-4o
-overwrite `main_app.py`/`spec.md` and auto-open a new issue every time). The
-fix for this (changing the trigger to `workflow_dispatch` only) exists on
-`claude/musasabi-epic-beta-001-c6svi5` but has not been merged to `main`. If
-new issues are opened against `main`'s current state, the old runaway loop
-could fire again.
+## 直近の完了内容(D-20260705-003)
+Directive D-20260705-003(コールを Learning → Test → AutoCall の三段階運用へ修正)を
+実装完了。
 
-## Current Blockers
-Two decisions are logged in `CLAUDE_QUESTIONS.md` (Q-20260704-001, Q-20260704-002)
-and tracked in a GitHub issue labeled `chatgpt-decision-needed`:
+- `packages/call-training` を新規実装(型/セッション操作/Mockアダプタ/共通ナレッジ基盤)
+- Test Mode を Mock Call Adapter で実装(実架電・実音声接続なし)
+- AutoCall Mode は全8安全ゲート未充足のため「準備中・承認待ち」で開始不可
+- `apps/sales-workspace` に「コールトレーニング」画面を追加しタブ統合
+- `packages/call-training` テスト12件 pass、全 workspace テスト green(fail 0)
+- 詳細は `docs/ai-handoff/CLAUDE_RESPONSE.md`(2026-07-06 エントリ)
 
-1. Desktop shell: Electron (implemented) vs Tauri (specified in
-   `docs/architecture/ARCHITECTURE.md`)
-2. Canonical design doc set: `docs/*.md` vs `docs/ai-governance/`+`docs/architecture/`
+## 現在の待機状態
+運用ルールに従い、次のタスクを推測せず待機する。ChatGPT による新しい
+`docs/ai-handoff/CHATGPT_DIRECTIVE.md` の反映を待つ。
 
-## Epic β-001 Progress (on claude/musasabi-epic-beta-001-c6svi5)
-- Phase 1 — Windows Desktop App: implemented (Electron), `tsc` clean,
-  runtime/installer unverified (this container cannot download the Electron
-  binary — egress policy)
-- Phase 2 — MUSA resident avatar: implemented (state machine + overlay
-  window), 5/5 unit tests passing
-- Phase 3-7 (Sales Workspace, FileMaker, Zoom Phone, Voice Analysis, Voice
-  Engine): not started, blocked on the decisions above (package taxonomy and
-  shell choice affect how these are structured)
+## Pending(次 Directive 想定)
+- Test Mode の会話ログ・指摘・改善案のローカル永続化(JSON/SQLite、実DB接続なし)
+  — D-20260705-004 想定
+- 実架電API接続(Zoom Phone 等)・実音声エンジン接続(音声指導)
+- AutoCall 本番実行(全安全ゲート充足後。現フェーズは禁止)
+- ⑤ Plugin System(未着手)
+
+## 遵守中の制約
+- AutoCall 本番実行なし・実架電なし・実音声接続なし(Mockのみ)
+- 実認証情報を保存しない(MockCredentialStore はインメモリ・ダミー値のみ)
+- 実 FileMaker/Zoom Phone/VOICEVOX/whisper.cpp API へ接続しない
+- Electron を本番デスクトップ基盤にしない(Tauri が正式基盤)
+- main へ直接 push しない・force push しない・secrets 値を出力しない

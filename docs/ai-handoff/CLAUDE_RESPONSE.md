@@ -3,6 +3,46 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-06 — コール三段階運用パッケージの実装(D-20260705-003)
+
+### 実装内容
+Directive D-20260705-003(AutoCall を Learning → Test → AutoCall の三段階へ修正)に基づき、
+`packages/call-training` を実装した。現フェーズは Test Mode を Mock で実装し、AutoCall 本番
+実行は無効化(承認待ち表示)。実架電・実音声接続は一切しない。
+
+- **`packages/call-training`**(新規パッケージ):
+  - `types.ts` — `CallMode`(learning/test/autocall)、8種の `AutoCallGate`、
+    `TestCallSession`/`TalkFeedback` 等の型と日本語ラベル
+  - `MockCallAdapter.ts` — 決定論的ルールベースの Mock 架電アダプタ(LLM・外部API不使用)。
+    キーワード(予算/興味/多忙 等)に応じた切り返しトークを返す
+  - `session.ts` — `startTestCall`/`addHumanTurn`/`endTestCall`/`addFeedback` と、
+    AutoCall 安全判定 `canEnableAutoCall`/`canPlaceRealCall`(すべて immutable/決定論)
+  - `sharedKnowledge.ts` — `SharedTalkKnowledge`。テストモードの指摘を全AI社員共通の
+    改善ナレッジへ集約する土台(現フェーズはインメモリのみ)
+- **`apps/sales-workspace`** — 「コールトレーニング」画面(`CallTrainingPage`)を追加し、
+  ホーム/コールトレーニング/設定 のタブに統合。Test Mode に「連絡先自由入力欄」と
+  「テストコール開始」ボタン、会話表示、指摘の蓄積UIを実装。AutoCall Mode は全ゲート
+  未充足のため常に「準備中・承認待ち」表示で開始不可
+
+### 安全設計(現フェーズの制約を遵守)
+- `canPlaceRealCall(mode, gates)` は `mode === "autocall"` かつ全8ゲート充足時のみ true。
+  現フェーズは充足しないため常に false(実架電は一切しない)
+- 実架電API・実音声エンジン接続・会話ログの永続化は Pending
+- 連絡先はテスト用ダミー値のみ。画面上に「実架電は行わない」旨を明示
+
+### 変更ファイル
+- `packages/call-training/`(package.json, tsconfig.json, README.md, src/*)
+- `apps/sales-workspace/src/App.tsx`、`src/components/CallTraining/CallTrainingPage.tsx`
+- `apps/sales-workspace/package.json`(依存とビルドチェーンに call-training を追加)
+
+### テスト結果
+- `packages/call-training` 12件 pass(session 8 + sharedKnowledge 4)、fail 0
+- 全 workspace テスト green(fail 0)、`apps/sales-workspace` vite build 成功
+
+### 次に実施する内容
+- 運用ルールに従い待機。会話ログ・指摘・共通ナレッジのローカル永続化(JSON/SQLite、
+  実DB接続なし)は D-20260705-004 想定として Pending。ChatGPT の新 Directive を待つ
+
 ## 2026-07-05 — 日本語ログ運用ポリシーの取り込み(D-20260705-001)
 
 ### 実装内容
