@@ -79,7 +79,9 @@ function encodeIco(pngBuf, size) {
   return Buffer.concat([header, pngBuf]);
 }
 
-// ---- 白黒ムササビの図形定義(正規化座標 0..1) ----
+// ---- 白黒ムササビの図形定義(正規化座標 0..1、ブランド画像準拠) ----
+// 黒の角丸四角の上に、右上へ滑空する白いムササビのシルエット
+// (頭+耳+前脚、飛膜の翼、稲妻形の尻尾)を描く。
 
 function inCircle(x, y, cx, cy, r) {
   const dx = x - cx;
@@ -93,29 +95,58 @@ function inRoundRect(x, y, cx, cy, hw, hh, cr) {
   return dx * dx + dy * dy <= cr * cr && Math.abs(x - cx) <= hw && Math.abs(y - cy) <= hh;
 }
 
+// 滑空ムササビのシルエット(時計回りの多角形)。ブランド画像をトレースした近似。
+const SQUIRREL = [
+  [0.80, 0.245], // 鼻先
+  [0.755, 0.215], // 額
+  [0.70, 0.205], // 頭頂
+  [0.665, 0.16], // 耳先
+  [0.635, 0.225], // 耳の付け根(くぼみ)
+  [0.575, 0.27], // 首の背
+  [0.46, 0.335], // 背中〜飛膜上縁
+  [0.335, 0.375], // 飛膜上縁
+  [0.235, 0.385], // 翼端(左)
+  [0.33, 0.45], // 飛膜の谷
+  [0.415, 0.505], // 飛膜下の膨らみ
+  [0.345, 0.60], // 稲妻の入り
+  [0.185, 0.635], // 稲妻スパイク(左)
+  [0.315, 0.675], // 稲妻の谷
+  [0.145, 0.80], // 尻尾の先(左下)
+  [0.415, 0.635], // 尻尾下縁→腹
+  [0.53, 0.545], // 腹
+  [0.655, 0.46], // 胸
+  [0.745, 0.40], // 肩
+  [0.855, 0.315], // 前脚(上腕)
+  [0.885, 0.29], // 前脚の先
+  [0.875, 0.33], // 手のひら
+  [0.79, 0.385], // 前脚の下側
+  [0.755, 0.345], // 顎下
+  [0.775, 0.29], // 口元
+];
+
+function pointInPolygon(x, y, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i];
+    const [xj, yj] = poly[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
 /**
  * 1点をサンプルして [r,g,b,a] を返す。
- * 黒い円形バッジの上に、白い滑空ムササビ(飛膜=角丸四角、頭、耳、尻尾)を描く。
+ * 黒の角丸四角バッジの上に白いムササビ、目は黒で抜く。
  */
 function samplePoint(x, y) {
-  if (!inCircle(x, y, 0.5, 0.5, 0.48)) {
+  if (!inRoundRect(x, y, 0.5, 0.5, 0.47, 0.47, 0.13)) {
     return [0, 0, 0, 0]; // バッジ外は透明
   }
-  // 白パーツ: 飛膜(角丸四角)/頭/耳/尻尾
-  const membrane = inRoundRect(x, y, 0.5, 0.55, 0.31, 0.19, 0.12);
-  const head = inCircle(x, y, 0.5, 0.3, 0.13);
-  const earL = inCircle(x, y, 0.415, 0.195, 0.05);
-  const earR = inCircle(x, y, 0.585, 0.195, 0.05);
-  const tail = inRoundRect(x, y, 0.5, 0.85, 0.045, 0.08, 0.045);
-  let white = membrane || head || earL || earR || tail;
-  if (white) {
-    // 黒パーツ(白の上に重ねる): 目・鼻
-    const eyeL = inCircle(x, y, 0.452, 0.29, 0.028);
-    const eyeR = inCircle(x, y, 0.548, 0.29, 0.028);
-    const nose = inCircle(x, y, 0.5, 0.345, 0.02);
-    if (eyeL || eyeR || nose) {
-      white = false;
-    }
+  let white = pointInPolygon(x, y, SQUIRREL);
+  if (white && inCircle(x, y, 0.705, 0.255, 0.024)) {
+    white = false; // 目
   }
   return white ? [255, 255, 255, 255] : [0, 0, 0, 255];
 }
