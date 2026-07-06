@@ -50,3 +50,12 @@ export {
   canApprove,
   approvalPath,
 } from "./approval";
+export {
+  MOCK_DEPARTMENT_SUMMARIES,
+  computeCompanySummary,
+  formatJpy,
+  DEPARTMENT_STATUS_LABEL_JA,
+  type DepartmentSummary,
+  type CompanySummary,
+  type DepartmentStatus,
+} from "./summary";

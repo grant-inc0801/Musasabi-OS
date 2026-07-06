@@ -155,6 +155,21 @@ main section,
   color: var(--text);
 }
 
+/* 部門カード(ボタン)。選択中はアクセント枠で示す(全面塗りにはしない)。 */
+.sidebar button.status-card,
+.sidebar button.status-card.active,
+.sidebar button.status-card:disabled {
+  background: var(--bg-card);
+  color: var(--text-muted);
+  opacity: 1;
+  line-height: 1.5;
+}
+
+.sidebar button.status-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
 .content {
   flex: 1;
   padding: 1.5rem 2rem;

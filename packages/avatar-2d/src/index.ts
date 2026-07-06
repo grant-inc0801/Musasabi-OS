@@ -48,3 +48,4 @@ export class AvatarStateMachine {
     };
   }
 }
+export * from "./displaySettings";

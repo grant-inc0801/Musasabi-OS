@@ -135,20 +135,47 @@
         color: #fff;
         cursor: pointer;
       }
-      /* アバター本体(クリックでミニパネル開閉) */
+      /* アバター本体(クリックでミニパネル開閉)。サイズは設定値(--avatar-size)に従う。 */
+      :root {
+        --avatar-size: 80px;
+      }
       #avatar {
-        width: 72px;
-        height: 72px;
+        width: var(--avatar-size);
+        height: var(--avatar-size);
         border-radius: 50%;
         background: #10131d;
         border: 2px solid #2d3650;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 40px;
+        font-size: calc(var(--avatar-size) * 0.55);
         cursor: pointer;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
         user-select: none;
+      }
+      /* アバターサイズ調整(小/中/大 + スライダー) */
+      #size-row {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      #size-row button {
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 8px;
+        border: 1px solid #2d3650;
+        background: #1c2333;
+        color: #e6e9f2;
+        cursor: pointer;
+      }
+      #size-row button.active {
+        background: #2f6feb;
+        border-color: #2f6feb;
+        color: #fff;
+      }
+      #size-slider {
+        flex: 1;
+        accent-color: #2f6feb;
       }
     </style>
   </head>
@@ -163,6 +190,11 @@
         <div id="chat-row">
           <input id="chat-input" type="text" placeholder="AI社員へ指示…" />
           <button id="send-btn" type="button">送信</button>
+        </div>
+        <div id="size-row">
+          <span style="font-size: 11px; color: #9aa3ba">アバター</span>
+          <span id="size-presets" style="display: flex; gap: 6px"></span>
+          <input id="size-slider" type="range" min="48" max="160" step="4" />
         </div>
         <button id="open-main" class="footer-btn" type="button">メイン管理画面を開く</button>
       </div>
