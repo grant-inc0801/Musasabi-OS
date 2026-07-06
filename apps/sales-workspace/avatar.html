@@ -63,14 +63,19 @@
         color: #9aa3ba;
         font-weight: normal;
       }
+      /* モード切替: 縦配置。該当モードに緑ランプ点灯(D-20260706 ユーザーFB) */
       #mode-row {
         display: flex;
-        gap: 6px;
+        flex-direction: column;
+        gap: 4px;
       }
       #mode-row button {
-        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-align: left;
         font-size: 12px;
-        padding: 6px 4px;
+        padding: 7px 10px;
         border-radius: 8px;
         border: 1px solid #2d3650;
         background: #1c2333;
@@ -78,9 +83,18 @@
         cursor: pointer;
       }
       #mode-row button.active {
-        background: #2f6feb;
-        border-color: #2f6feb;
-        color: #fff;
+        border-color: #3fb950;
+      }
+      #mode-row .lamp {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #3a4157;
+        flex-shrink: 0;
+      }
+      #mode-row button.active .lamp {
+        background: #3fb950;
+        box-shadow: 0 0 6px #3fb950;
       }
       #mode-note {
         font-size: 11px;
@@ -135,43 +149,53 @@
         color: #fff;
         cursor: pointer;
       }
-      /* アバター本体(クリックでミニパネル開閉)。サイズは設定値(--avatar-size)に従う。 */
+      /* アバター本体(クリックでミニパネル開閉)。
+         背景の円形バッジは持たず、キャラクターだけがデスクトップに浮かぶ見た目にする
+         (3Dアバター実装までのプレースホルダー。D-20260706 ユーザーFB)。 */
       :root {
         --avatar-size: 80px;
+      }
+      #avatar-wrap {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
       #avatar {
         width: var(--avatar-size);
         height: var(--avatar-size);
-        border-radius: 50%;
-        background: #10131d;
-        border: 2px solid #2d3650;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: calc(var(--avatar-size) * 0.55);
+        font-size: calc(var(--avatar-size) * 0.9);
+        line-height: 1;
         cursor: pointer;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        user-select: none;
+        filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
+      }
+      /* 配置換え用のドラッグハンドル(ホバー時のみ表示) */
+      #drag-handle {
+        font-size: 11px;
+        color: #9aa3ba;
+        background: #151a28cc;
+        border: 1px solid #2d3650;
+        border-radius: 6px;
+        padding: 1px 8px;
+        margin-bottom: 4px;
+        cursor: move;
+        opacity: 0;
+        transition: opacity 0.15s;
         user-select: none;
       }
-      /* アバターサイズ調整(小/中/大 + スライダー) */
+      #avatar-wrap:hover #drag-handle,
+      #drag-handle:hover {
+        opacity: 1;
+      }
+      /* アバターサイズ調整(スライダーのみ) */
       #size-row {
         display: flex;
-        gap: 6px;
+        gap: 8px;
         align-items: center;
-      }
-      #size-row button {
-        font-size: 12px;
-        padding: 4px 10px;
-        border-radius: 8px;
-        border: 1px solid #2d3650;
-        background: #1c2333;
-        color: #e6e9f2;
-        cursor: pointer;
-      }
-      #size-row button.active {
-        background: #2f6feb;
-        border-color: #2f6feb;
-        color: #fff;
       }
       #size-slider {
         flex: 1;
@@ -192,13 +216,15 @@
           <button id="send-btn" type="button">送信</button>
         </div>
         <div id="size-row">
-          <span style="font-size: 11px; color: #9aa3ba">アバター</span>
-          <span id="size-presets" style="display: flex; gap: 6px"></span>
+          <span style="font-size: 11px; color: #9aa3ba">アバターサイズ</span>
           <input id="size-slider" type="range" min="48" max="160" step="4" />
         </div>
         <button id="open-main" class="footer-btn" type="button">メイン管理画面を開く</button>
       </div>
-      <span id="avatar" title="クリックでミニパネルを開閉"></span>
+      <div id="avatar-wrap">
+        <span id="drag-handle" data-tauri-drag-region title="ドラッグで移動">⠿ 移動</span>
+        <span id="avatar" title="クリックでミニパネルを開閉"></span>
+      </div>
     </div>
     <script type="module" src="/src/avatarMain.ts"></script>
   </body>

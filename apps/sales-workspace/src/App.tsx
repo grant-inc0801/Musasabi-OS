@@ -1,15 +1,5 @@
-import { useEffect, useState } from "react";
-import { calculateKpi, generateDailyPlan, recommendActions } from "@musasabi/ai-core";
-import type { Lead } from "@musasabi/ai-core";
+import { useState } from "react";
 import { isSetupComplete } from "@musasabi/shared";
-import type { CallAnalysisSummary } from "@musasabi/voice-analysis";
-import { MOCK_CALLS, MOCK_LEADS } from "./mockData";
-import { KpiDashboard } from "./components/KpiDashboard";
-import { DailyPlanBoard } from "./components/DailyPlanBoard";
-import { LeadTable } from "./components/LeadTable";
-import { RecommendedActionsList } from "./components/RecommendedActionsList";
-import { MusaActionsPanel } from "./components/MusaActionsPanel";
-import { CallAnalysisPanel } from "./components/CallAnalysisPanel";
 import { ConnectionSettingsPanel } from "./components/Settings/ConnectionSettingsPanel";
 import { EmployeeSettingsPanel } from "./components/Settings/EmployeeSettingsPanel";
 import { CompanyPage } from "./components/Company/CompanyPage";
@@ -17,6 +7,7 @@ import { SalesBrainPage } from "./components/SalesBrain/SalesBrainPage";
 import { FirstRunSetup } from "./components/Setup/FirstRunSetup";
 import { SalesDeptPage } from "./components/Sales/SalesDeptPage";
 import { PublishingPage } from "./components/Publishing/PublishingPage";
+import { DeptDetailPage } from "./components/Department/DeptDetailPage";
 import { loadSetupState } from "./lib/setupStorage";
 import {
   MOCK_DEPARTMENT_SUMMARIES,
@@ -26,60 +17,47 @@ import {
 } from "@musasabi/ai-company";
 import type { DepartmentSummary } from "@musasabi/ai-company";
 
-// β版管理画面(D-20260706-002 / -004 / -006)。ダークテーマ+部門中心サイドバー構成。
-// サイドバーは「ミニ経営ダッシュボード」として全体サマリーと部門別の進捗・作業内容を
-// 常時表示し、部門ページ(営業部=コールシステム中心 / 出版部=成果物・売上中心)と
-// 全社画面(ダッシュボード / AI社員管理 / Sales Brain / 設定)へ遷移できる。
+// β版管理画面(D-20260706-002 / -004 / -006 + ユーザーFB)。ダークテーマ+部門中心
+// サイドバー構成。サイドバーは「ミニ経営ダッシュボード」として全体サマリーと部門別の
+// 進捗・作業内容を常時表示し、各部門タブから詳細ページへ遷移する。
+// ダッシュボードは営業部ページへ集約(独立タブは持たない)。
 type Tab =
-  | "home"
   | "dept_sales"
   | "dept_publishing"
+  | "dept_development"
+  | "dept_support"
   | "company"
   | "sales_brain"
   | "settings";
 
 const TAB_LABEL_JA: Record<Tab, string> = {
-  home: "ダッシュボード",
   dept_sales: "営業部",
   dept_publishing: "出版部",
+  dept_development: "開発部",
+  dept_support: "サポート部",
   company: "AI社員管理",
   sales_brain: "Sales Brain",
   settings: "設定",
 };
 
-/** 部門ID → タブ(サイドバーの部門カードから遷移する)。 */
+/** 部門ID → タブ(サイドバーの部門カードから各詳細ページへ遷移する)。 */
 const DEPT_TAB: Record<string, Tab> = {
   "dept-sales": "dept_sales",
   "dept-publishing": "dept_publishing",
+  "dept-development": "dept_development",
+  "dept-support": "dept_support",
 };
 
-const GLOBAL_TABS: Tab[] = ["home", "company", "sales_brain", "settings"];
+const GLOBAL_TABS: Tab[] = ["company", "sales_brain", "settings"];
 
 const COMPANY_SUMMARY = computeCompanySummary(MOCK_DEPARTMENT_SUMMARIES);
 
 export function App() {
-  const [tab, setTab] = useState<Tab>("home");
+  // ダッシュボードは営業部に集約したため、既定タブは営業部。
+  const [tab, setTab] = useState<Tab>("dept_sales");
   // 初回セットアップが未完了なら、通常UIの前にセットアップウィザードを表示する
   // (Phase β-002 優先順位①)。判定は localStorage 由来の状態から決定論的に行う。
   const [setupDone, setSetupDone] = useState<boolean>(() => isSetupComplete(loadSetupState()));
-  // window.musasabi はTauriデスクトップアプリ内(apps/desktop、desktopBridge.ts)での
-  // みインストールされる。ブラウザ単体での `vite dev` 実行時はundefinedなので、
-  // 静的モックにフォールバックする(FileMaker/Zoom Phone連携が未接続の間の既定データでもある)。
-  const [leads, setLeads] = useState<Lead[]>(MOCK_LEADS);
-  const [callAnalysis, setCallAnalysis] = useState<CallAnalysisSummary | null>(null);
-
-  useEffect(() => {
-    const musasabi = window.musasabi;
-    if (!musasabi) {
-      return;
-    }
-    musasabi.getLeads().then(setLeads).catch(() => setLeads(MOCK_LEADS));
-  }, []);
-
-  const kpi = calculateKpi(MOCK_CALLS);
-  const plan = generateDailyPlan(leads);
-  const actions = recommendActions(leads);
-  const leadsById = new Map(leads.map((lead) => [lead.id, lead]));
 
   if (!setupDone) {
     return <FirstRunSetup onComplete={() => setSetupDone(true)} />;
@@ -140,17 +118,12 @@ export function App() {
           <SalesDeptPage />
         ) : tab === "dept_publishing" ? (
           <PublishingPage />
-        ) : tab === "sales_brain" ? (
-          <SalesBrainPage />
+        ) : tab === "dept_development" ? (
+          <DeptDetailPage deptId="dept-development" />
+        ) : tab === "dept_support" ? (
+          <DeptDetailPage deptId="dept-support" />
         ) : (
-          <>
-            <MusaActionsPanel onCallAnalysisComplete={setCallAnalysis} />
-            <CallAnalysisPanel summary={callAnalysis} />
-            <KpiDashboard kpi={kpi} />
-            <DailyPlanBoard plan={plan} />
-            <RecommendedActionsList actions={actions} leadsById={leadsById} />
-            <LeadTable leads={leads} />
-          </>
+          <SalesBrainPage />
         )}
       </main>
     </div>
