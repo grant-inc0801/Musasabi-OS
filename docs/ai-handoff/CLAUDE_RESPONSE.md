@@ -3,6 +3,48 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-06 — 操作可能なβ版評価ビルドの整備(D-20260706-002)
+
+### 実装内容
+Directive D-20260706-002(アバターは後続フェーズに回し、まず操作可能なβ版を出力する)に
+基づき、β版評価ビルドの起動導線と主要画面統合を完了した。
+
+- **Sales Brain / 学習データ画面を追加**(β版に含める画面6):
+  学習データソース(人間の営業トーク/過去の架電履歴/テストモード会話ログ・指摘/
+  成功失敗パターン)を Mock/準備中 の状態付きで一覧表示し、全AI社員共通トーク改善
+  ナレッジ(`SharedTalkKnowledge`)をカテゴリ絞り込み付きで表示
+- **5画面構成に統合**(実装指示5): ダッシュボード / AI社員管理 / コールトレーニング
+  (Learning・Test・AutoCall)/ Sales Brain / 設定。全タブ相互遷移可能
+- **起動導線**(実装指示11): root に `npm run dev:desktop`(Tauri起動)、
+  `npm run dev:web`(ブラウザ代替)、`npm run package:win`(NSIS/MSI)を追加
+- **README 更新**(実装指示9): β版評価ビルドの起動手順(前提条件・コマンド・
+  画面一覧・安全ルール)を追加。リポジトリ構成の記述も現状(Tauri/call-training)に更新
+- **Windows実機検証チェックリスト更新**(実装指示10): 「9. β版評価ビルドの画面操作
+  確認」を追加(5タブ遷移・Test Mode操作・AutoCall無効確認・Mock安全確認)
+- **beta-build workflow**(実装指示12): 既存の `.github/workflows/beta-build.yml`
+  (workflow_dispatch のみ)をβ評価ビルドの手動実行導線として README から参照
+
+### アバターの扱い(実装指示3・4)
+- 本格実装は行わず、2Dプレースホルダー(`packages/avatar-2d` オーバーレイ)を維持
+- VRoid Studio / VRM / three.js 実レンダラーは Pending Issue #200 のまま
+
+### 安全ルールの遵守(実装指示6〜8)
+- AutoCall 本番実行は無効のまま(「準備中・承認待ち」表示、開始ボタン無効)
+- FileMaker / Zoom Phone / VOICEVOX / whisper.cpp は Mock または準備中表示
+- 実API接続・実認証情報保存・実架電なし。secrets 出力なし・force push なし
+
+### テスト結果
+- 全 workspace テスト152件 pass・fail 0
+- root `npm run build` 成功、`apps/sales-workspace` vite build 成功(214 modules)
+
+### 完了条件の充足
+- β版として起動・操作する手順が明確(README)✅ / 主要画面へ遷移できる(5タブ)✅ /
+  アバターは仮表示 ✅ / 実API・実架電は無効のまま ✅ / テストが通る ✅ /
+  CLAUDE_RESPONSE.md 日本語更新 ✅ / Next Directive 待ちとして停止 ✅
+
+### 次に実施する内容
+- 運用ルールに従い待機。ChatGPT の新 Directive を待つ
+
 ## 2026-07-06 — AI Company System完成・β統合(D-20260706-001)
 
 ### 実装内容

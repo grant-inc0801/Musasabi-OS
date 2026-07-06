@@ -4,19 +4,22 @@
 **Updated:** 2026-07-06
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(D-20260706-001)
-Directive D-20260706-001(AI Company System・β統合)を実装完了。
+## 直近の完了内容(D-20260706-002)
+Directive D-20260706-002(操作可能なβ版評価ビルドを最優先で出力)を実装完了。
 
-- `packages/ai-company` を完成: AI社員モデル(稼働状態追加)、Company Genome 反映、
-  AI社員名簿(Mock 7名)、Learning/Test/AutoCall のAI社員統合(研修進捗→利用可能モード判定)
-- β統合: ホーム/AIカンパニー/コールトレーニング/設定 の4タブで相互遷移
-- Settings: AI社員・音声(Mock)・既定コールモード設定を追加(credential 非保存)
-- AutoCall は合格基準+全8安全ゲート充足時のみで、現フェーズは常に無効(Mock維持)
-- 全 workspace テスト152件 pass・fail 0、vite build 成功
-- 詳細は `docs/ai-handoff/CLAUDE_RESPONSE.md`(2026-07-06 D-20260706-001 エントリ)
+- Sales Brain / 学習データ画面を追加し、5画面構成に統合
+  (ダッシュボード / AI社員管理 / コールトレーニング / Sales Brain / 設定)
+- 起動導線: `npm run dev:desktop`(Tauri)/ `npm run dev:web`(ブラウザ)/
+  `npm run package:win`(NSIS/MSI)
+- README にβ版起動手順、Windows実機検証チェックリストにβ画面操作確認(§9)を追加
+- アバターは2Dプレースホルダー維持(VRM実描画は Pending #200)
+- Mock構成維持: 実API接続・実認証情報保存・実架電なし、AutoCall本番実行は無効
+- 全 workspace テスト152件 pass・fail 0、root build 成功
+- 詳細は `docs/ai-handoff/CLAUDE_RESPONSE.md`(2026-07-06 D-20260706-002 エントリ)
 
-## それ以前の完了(D-20260705-003)
-- `packages/call-training`(三段階コール運用・Mock架電・共通ナレッジ基盤)実装済み
+## それ以前の完了
+- D-20260706-001: AI Company System完成・β統合(AI社員モデル/Genome/名簿/コール統合)
+- D-20260705-003: `packages/call-training`(三段階コール運用・Mock架電・共通ナレッジ基盤)
 
 ## 現在の待機状態
 運用ルールに従い、次のタスクを推測せず待機する。ChatGPT による新しい
