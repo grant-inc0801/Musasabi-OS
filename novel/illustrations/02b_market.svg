@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560" role="img" aria-label="夏の夕暮れの商店街で並んで歩く、お忍びの令子と買い物帰りの湊">
+  <defs>
+    <linearGradient id="sky02b" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6d38a"/>
+      <stop offset="0.55" stop-color="#f0a75e"/>
+      <stop offset="1" stop-color="#d97b52"/>
+    </linearGradient>
+    <linearGradient id="arcade02b" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5a3a34"/>
+      <stop offset="1" stop-color="#3a241f"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="560" fill="#1c1210"/>
+  <rect x="18" y="18" width="864" height="524" fill="url(#sky02b)"/>
+  <!-- setting sun down the arcade -->
+  <circle cx="450" cy="300" r="55" fill="#fff2cf" opacity="0.9"/>
+  <circle cx="450" cy="300" r="95" fill="#ffe6ad" opacity="0.3"/>
+  <!-- arcade roof beams receding (one-point perspective) -->
+  <g stroke="#3a241f" stroke-width="3" opacity="0.7">
+    <line x1="18" y1="40" x2="380" y2="250"/>
+    <line x1="882" y1="40" x2="520" y2="250"/>
+    <line x1="60" y1="30" x2="400" y2="250"/>
+    <line x1="840" y1="30" x2="500" y2="250"/>
+  </g>
+  <rect x="18" y="18" width="864" height="26" fill="url(#arcade02b)"/>
+  <!-- shop rows both sides -->
+  <g fill="url(#arcade02b)">
+    <polygon points="18,250 380,250 380,470 18,470"/>
+    <polygon points="520,250 882,250 882,470 520,470"/>
+  </g>
+  <!-- awnings -->
+  <g fill="#b0453f">
+    <rect x="40" y="250" width="120" height="16"/>
+    <rect x="190" y="256" width="120" height="16"/>
+    <rect x="600" y="256" width="120" height="16"/>
+    <rect x="740" y="250" width="120" height="16"/>
+  </g>
+  <g fill="#3f7a6a">
+    <rect x="110" y="300" width="90" height="14"/>
+    <rect x="680" y="300" width="90" height="14"/>
+  </g>
+  <!-- warm shop lanterns -->
+  <g>
+    <circle cx="90" cy="290" r="10" fill="#ffd873"/><circle cx="250" cy="296" r="10" fill="#ffd873"/>
+    <circle cx="660" cy="296" r="10" fill="#ffd873"/><circle cx="800" cy="290" r="10" fill="#ffd873"/>
+    <g fill="#ffe9b8" opacity="0.4"><circle cx="90" cy="290" r="20"/><circle cx="250" cy="296" r="20"/><circle cx="660" cy="296" r="20"/><circle cx="800" cy="290" r="20"/></g>
+  </g>
+  <!-- a shuttered shop (foreshadow), dim, left side -->
+  <g transform="translate(300,320)">
+    <rect x="0" y="0" width="70" height="150" fill="#2b1c18"/>
+    <g stroke="#1a100d" stroke-width="2" opacity="0.7">
+      <line x1="0" y1="16" x2="70" y2="16"/><line x1="0" y1="32" x2="70" y2="32"/><line x1="0" y1="48" x2="70" y2="48"/>
+      <line x1="0" y1="64" x2="70" y2="64"/><line x1="0" y1="80" x2="70" y2="80"/><line x1="0" y1="96" x2="70" y2="96"/>
+    </g>
+    <rect x="4" y="-16" width="62" height="14" fill="#20140f"/>
+  </g>
+  <!-- cicada silhouette on a beam -->
+  <g fill="#2a1a15" transform="translate(700,70)">
+    <ellipse cx="0" cy="0" rx="7" ry="3.5"/>
+    <path d="M2,-2 q18,-10 26,2 q-16,-2 -26,0 z" opacity="0.6"/>
+    <path d="M2,2 q18,10 26,-2 q-16,2 -26,0 z" opacity="0.6"/>
+  </g>
+  <!-- ground -->
+  <rect x="18" y="470" width="864" height="72" fill="#2a1a16"/>
+  <!-- two figures walking away down the arcade, side by side -->
+  <!-- Minato (left) with paper grocery bag -->
+  <g fill="#0e0806" transform="translate(410,470)">
+    <ellipse cx="0" cy="6" rx="26" ry="7" opacity="0.35"/>
+    <path d="M0,-104 c-14,0 -23,11 -23,25 l0,74 c0,6 5,10 12,10 l22,0 c7,0 12,-4 12,-10 l0,-74 c0,-14 -9,-25 -23,-25 z"/>
+    <circle cx="0" cy="-118" r="15"/>
+    <!-- arm holding bag -->
+    <path d="M-16,-84 l-20,26 l10,8 l18,-26 z"/>
+  </g>
+  <!-- paper bag with veg -->
+  <g transform="translate(370,398)">
+    <path d="M0,0 l30,0 l4,44 l-38,0 z" fill="#c99a5f"/>
+    <g fill="#5aa06a"><ellipse cx="8" cy="-4" rx="5" ry="9"/><ellipse cx="20" cy="-6" rx="5" ry="10"/></g>
+    <circle cx="26" cy="-2" r="6" fill="#c0453f"/>
+  </g>
+  <!-- Reiko (right) with wide-brim hat -->
+  <g fill="#140d0a" transform="translate(500,470)">
+    <ellipse cx="0" cy="6" rx="26" ry="7" opacity="0.35"/>
+    <path d="M0,-100 c-14,0 -23,11 -23,25 l0,70 c0,6 5,10 12,10 l22,0 c7,0 12,-4 12,-10 l0,-70 c0,-14 -9,-25 -23,-25 z"/>
+    <circle cx="0" cy="-114" r="14"/>
+    <!-- wide-brim hat -->
+    <ellipse cx="0" cy="-120" rx="30" ry="8"/>
+    <path d="M-12,-122 a12,14 0 0 1 24,0 z"/>
+    <!-- long hair below hat -->
+    <path d="M-14,-118 c-12,10 -16,40 -12,74 l8,0 c-2,-30 3,-56 14,-64 z" fill="#2a2030"/>
+    <path d="M14,-118 c12,10 16,40 12,74 l-8,0 c2,-30 -3,-56 -14,-64 z" fill="#2a2030"/>
+    <!-- tapioca cup in hand -->
+    <path d="M18,-70 l14,0 l-2,22 l-10,0 z" fill="#e8dcc4"/>
+  </g>
+  <rect x="18" y="502" width="864" height="40" fill="#000000" opacity="0.38"/>
+  <text x="36" y="529" font-family="'Yu Mincho','Hiragino Mincho ProN',serif" font-size="19" fill="#ffeccb" letter-spacing="2">――経営には、いつも、二つの答えがある。</text>
+  <rect x="18" y="18" width="864" height="524" fill="none" stroke="#e79a52" stroke-width="1.5" opacity="0.6"/>
+</svg>
