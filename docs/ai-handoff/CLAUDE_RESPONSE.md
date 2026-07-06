@@ -3,6 +3,48 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-06 — AI Company System完成・β統合(D-20260706-001)
+
+### 実装内容
+Directive D-20260706-001(AI Company System・β統合)に基づき、`packages/ai-company` を
+完成させ、β版の主要画面を一つのアプリとして統合した。実API接続は行わず Mock を維持。
+
+- **AI社員モデル**(実装指示2): `AIEmployee` に稼働状態 `EmployeeState`
+  (待機中/業務中/通話中/研修中/停止中)を追加。役割・所属・役職・権限・KPI と合わせて
+  AI社員の全属性をモデル化
+- **Company Genome 反映**(実装指示3): `genome.ts` に Mission/Vision/Values(6価値)/
+  意思決定原則(5原則)をデータ化。Organization Bible の組織図・承認フローは既存実装を継続
+- **Learning/Test/AutoCall のAI社員統合**(実装指示4): `callIntegration.ts`。
+  AI社員ごとの研修進捗 `EmployeeCallProgress`(Learning完了・Test合格数)から
+  利用可能モードを決定論的に判定(`allowedCallModes`/`recommendedCallMode`)。
+  AutoCall は「合格基準充足 かつ 全8安全ゲート充足」時のみで、現フェーズは常に無効
+- **AI社員名簿(Mock)**: `roster.ts`。CEO(MUSA-001)+AI営業本部のAI社員計7名の
+  マスタデータ(すべてダミー。実在の人物・実データではない)
+- **Settings 拡張**(実装指示5): `EmployeeSettingsPanel` を追加。既定AI社員の選択、
+  音声エンジン(VOICEVOX Mock/無効)、読み上げ速度、既定コールモード(learning/test のみ。
+  autocall は選択不可)を localStorage に保存(credential は扱わない)
+- **β統合**(実装指示6): ホーム/AIカンパニー/コールトレーニング/設定 の4タブ構成。
+  AIカンパニー画面(Genome表示・組織図ツリー・名簿・社員別コールモード可視化)から
+  コールトレーニングへ相互遷移。コールトレーニングは設定の既定モードで起動
+
+### 変更ファイル
+- `packages/ai-company/src/`(types.ts, genome.ts, callIntegration.ts, roster.ts, index.ts,
+  callIntegration.test.ts, roster.test.ts)、package.json(call-training 依存追加)、README.md
+- `apps/sales-workspace/src/`(App.tsx, components/Company/CompanyPage.tsx,
+  components/Settings/EmployeeSettingsPanel.tsx, lib/employeeSettings.ts,
+  components/CallTraining/CallTrainingPage.tsx)、package.json
+
+### テスト結果
+- `@musasabi/ai-company` 18件 pass(6件追加)、全 workspace 152件 pass・fail 0
+- `apps/sales-workspace` vite build 成功(213 modules)
+
+### 完了条件の充足
+- AI Company System 統合 ✅ / β版で主要画面を操作可能(4タブ相互遷移)✅ /
+  Mock構成維持(実API接続なし・実架電なし)✅ / テスト成功 ✅ / 日本語ドキュメント更新 ✅
+
+### 次に実施する内容
+- 運用ルールに従い待機。ChatGPT の新 Directive を待つ
+
 ## 2026-07-06 — コール三段階運用パッケージの実装(D-20260705-003)
 
 ### 実装内容
