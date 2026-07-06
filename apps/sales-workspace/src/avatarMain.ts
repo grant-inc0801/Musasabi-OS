@@ -1,12 +1,6 @@
 import { AvatarStateMachine, isAvatarState } from "@musasabi/avatar-2d";
-import {
-  AVATAR_SIZE_PRESETS,
-  AVATAR_SIZE_PRESET_LABEL_JA,
-  AVATAR_SIZE_PRESET_PX,
-  clampAvatarSizePx,
-  presetForSizePx,
-} from "@musasabi/avatar-2d";
-import type { AvatarState, AvatarSizePreset } from "@musasabi/avatar-2d";
+import { clampAvatarSizePx } from "@musasabi/avatar-2d";
+import type { AvatarState } from "@musasabi/avatar-2d";
 import { AVATAR_EVENTS } from "@musasabi/shared";
 import {
   createAssistantPanelState,
@@ -54,7 +48,8 @@ function el<T extends HTMLElement>(id: string): T | null {
 // 合わせてリサイズする(D-20260706-006)。右下アンカーを保つよう、サイズ変更分だけ
 // 位置を右下方向へ補正する。Tauri外(ブラウザ)では何もしない。
 const WINDOW_PADDING = 32; // #stack のpadding+影の余白
-const PANEL_SIZE = { w: 340, h: 560 };
+const HANDLE_HEIGHT = 26; // ドラッグハンドル(⠿ 移動)の分
+const PANEL_SIZE = { w: 340, h: 640 };
 const BUBBLE_SIZE = { w: 340, h: 240 };
 
 function desiredWindowSize(): { w: number; h: number } {
@@ -64,7 +59,10 @@ function desiredWindowSize(): { w: number; h: number } {
   if (panelState.bubble !== null) {
     return { w: BUBBLE_SIZE.w, h: BUBBLE_SIZE.h + avatarSizePx };
   }
-  return { w: avatarSizePx + WINDOW_PADDING, h: avatarSizePx + WINDOW_PADDING };
+  return {
+    w: avatarSizePx + WINDOW_PADDING,
+    h: avatarSizePx + WINDOW_PADDING + HANDLE_HEIGHT,
+  };
 }
 
 async function resizeWindowToContent(): Promise<void> {
@@ -99,28 +97,12 @@ function renderAvatar(state: AvatarState): void {
   }
 }
 
-/** アバターサイズ設定をCSS変数・サイズUI・ウィンドウサイズへ反映する。 */
+/** アバターサイズ設定をCSS変数・スライダー・ウィンドウサイズへ反映する。 */
 function applyAvatarSize(): void {
   document.documentElement.style.setProperty("--avatar-size", `${avatarSizePx}px`);
   const slider = el<HTMLInputElement>("size-slider");
   if (slider) {
     slider.value = String(avatarSizePx);
-  }
-  const presets = el("size-presets");
-  if (presets) {
-    const activePreset = presetForSizePx(avatarSizePx);
-    presets.replaceChildren(
-      ...AVATAR_SIZE_PRESETS.map((preset: AvatarSizePreset) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.textContent = AVATAR_SIZE_PRESET_LABEL_JA[preset];
-        button.classList.toggle("active", preset === activePreset);
-        button.addEventListener("click", () => {
-          setAvatarSize(AVATAR_SIZE_PRESET_PX[preset]);
-        });
-        return button;
-      }),
-    );
   }
 }
 
@@ -150,13 +132,17 @@ function renderPanel(): void {
   modeNote.textContent =
     panelState.mode === "autocall" ? "オートコールは承認待ちです(本番実行不可)" : "";
 
-  // モード切替ボタン(3件固定なので毎回作り直す)
+  // モード切替(縦配置。該当モードに緑ランプ点灯)
   modeRow.replaceChildren(
     ...CALL_MODES.map((mode: CallMode) => {
       const button = document.createElement("button");
       button.type = "button";
-      button.textContent = CALL_MODE_LABEL_JA[mode];
       button.classList.toggle("active", mode === panelState.mode);
+      const lamp = document.createElement("span");
+      lamp.className = "lamp";
+      const label = document.createElement("span");
+      label.textContent = CALL_MODE_LABEL_JA[mode];
+      button.append(lamp, label);
       button.addEventListener("click", () => {
         panelState = switchMode(panelState, mode);
         renderPanel();
