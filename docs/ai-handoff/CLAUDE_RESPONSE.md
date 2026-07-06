@@ -3,6 +3,38 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-06 — main統合とWindowsβ版インストーラ生成成功(ChatGPT Directive 2026-07-06)
+
+### 実施内容
+ChatGPT の指示(epicブランチ→main統合→Beta Build実行→成果物作成)を完了した。
+
+1. **main統合**: PR #215(39コミット、D-20260705-003〜D-20260706-004 の全実装)を作成。
+   コンフリクトなし・CI(verify/check)2件 success を確認して main へマージ
+   (マージコミット `3e06408`)
+2. **Beta Build 実行**: main から手動実行(run #1、
+   <https://github.com/grant-inc0801/Musasabi-OS/actions/runs/28769588852>)。
+   test ジョブ(ubuntu, 全テスト160件 pass)→ build-windows ジョブ(windows-latest,
+   `tauri build` 4分33秒)の両方 **success**
+3. **Windowsインストーラ生成に成功**(ビルドログで確認):
+   - NSIS: `Musasabi OS_0.1.0_x64-setup.exe`
+   - MSI: `Musasabi OS_0.1.0_x64_en-US.msi`
+4. **Artifact 保存済み**(保持期間14日):
+   - `musasabi-beta-windows-3e06408…`(4.76MB、上記 .exe/.msi 入り)
+     ダウンロード: <https://github.com/grant-inc0801/Musasabi-OS/actions/runs/28769588852/artifacts/8100420960>
+   - `musasabi-beta-web-3e06408…`(Web版 dist)
+5. **README 更新**: ダウンロード手順を実績ベースに更新(実行リンク・所要時間・
+   zip内のファイル名・SmartScreen 警告時の操作・要GitHubログイン・保持期間)
+
+### 未検証項目(正直な記録)
+- **Windows実機でのインストール・起動・操作は未検証**。インストーラの「生成」は
+  CI ログと Artifact で確認済みだが、「動作」は未確認。
+  `docs/WINDOWS_VERIFICATION_CHECKLIST.md` §2〜§10 に沿った実機確認が必要
+- 右下アバター常駐・最小化挙動などの Tauri ネイティブ動作も同様に実機確認待ち
+- インストーラは未署名のため、実行時に SmartScreen 警告が出る想定
+
+### GitHub Releases
+- 未公開(方針どおり、人間が artifact の内容を確認してから手動でアップロードする)
+
 ## 2026-07-06 — ダークテーマ管理画面と右下アバター常駐(D-20260706-004)
 
 ### 実装内容

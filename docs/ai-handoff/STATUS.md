@@ -4,7 +4,17 @@
 **Updated:** 2026-07-06
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(D-20260706-004)
+## 直近の完了内容(main統合・Windowsβ版インストーラ生成)
+ChatGPT指示により epic → main 統合(PR #215)と Beta Build 実行を完了。
+
+- main へ39コミットを統合(マージコミット `3e06408`、CI green)
+- Beta Build run #1 success: `Musasabi OS_0.1.0_x64-setup.exe` / `_x64_en-US.msi` を生成し
+  Artifact `musasabi-beta-windows-3e06408…`(4.76MB、14日保持)として保存
+- README にダウンロード手順を実績ベースで更新
+- **未検証**: Windows実機でのインストール・起動・操作(チェックリスト §2〜§10)
+- GitHub Releases は未公開(人間確認後に手動アップロードする方針)
+
+## それ以前の完了(D-20260706-004)
 Directive D-20260706-004(管理画面UIとデスクトップ右下アバター常駐)を実装完了。
 
 - 管理画面をダークテーマ+サイドバー構成へ刷新(AI社員ステータス・モード状態カード付き)

@@ -110,11 +110,18 @@ npm run build:desktop    # = npm run package:win(tauri build)
 
 ### 3. GitHub Actions でインストーラを取得(ローカルにRust環境が無い場合)
 
-1. GitHub リポジトリの **Actions → Beta Build** を開き、**Run workflow** で手動実行する
-   (`workflow_dispatch` のみ。自動トリガーは無い)
-2. 完了後、実行結果ページの **Artifacts** から
-   `musasabi-beta-windows-<sha>`(`.exe` / `.msi`)をダウンロードする
-3. β版として配布する場合は、artifact の内容を確認したうえで GitHub Releases に
+> 実績: 2026-07-06 の [Beta Build 実行](https://github.com/grant-inc0801/Musasabi-OS/actions/runs/28769588852)
+> で Windows インストーラの Artifact 生成に成功している。
+
+1. GitHub リポジトリの **Actions → Beta Build** を開き、**Run workflow**(Branch: main)で
+   手動実行する(`workflow_dispatch` のみ。自動トリガーは無い。所要 約6〜10分)
+2. 完了後、実行結果ページ下部の **Artifacts** から
+   `musasabi-beta-windows-<sha>` をダウンロードする(要GitHubログイン。保持期間14日)
+3. zip を展開すると NSIS インストーラ `Musasabi OS_0.1.0_x64-setup.exe` と
+   MSI `Musasabi OS_0.1.0_x64_en-US.msi` が入っている。どちらか一方を実行して
+   インストールする(未署名のため SmartScreen 警告が出た場合は
+   「詳細情報」→「実行」を選択)
+4. β版として配布する場合は、artifact の内容を確認したうえで GitHub Releases に
    手動でアップロードする(自動公開・署名は行わない)
 
 ### アプリアイコン
