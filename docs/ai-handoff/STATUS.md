@@ -4,7 +4,17 @@
 **Updated:** 2026-07-06
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(D-20260706-006)
+## 直近の完了内容(テストコール履歴の永続化・Sales Brain実データ化)
+ユーザー指示により次フェーズ(会話ログ・指摘のローカル永続化)を実装完了。
+
+- `@musasabi/call-training` に persistence(JSON直列化/検証)+ TestCallRepository
+  (node:sqlite)を追加。テストコールを localStorage へ自動保存し、Sales Brain は
+  保存履歴から共通ナレッジ・履歴一覧・集計を表示(実DB接続・外部送信なし)
+- 同日: β版UIフィードバック反映(PR #220/#221 — グラフKPI・部門ツリーナビ・
+  スライダーバグ修正・組織図改善・ブランドアイコン統一)
+- 全 workspace テスト181件 pass・fail 0。E2E(実施→反映→再読込後保持)確認済み
+
+## それ以前の完了(D-20260706-006)
 Directive D-20260706-006(β版UI追加修正)を実装完了。
 
 - アバター常駐修正: 常駐時はウィンドウをアバターサイズへ縮小し透明画面を残さない。
