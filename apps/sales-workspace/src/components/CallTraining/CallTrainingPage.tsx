@@ -17,17 +17,19 @@ import type {
   TalkFeedbackCategory,
 } from "@musasabi/call-training";
 import { appLogger } from "../../lib/appLogger";
+import { loadEmployeeSettings } from "../../lib/employeeSettings";
 
 // コールトレーニング画面(Directive D-20260705-003)。
 // Learning → Test → AutoCall の三段階。現フェーズは Test Mode を Mock で実装し、
 // AutoCall 本番実行は無効(準備中/承認待ち表示)。実架電・実音声接続はしない。
+// 既定モードは設定画面(EmployeeSettingsPanel)の値に従う(D-20260706-001)。
 
 const adapter = new MockCallAdapter();
 
 const MODE_ORDER: CallMode[] = ["learning", "test", "autocall"];
 
 export function CallTrainingPage() {
-  const [mode, setMode] = useState<CallMode>("test");
+  const [mode, setMode] = useState<CallMode>(() => loadEmployeeSettings().defaultCallMode);
   const [contact, setContact] = useState("");
   const [session, setSession] = useState<TestCallSession | null>(null);
   const [humanText, setHumanText] = useState("");

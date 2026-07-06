@@ -5,11 +5,12 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "npm --prefix ../call-training run build && tsc -p tsconfig.json",
     "test": "npm run build && node --test dist/*.test.js"
   },
   "dependencies": {
-    "@musasabi/shared": "*"
+    "@musasabi/shared": "*",
+    "@musasabi/call-training": "*"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

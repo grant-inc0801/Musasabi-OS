@@ -60,8 +60,35 @@ export const RANK_LABEL_JA: Record<EmployeeRank, string> = {
 };
 
 /**
+ * AI社員の稼働状態(D-20260706-001)。UI表示・タスク割当の基礎となる。
+ * 状態遷移は決定論的に扱い、実行時の自動遷移は次フェーズ。
+ */
+export type EmployeeState =
+  | "idle" // 待機中
+  | "working" // 業務中
+  | "on_call" // 通話中(テストコール含む)
+  | "training" // 研修中(Learning/Test Mode)
+  | "offline"; // 停止中
+
+export const EMPLOYEE_STATES: readonly EmployeeState[] = [
+  "idle",
+  "working",
+  "on_call",
+  "training",
+  "offline",
+];
+
+export const EMPLOYEE_STATE_LABEL_JA: Record<EmployeeState, string> = {
+  idle: "待機中",
+  working: "業務中",
+  on_call: "通話中",
+  training: "研修中",
+  offline: "停止中",
+};
+
+/**
  * AI社員(Organization Bible 第3章 / Development Bible 第24章)。
- * Role / Department / Authority / KPI を持つ。
+ * Role / Department / Authority / KPI / State を持つ(D-20260706-001)。
  */
 export interface AIEmployee {
   id: string; // 例: "MUSA-101"
@@ -74,6 +101,8 @@ export interface AIEmployee {
   authorityLevel: number;
   /** KPI名 → 目標値(Organization Bible 第4章)。 */
   kpi: Record<string, number>;
+  /** 現在の稼働状態。 */
+  state: EmployeeState;
 }
 
 /**

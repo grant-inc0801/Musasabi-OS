@@ -7,13 +7,36 @@ export type {
   OrganizationLevel,
   OrganizationUnit,
   EmployeeRank,
+  EmployeeState,
   AIEmployee,
 } from "./types";
 export {
   RANK_AUTHORITY_LEVEL,
   RANK_LABEL_JA,
   APPROVAL_CHAIN,
+  EMPLOYEE_STATES,
+  EMPLOYEE_STATE_LABEL_JA,
 } from "./types";
+export {
+  COMPANY_GENOME,
+  COMPANY_VALUES,
+  COMPANY_VALUE_LABEL_JA,
+  type CompanyValue,
+} from "./genome";
+export {
+  initialCallProgress,
+  hasPassedTestCriteria,
+  allowedCallModes,
+  recommendedCallMode,
+  stateDuringCall,
+  type EmployeeCallProgress,
+} from "./callIntegration";
+export {
+  AI_EMPLOYEES,
+  getEmployee,
+  getEmployeesByUnit,
+  initialRosterCallProgress,
+} from "./roster";
 export {
   COMPANY_ID,
   HEADQUARTERS_IDS,

@@ -11,11 +11,22 @@ import { RecommendedActionsList } from "./components/RecommendedActionsList";
 import { MusaActionsPanel } from "./components/MusaActionsPanel";
 import { CallAnalysisPanel } from "./components/CallAnalysisPanel";
 import { ConnectionSettingsPanel } from "./components/Settings/ConnectionSettingsPanel";
+import { EmployeeSettingsPanel } from "./components/Settings/EmployeeSettingsPanel";
 import { CallTrainingPage } from "./components/CallTraining/CallTrainingPage";
+import { CompanyPage } from "./components/Company/CompanyPage";
 import { FirstRunSetup } from "./components/Setup/FirstRunSetup";
 import { loadSetupState } from "./lib/setupStorage";
 
-type Tab = "home" | "call_training" | "settings";
+type Tab = "home" | "company" | "call_training" | "settings";
+
+const TAB_LABEL_JA: Record<Tab, string> = {
+  home: "ホーム",
+  company: "AIカンパニー",
+  call_training: "コールトレーニング",
+  settings: "設定",
+};
+
+const TAB_ORDER: Tab[] = ["home", "company", "call_training", "settings"];
 
 export function App() {
   const [tab, setTab] = useState<Tab>("home");
@@ -48,23 +59,20 @@ export function App() {
   return (
     <main style={{ fontFamily: "sans-serif", padding: "2rem" }}>
       <h1>Musasabi OS — Sales Workspace</h1>
-      <nav style={{ marginBottom: "1.5rem" }}>
-        <button type="button" onClick={() => setTab("home")} disabled={tab === "home"}>
-          ホーム
-        </button>{" "}
-        <button
-          type="button"
-          onClick={() => setTab("call_training")}
-          disabled={tab === "call_training"}
-        >
-          コールトレーニング
-        </button>{" "}
-        <button type="button" onClick={() => setTab("settings")} disabled={tab === "settings"}>
-          設定
-        </button>
+      <nav style={{ marginBottom: "1.5rem", display: "flex", gap: "0.5rem" }}>
+        {TAB_ORDER.map((t) => (
+          <button key={t} type="button" onClick={() => setTab(t)} disabled={tab === t}>
+            {TAB_LABEL_JA[t]}
+          </button>
+        ))}
       </nav>
       {tab === "settings" ? (
-        <ConnectionSettingsPanel />
+        <>
+          <EmployeeSettingsPanel />
+          <ConnectionSettingsPanel />
+        </>
+      ) : tab === "company" ? (
+        <CompanyPage onNavigateToCallTraining={() => setTab("call_training")} />
       ) : tab === "call_training" ? (
         <CallTrainingPage />
       ) : (
