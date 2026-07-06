@@ -80,7 +80,7 @@ export function HBarChart({ series, rows, unit = "", maxValue }: HBarChartProps)
         {Array.from({ length: gridSteps + 1 }, (_, i) => {
           const x = LABEL_W + (plotW * i) / gridSteps;
           return (
-            <line key={i} x1={x} y1={0} x2={x} y2={height - 8} stroke="#2d3650" strokeWidth={1} />
+            <line key={i} x1={x} y1={0} x2={x} y2={height - 8} stroke="rgba(151,168,205,0.18)" strokeWidth={1} />
           );
         })}
         {rows.map((row, rowIndex) => {

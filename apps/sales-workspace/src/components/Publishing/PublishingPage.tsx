@@ -99,7 +99,7 @@ export function PublishingPage() {
 }
 
 const cellStyle: React.CSSProperties = {
-  border: "1px solid #2d3650",
+  border: "1px solid rgba(151,168,205,0.16)",
   padding: "0.35rem 0.6rem",
   textAlign: "left",
 };

@@ -139,7 +139,9 @@ npm run dev:web         # Vite dev server(http://localhost:5173)
 
 ### β版で操作できる画面
 
-管理画面はダークテーマ+部門ツリー型サイドバー構成。サイドバーには**部門名のみ**を表示し、
+管理画面は Development Bible 第7章 UI Philosophy(Glass / Minimal / Professional /
+Dark対応、Windows Nativeフォント・速度優先)に準拠したガラス調ダークテーマ+
+部門ツリー型サイドバー構成。サイドバーには**部門名のみ**を表示し、
 部門配下のサブ項目(営業部 → KPI / コールトレーニング / Sales Brain)から各詳細ページへ
 遷移する(β版はすべてMock値)。
 
