@@ -168,6 +168,7 @@
       #avatar {
         width: var(--avatar-size);
         height: var(--avatar-size);
+        position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -176,6 +177,11 @@
         cursor: pointer;
         user-select: none;
         filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
+      }
+      #avatar canvas {
+        width: 100% !important;
+        height: 100% !important;
+        display: block;
       }
       /* 配置換え用のドラッグハンドル(ホバー時のみ表示) */
       #drag-handle {
@@ -223,6 +229,8 @@
           <span style="font-size: 11px; color: #9aa3ba">アバターサイズ</span>
           <input id="size-slider" type="range" min="48" max="160" step="4" />
         </div>
+        <button id="load-vrm" class="footer-btn" type="button">VRMアバターを読み込む(VRoid)</button>
+        <input id="vrm-file" type="file" accept=".vrm" style="display: none" />
         <button id="open-main" class="footer-btn" type="button">メイン管理画面を開く</button>
       </div>
       <div id="avatar-wrap">
