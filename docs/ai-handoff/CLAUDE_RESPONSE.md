@@ -3,6 +3,52 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-06 — Windows向けβ版リリースビルド導線の整備(D-20260706-003)
+
+### 実装内容
+Directive D-20260706-003(Windows向けβ版リリースビルドを最優先で出力する)に基づき、
+`.exe` / `.msi` を生成できる導線を整備した。
+
+- **beta-build workflow の Windows ジョブ追加**(実装指示6・7):
+  `windows-latest` 上で `npm run build:desktop`(= `tauri build`)を実行し、
+  NSIS `.exe` / MSI `.msi` を `musasabi-beta-windows-<sha>` artifact として
+  アップロードする。手動実行(`workflow_dispatch`)のみ・`contents: read` 維持・
+  自動公開・署名なし
+- **仮アプリアイコン**(実装指示9): 白黒ムササビの仮アイコンを生成して
+  `apps/desktop/src-tauri/icons/` へ組み込み(32/128/256/512px PNG + icon.ico)。
+  生成スクリプトは `scripts/generate-beta-icon.js`(依存パッケージなし、
+  node:zlib のみで PNG/ICO をエンコード)。正式アイコンは後続フェーズで差し替え
+- **ビルドコマンド**(実装指示3・4): root に `build:desktop` を追加
+  (`dev:desktop` / `dev:web` / `package:win` は D-20260706-002 で整備済みを確認)
+- **README 更新**(実装指示12): インストーラ作成手順、GitHub Actions artifact の
+  取得手順、GitHub Releases への手動公開手順(実装指示8。自動公開はしない)、
+  仮アイコンの説明を追加
+- **Windows実機検証チェックリスト更新**(実装指示11): §8 に `build:desktop`・
+  artifact ダウンロード・仮アイコン表示の確認項目を追加
+- **β版に含める7画面**: D-20260706-002 で統合済み(ダッシュボード / Learning /
+  Test / AutoCall(本番実行不可)/ AI社員管理 / Sales Brain / 設定)を維持
+
+### 未検証項目(実装指示13、正直に記録)
+- このサンドボックスでは `libwebkit2gtk` 等が導入できず `cargo build` /
+  `tauri build` / `tauri dev` を実行できないため、**`.exe` / `.msi` の実生成と
+  Windows 実機起動は未検証**。beta-build workflow の Windows ジョブを
+  GitHub Actions 上で手動実行して確認する必要がある
+- 検証済み: フロントエンドのビルドチェーン(`apps/desktop` の build →
+  sales-workspace + 全パッケージ)、全ユニットテスト、アイコンファイルの生成
+
+### テスト結果
+- 全 workspace テスト152件 pass・fail 0(9 workspace すべて fail 0)
+- `apps/desktop` フロントエンドビルド成功、root `npm run build` 成功
+
+### 完了条件の充足
+- Windows向けβ版の起動手順が明確(README)✅ / artifact 出力導線あり
+  (beta-build windows ジョブ)✅ / `npm run dev:desktop` 導線確認 ✅ /
+  β版README更新 ✅ / チェックリスト更新 ✅ / 仮アイコン採用+再生成手順明確 ✅ /
+  テスト green ✅ / 本エントリ(日本語)✅ / Next Directive 待ちで停止 ✅
+
+### 次に実施する内容
+- 運用ルールに従い待機。ChatGPT の新 Directive を待つ
+
 ## 2026-07-06 — 操作可能なβ版評価ビルドの整備(D-20260706-002)
 
 ### 実装内容
