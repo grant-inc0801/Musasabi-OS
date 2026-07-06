@@ -7,3 +7,5 @@ export * from "./session";
 export * from "./sharedKnowledge";
 export * from "./assistantPanel";
 export * from "./workLog";
+export * from "./persistence";
+export { TestCallRepository } from "./TestCallRepository";

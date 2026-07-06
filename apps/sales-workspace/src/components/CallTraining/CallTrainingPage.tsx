@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   MockCallAdapter,
   startTestCall,
@@ -21,6 +21,7 @@ import type {
 import { appLogger } from "../../lib/appLogger";
 import { loadEmployeeSettings } from "../../lib/employeeSettings";
 import { loadWorkLog, saveWorkLog } from "../../lib/workLogStorage";
+import { saveSessionToCallLog } from "../../lib/callLogStorage";
 
 // コールトレーニング画面(Directive D-20260705-003)。
 // Learning → Test → AutoCall の三段階。現フェーズは Test Mode を Mock で実装し、
@@ -38,6 +39,14 @@ export function CallTrainingPage() {
   const [humanText, setHumanText] = useState("");
   const [fbComment, setFbComment] = useState("");
   const [fbCategory, setFbCategory] = useState<TalkFeedbackCategory>("tone");
+
+  // セッションの更新(発話・指摘・終了)をこの端末のローカル履歴へ自動保存する。
+  // 保存された履歴は Sales Brain の共通ナレッジ・履歴一覧へ反映される(外部送信なし)。
+  useEffect(() => {
+    if (session) {
+      saveSessionToCallLog(session);
+    }
+  }, [session]);
 
   function handleStart(): void {
     try {

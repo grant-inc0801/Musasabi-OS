@@ -3,6 +3,40 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-06 — テストコール履歴のローカル永続化・Sales Brain実データ化(次フェーズ)
+
+### 実装内容
+ユーザー指示「次のフェイズ実行して」に基づき、かねてよりPending第1候補としていた
+「Test Mode会話ログ・指摘・共通ナレッジのローカル永続化(JSON/SQLite、実DB接続なし)」
+を実装した。あわせてβ版UIフィードバック第2弾(スライダー修正・部門ツリーナビ・KPI表・
+組織図改善・ブランドアイコン統一、PR #221)も同日実装済み。
+
+- **`@musasabi/call-training` 永続化層**:
+  - `persistence.ts` — セッション履歴のJSON直列化/検証復元(壊れた要素は捨てる)、
+    `upsertSession`(同ID置換・新しい順・上限100件)、`knowledgeFromSessions`
+    (履歴から共通ナレッジ再構築)、`callLogStats`(集計)
+  - `TestCallRepository.ts` — `node:sqlite` によるSQLite保存
+    (デスクトップ/Node環境用。voice-analysis の CallAnalysisRepository と同方針)
+  - テスト6件追加(round-trip/破損データ/upsert/ナレッジ再構築/集計/SQLite)
+- **UI(この端末のlocalStorage、外部送信なし)**:
+  - テストコールの発話・指摘・終了を `musasabi.testCallLog` へ自動保存
+  - Sales Brain を実データ化: 学習データサマリー(テストコール数/完了数/ターン数/
+    指摘数/手動学習数)、保存履歴から再構築した共通ナレッジ(カテゴリ絞り込み)、
+    テストコール履歴一覧(最新20件)
+- **E2E確認**: Playwright で「テストコール実施 → 指摘追加 → 通話終了 →
+  Sales Brain に反映 → ページ再読込後も保持」を実画面で確認
+
+### 安全ルールの遵守
+- 保存はローカルのみ(localStorage / SQLiteファイル)。実DB接続・外部送信なし。
+  実架電・実API接続・実認証情報保存なし。AutoCall本番実行は不可のまま
+
+### テスト結果
+- 全 workspace テスト**181件 pass・fail 0**(call-training 31件)
+- vite build 成功
+
+### 次に実施する内容
+- 運用ルールに従い待機。ChatGPT の新 Directive を待つ
+
 ## 2026-07-06 — β版UI追加修正(D-20260706-006)
 
 ### 実装内容
