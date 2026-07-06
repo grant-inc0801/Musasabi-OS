@@ -14,19 +14,23 @@ import { ConnectionSettingsPanel } from "./components/Settings/ConnectionSetting
 import { EmployeeSettingsPanel } from "./components/Settings/EmployeeSettingsPanel";
 import { CallTrainingPage } from "./components/CallTraining/CallTrainingPage";
 import { CompanyPage } from "./components/Company/CompanyPage";
+import { SalesBrainPage } from "./components/SalesBrain/SalesBrainPage";
 import { FirstRunSetup } from "./components/Setup/FirstRunSetup";
 import { loadSetupState } from "./lib/setupStorage";
 
-type Tab = "home" | "company" | "call_training" | "settings";
+// β版評価ビルドの主要画面(D-20260706-002)。ダッシュボード / AI社員管理 /
+// コールトレーニング(Learning・Test・AutoCall)/ Sales Brain / 設定 を相互遷移できる。
+type Tab = "home" | "company" | "call_training" | "sales_brain" | "settings";
 
 const TAB_LABEL_JA: Record<Tab, string> = {
-  home: "ホーム",
-  company: "AIカンパニー",
+  home: "ダッシュボード",
+  company: "AI社員管理",
   call_training: "コールトレーニング",
+  sales_brain: "Sales Brain",
   settings: "設定",
 };
 
-const TAB_ORDER: Tab[] = ["home", "company", "call_training", "settings"];
+const TAB_ORDER: Tab[] = ["home", "company", "call_training", "sales_brain", "settings"];
 
 export function App() {
   const [tab, setTab] = useState<Tab>("home");
@@ -75,6 +79,8 @@ export function App() {
         <CompanyPage onNavigateToCallTraining={() => setTab("call_training")} />
       ) : tab === "call_training" ? (
         <CallTrainingPage />
+      ) : tab === "sales_brain" ? (
+        <SalesBrainPage />
       ) : (
         <>
           <MusaActionsPanel onCallAnalysisComplete={setCallAnalysis} />

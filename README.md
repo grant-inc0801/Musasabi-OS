@@ -44,15 +44,16 @@ Electronバイナリを取得できず未実施。実FileMaker/Zoom Phone/VOICEV
 
 ```
 apps/
-  desktop/            Desktop Application(Electron、Windowsインストーラ、トレイ常駐)
+  desktop/            Desktop Application(Tauri、Windowsインストーラ、トレイ常駐)
   sales-workspace/    Sales Workspace β 版 UI(React + Vite)
 packages/
   avatar-2d/          MUSA 常駐アバター(2D オーバーレイ、状態機械)
-  avatar-3d/          3D アバター(未実装、β版完成後のスコープ)
+  avatar-3d/          3D アバターロジック(three.js実レンダラーは Pending Issue #200)
   voice-engine/       TTS / STT(発話合成・音声認識)
   voice-analysis/     通話音声解析(感情分析・キーワード抽出・SQLite永続化)
   ai-core/            AI Sales Employee ロジック(リード優先順位付け・日次計画・KPI)
-  ai-company/         AI Company System(組織階層・役職・KPI・承認フロー、型定義のみ)
+  ai-company/         AI Company System(組織階層・AI社員モデル・Genome・承認フロー)
+  call-training/      コール三段階運用(Learning/Test/AutoCall、Mock架電、共通ナレッジ)
   integrations/       外部サービス連携(FileMaker、Zoom Phone)
   memory/             Brain Memory Engine(未実装、Epic β-001完了後)
   vision/             Vision Engine(未実装、Epic β-001完了後)
@@ -79,7 +80,52 @@ plugins/              Plugin SDK 準拠のプラグイン
 ```
 npm install
 npm run build   # 全パッケージをビルド(依存順に自動でビルドされる)
-npm run test --workspaces --if-present   # 全パッケージのユニットテスト
+npm test        # 全パッケージのユニットテスト
 ```
 
-Windowsでの実行・パッケージングは `apps/desktop` を参照。
+## β版評価ビルドの起動手順(D-20260706-002)
+
+β版は Mock 構成で安全に操作できる評価ビルドである。**実API接続・実認証情報の保存・
+実架電は一切行わない**(FileMaker / Zoom Phone / VOICEVOX / whisper.cpp は Mock
+または「準備中」表示。AutoCall 本番実行は無効)。
+
+### 1. Tauri デスクトップとして起動(Windows 推奨)
+
+前提: Node.js 22+、Rust ツールチェイン、WebView2 ランタイム
+(<https://tauri.app/start/prerequisites/> 参照)。
+
+```
+npm install
+npm run dev:desktop     # フロントをビルドして Tauri ウィンドウで起動
+```
+
+Windows インストーラ(NSIS/MSI)の作成:
+
+```
+npm run package:win
+```
+
+### 2. ブラウザで起動(Rust 環境が無い場合の代替)
+
+```
+npm install
+npm run dev:web         # Vite dev server(http://localhost:5173)
+```
+
+### β版で操作できる画面
+
+| 画面 | 内容 |
+| --- | --- |
+| ダッシュボード | KPI・日次計画・推奨アクション・リード一覧・通話解析(Mock) |
+| AI社員管理 | Company Genome・組織図・AI社員名簿・社員別コールモード |
+| コールトレーニング | Learning / Test / AutoCall の三段階。Test Mode は Mock 架電を操作可能。AutoCall は「準備中・承認待ち」で本番実行不可 |
+| Sales Brain | 学習データソース(Mock/準備中)と全AI社員共通トーク改善ナレッジ |
+| 設定 | AI社員・音声(Mock)・既定コールモード、外部サービス接続準備状況(ダミー値のみ) |
+
+MUSAアバターは現フェーズでは 2D プレースホルダー表示(`packages/avatar-2d`)。
+VRoid/VRM・three.js 実レンダラーは Pending(Issue #200)。
+
+Windows 実機での確認手順は
+[docs/WINDOWS_VERIFICATION_CHECKLIST.md](docs/WINDOWS_VERIFICATION_CHECKLIST.md) を参照。
+GitHub Actions の手動実行(`workflow_dispatch`)による評価ビルドは
+`.github/workflows/beta-build.yml` を使用する。
