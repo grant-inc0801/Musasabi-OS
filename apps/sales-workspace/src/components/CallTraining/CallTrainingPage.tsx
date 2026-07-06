@@ -230,7 +230,7 @@ function TestModeView(props: TestModeProps) {
       </div>
 
       {session && (
-        <div style={{ border: "1px solid #2d3650", padding: "0.75rem", maxWidth: "48rem" }}>
+        <div style={{ border: "1px solid rgba(151,168,205,0.16)", padding: "0.75rem", maxWidth: "48rem" }}>
           <p style={{ margin: "0 0 0.5rem", color: "#9aa3ba" }}>
             連絡先: {session.contact} / 状態: {inProgress ? "通話中" : "終了"}
           </p>
