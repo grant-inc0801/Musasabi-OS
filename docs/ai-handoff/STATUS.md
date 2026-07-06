@@ -4,22 +4,22 @@
 **Updated:** 2026-07-06
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(D-20260706-003)
-Directive D-20260706-003(Windows向けβ版リリースビルドを最優先で出力)を実装完了。
+## 直近の完了内容(D-20260706-004)
+Directive D-20260706-004(管理画面UIとデスクトップ右下アバター常駐)を実装完了。
 
-- beta-build workflow に windows-latest ジョブを追加: `tauri build` で NSIS `.exe` /
-  MSI `.msi` を生成し `musasabi-beta-windows-<sha>` artifact としてアップロード
-  (手動実行のみ・自動公開なし)
-- 白黒ムササビの仮アプリアイコンを組み込み(`scripts/generate-beta-icon.js` で再生成可)
-- root に `build:desktop` を追加。README にインストーラ作成/artifact取得/Releases
-  手動公開手順、チェックリスト§8に確認項目を追加
-- **未検証(正直な記録)**: サンドボックスでは cargo/tauri を実行できないため
-  `.exe`/`.msi` の実生成と Windows 実機起動は未検証。GitHub Actions の Beta Build
-  手動実行での確認が必要
-- 全 workspace テスト152件 pass・fail 0
-- 詳細は `docs/ai-handoff/CLAUDE_RESPONSE.md`(2026-07-06 D-20260706-003 エントリ)
+- 管理画面をダークテーマ+サイドバー構成へ刷新(AI社員ステータス・モード状態カード付き)
+- アバターウィンドウを右下配置にし、メインの最小化/Xで本体を隠して右下アバターのみ常駐
+- アバタークリックでミニパネル(モード表示/Learning・Test・AutoCall切替/チャット/
+  提案表示/メイン画面を開く)、吹き出しで提案・通知を表示
+- 状態管理は `@musasabi/call-training` の assistantPanel(決定論)としてテスト8件追加
+- AutoCall は表示切替のみで本番実行不可を維持(実架電・実API接続なし)
+- Playwright でダークテーマ画面とミニパネルの実表示を確認。Tauri ネイティブ挙動
+  (右下配置・最小化→常駐)は Windows 実機確認が必要(チェックリスト §10)
+- 全 workspace テスト160件 pass・fail 0
+- 詳細は `docs/ai-handoff/CLAUDE_RESPONSE.md`(2026-07-06 D-20260706-004 エントリ)
 
 ## それ以前の完了
+- D-20260706-003: Windowsβ版ビルド導線(beta-build windowsジョブ・仮アイコン・README)
 - D-20260706-002: β版評価ビルド(5画面統合・Sales Brain・起動導線・README/チェックリスト)
 - D-20260706-001: AI Company System完成・β統合(AI社員モデル/Genome/名簿/コール統合)
 - D-20260705-003: `packages/call-training`(三段階コール運用・Mock架電・共通ナレッジ基盤)
