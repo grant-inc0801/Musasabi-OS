@@ -47,14 +47,21 @@ function el<T extends HTMLElement>(id: string): T | null {
 // 常駐時に「アバター以外の透明画面を出さない」ため、ウィンドウ自体を表示内容に
 // 合わせてリサイズする(D-20260706-006)。右下アンカーを保つよう、サイズ変更分だけ
 // 位置を右下方向へ補正する。Tauri外(ブラウザ)では何もしない。
+//
+// スライダー操作でウィンドウが移動して見えなくなる不具合対策(ユーザーFB):
+// - パネル表示中のウィンドウサイズはアバターサイズに依存しない固定値にする
+//   (スライダー操作ではウィンドウを一切動かさない)
+// - リサイズ処理は直列化し、並行実行による位置ドリフトを防ぐ
 const WINDOW_PADDING = 32; // #stack のpadding+影の余白
 const HANDLE_HEIGHT = 26; // ドラッグハンドル(⠿ 移動)の分
-const PANEL_SIZE = { w: 340, h: 640 };
+const AVATAR_MAX = 160; // スライダー上限(パネル表示中はこの分を常に確保)
+const PANEL_SIZE = { w: 340, h: 620 + AVATAR_MAX };
 const BUBBLE_SIZE = { w: 340, h: 240 };
 
 function desiredWindowSize(): { w: number; h: number } {
   if (panelState.panelOpen) {
-    return { w: PANEL_SIZE.w, h: PANEL_SIZE.h + avatarSizePx };
+    // アバターサイズに依存しない固定サイズ(スライダー中に窓が動かないように)。
+    return PANEL_SIZE;
   }
   if (panelState.bubble !== null) {
     return { w: BUBBLE_SIZE.w, h: BUBBLE_SIZE.h + avatarSizePx };
@@ -65,7 +72,15 @@ function desiredWindowSize(): { w: number; h: number } {
   };
 }
 
-async function resizeWindowToContent(): Promise<void> {
+// リサイズの直列化キュー。並行した outerSize/setPosition の読み書き競合で
+// ウィンドウが右下方向へ流れていくのを防ぐ。
+let resizeChain: Promise<void> = Promise.resolve();
+
+function resizeWindowToContent(): void {
+  resizeChain = resizeChain.then(doResizeWindow).catch(() => {});
+}
+
+async function doResizeWindow(): Promise<void> {
   try {
     const { getCurrentWindow, PhysicalPosition, PhysicalSize } = await import(
       "@tauri-apps/api/window"
@@ -110,7 +125,11 @@ function setAvatarSize(sizePx: number): void {
   avatarSizePx = clampAvatarSizePx(sizePx);
   saveAvatarSettings({ sizePx: avatarSizePx });
   applyAvatarSize();
-  void resizeWindowToContent();
+  // パネル表示中はウィンドウ固定サイズのためリサイズ不要(スライダーで窓が動かない)。
+  // 閉じている(アバターのみ)状態でのサイズ変更のみウィンドウへ反映する。
+  if (!panelState.panelOpen) {
+    resizeWindowToContent();
+  }
 }
 
 function renderPanel(): void {
@@ -162,7 +181,7 @@ function renderPanel(): void {
   chatLog.scrollTop = chatLog.scrollHeight;
 
   // 表示内容(アバターのみ/吹き出し/ミニパネル)に合わせてウィンドウをリサイズする。
-  void resizeWindowToContent();
+  resizeWindowToContent();
 }
 
 function handleSend(): void {
