@@ -11,10 +11,11 @@ import { RecommendedActionsList } from "./components/RecommendedActionsList";
 import { MusaActionsPanel } from "./components/MusaActionsPanel";
 import { CallAnalysisPanel } from "./components/CallAnalysisPanel";
 import { ConnectionSettingsPanel } from "./components/Settings/ConnectionSettingsPanel";
+import { CallTrainingPage } from "./components/CallTraining/CallTrainingPage";
 import { FirstRunSetup } from "./components/Setup/FirstRunSetup";
 import { loadSetupState } from "./lib/setupStorage";
 
-type Tab = "home" | "settings";
+type Tab = "home" | "call_training" | "settings";
 
 export function App() {
   const [tab, setTab] = useState<Tab>("home");
@@ -51,12 +52,21 @@ export function App() {
         <button type="button" onClick={() => setTab("home")} disabled={tab === "home"}>
           ホーム
         </button>{" "}
+        <button
+          type="button"
+          onClick={() => setTab("call_training")}
+          disabled={tab === "call_training"}
+        >
+          コールトレーニング
+        </button>{" "}
         <button type="button" onClick={() => setTab("settings")} disabled={tab === "settings"}>
           設定
         </button>
       </nav>
       {tab === "settings" ? (
         <ConnectionSettingsPanel />
+      ) : tab === "call_training" ? (
+        <CallTrainingPage />
       ) : (
         <>
           <MusaActionsPanel onCallAnalysisComplete={setCallAnalysis} />
