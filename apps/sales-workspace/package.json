@@ -3,25 +3,29 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "npm --prefix ../../packages/shared run build && npm --prefix ../../packages/ai-core run build && npm --prefix ../../packages/avatar-2d run build && npm --prefix ../../packages/integrations run build && npm --prefix ../../packages/voice-analysis run build && npm --prefix ../../packages/voice-engine run build && npm --prefix ../../packages/call-training run build && npm --prefix ../../packages/ai-company run build && vite build",
+    "build": "npm --prefix ../../packages/shared run build && npm --prefix ../../packages/ai-core run build && npm --prefix ../../packages/avatar-2d run build && npm --prefix ../../packages/integrations run build && npm --prefix ../../packages/voice-analysis run build && npm --prefix ../../packages/voice-engine run build && npm --prefix ../../packages/call-training run build && npm --prefix ../../packages/ai-company run build && npm --prefix ../../packages/avatar-3d run build && vite build",
     "dev": "vite"
   },
   "dependencies": {
-    "@musasabi/shared": "*",
+    "@musasabi/ai-company": "*",
     "@musasabi/ai-core": "*",
     "@musasabi/avatar-2d": "*",
+    "@musasabi/call-training": "*",
     "@musasabi/integrations": "*",
+    "@musasabi/shared": "*",
     "@musasabi/voice-analysis": "*",
     "@musasabi/voice-engine": "*",
-    "@musasabi/call-training": "*",
-    "@musasabi/ai-company": "*",
+    "@pixiv/three-vrm": "^3.5.4",
     "@tauri-apps/api": "^2.11.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "three": "^0.185.1",
+    "@musasabi/avatar-3d": "*"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@types/three": "^0.185.0",
     "@vitejs/plugin-react": "^4.3.1",
     "typescript": "^5.5.4",
     "vite": "^5.4.0"

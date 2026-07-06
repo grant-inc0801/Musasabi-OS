@@ -12,6 +12,7 @@ import {
   CALL_MODE_LABEL_JA,
 } from "@musasabi/call-training";
 import type { AssistantPanelState, CallMode } from "@musasabi/call-training";
+import { AvatarManager } from "@musasabi/avatar-3d";
 import { loadEmployeeSettings } from "./lib/employeeSettings";
 import { loadAvatarSettings, saveAvatarSettings } from "./lib/avatarSettings";
 
@@ -39,6 +40,49 @@ let panelState: AssistantPanelState = createAssistantPanelState(
   loadEmployeeSettings().defaultCallMode,
 );
 let avatarSizePx = loadAvatarSettings().sizePx;
+
+// 3Dアバター(Issue #200)。three.js + @pixiv/three-vrm による実レンダラー。
+// 初期化に失敗した環境(WebGL不可)では従来の絵文字表示へフォールバックする。
+// レンダラー実装は動的importで読み込む(three.js を別チャンクに分離)。
+type Avatar3d = {
+  manager: AvatarManager;
+  renderFrame: (timeMs: number) => void;
+  resize: (px: number) => void;
+  loadVrm: (url: string) => Promise<void>;
+};
+let avatar3d: Avatar3d | null = null;
+
+async function initAvatar3d(): Promise<void> {
+  const container = el("avatar");
+  if (!container) {
+    return;
+  }
+  try {
+    const { ThreeVrmRenderer } = await import("./avatar3d/ThreeVrmRenderer");
+    const canvas = document.createElement("canvas");
+    const renderer = new ThreeVrmRenderer(canvas);
+    const manager = new AvatarManager(renderer);
+    manager.setState(stateMachine.getState());
+    container.textContent = ""; // 絵文字を消してcanvasへ置き換え
+    container.appendChild(canvas);
+    renderer.resize(avatarSizePx);
+    avatar3d = {
+      manager,
+      renderFrame: (t) => renderer.renderFrame(t),
+      resize: (px) => renderer.resize(px),
+      loadVrm: (url) => manager.loadAvatar(url),
+    };
+    const loop = (t: number): void => {
+      manager.tick(t);
+      renderer.renderFrame(t);
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  } catch {
+    // WebGLが使えない環境では絵文字プレースホルダーのまま動かす。
+    avatar3d = null;
+  }
+}
 
 function el<T extends HTMLElement>(id: string): T | null {
   return document.getElementById(id) as T | null;
@@ -106,15 +150,20 @@ async function doResizeWindow(): Promise<void> {
 }
 
 function renderAvatar(state: AvatarState): void {
+  if (avatar3d) {
+    avatar3d.manager.setState(state);
+    return;
+  }
   const avatar = el("avatar");
   if (avatar) {
     avatar.textContent = AVATAR_STATE_EMOJI[state];
   }
 }
 
-/** アバターサイズ設定をCSS変数・スライダー・ウィンドウサイズへ反映する。 */
+/** アバターサイズ設定をCSS変数・スライダー・3Dキャンバスへ反映する。 */
 function applyAvatarSize(): void {
   document.documentElement.style.setProperty("--avatar-size", `${avatarSizePx}px`);
+  avatar3d?.resize(avatarSizePx);
   const slider = el<HTMLInputElement>("size-slider");
   if (slider) {
     slider.value = String(avatarSizePx);
@@ -230,12 +279,44 @@ function setupUi(): void {
   el<HTMLInputElement>("size-slider")?.addEventListener("input", (event) => {
     setAvatarSize(Number((event.target as HTMLInputElement).value));
   });
+  // VRoid Studio 製 VRM の読み込み(ローカルファイルのみ。外部送信なし)。
+  el("load-vrm")?.addEventListener("click", () => {
+    el<HTMLInputElement>("vrm-file")?.click();
+  });
+  el<HTMLInputElement>("vrm-file")?.addEventListener("change", (event) => {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) {
+      return;
+    }
+    if (!avatar3d) {
+      panelState = showBubbleState("この環境では3D表示を利用できません(WebGL無効)。");
+      renderPanel();
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    avatar3d
+      .loadVrm(url)
+      .then(() => {
+        panelState = showBubbleState(`VRMアバターを読み込みました: ${file.name}`);
+        renderPanel();
+      })
+      .catch((error) => {
+        panelState = showBubbleState(`VRMの読み込みに失敗しました: ${String(error)}`);
+        renderPanel();
+      })
+      .finally(() => URL.revokeObjectURL(url));
+  });
+}
+
+function showBubbleState(text: string): AssistantPanelState {
+  return { ...panelState, bubble: text };
 }
 
 renderAvatar(stateMachine.getState());
 setupUi();
 applyAvatarSize();
 renderPanel();
+void initAvatar3d();
 
 // メインウィンドウからのアバター状態遷移イベント(Tauri内のみ)。
 async function listenAvatarEvents(): Promise<void> {
