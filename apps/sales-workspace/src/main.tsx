@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import "./styles.css";
 import { App } from "./App";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { installDesktopBridge } from "./desktopBridge";

@@ -143,7 +143,7 @@ function TestModeView(props: TestModeProps) {
   return (
     <div>
       <h3>テストモード(Mock架電)</h3>
-      <p style={{ color: "#a00", fontSize: "0.9rem", maxWidth: "40rem" }}>
+      <p style={{ color: "#f0883e", fontSize: "0.9rem", maxWidth: "40rem" }}>
         実際の外部架電は行いません(Mock Call Adapter)。連絡先はテスト用のダミー値を
         入力してください。
       </p>
@@ -165,8 +165,8 @@ function TestModeView(props: TestModeProps) {
       </div>
 
       {session && (
-        <div style={{ border: "1px solid #ddd", padding: "0.75rem", maxWidth: "48rem" }}>
-          <p style={{ margin: "0 0 0.5rem", color: "#555" }}>
+        <div style={{ border: "1px solid #2d3650", padding: "0.75rem", maxWidth: "48rem" }}>
+          <p style={{ margin: "0 0 0.5rem", color: "#9aa3ba" }}>
             連絡先: {session.contact} / 状態: {inProgress ? "通話中" : "終了"}
           </p>
           <div style={{ maxHeight: "16rem", overflowY: "auto", marginBottom: "0.5rem" }}>
@@ -224,7 +224,7 @@ function TestModeView(props: TestModeProps) {
               </li>
             ))}
           </ul>
-          <p style={{ color: "#555", fontSize: "0.85rem" }}>
+          <p style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>
             指摘内容は全AI社員共通の改善ナレッジへ反映される設計です(集約は次フェーズで永続化)。
           </p>
         </div>
@@ -237,7 +237,7 @@ function AutoCallModeView({ allowed }: { allowed: boolean }) {
   return (
     <div>
       <h3>オートコールモード(準備中・承認待ち)</h3>
-      <p style={{ color: "#a00", fontWeight: "bold" }}>
+      <p style={{ color: "#f0883e", fontWeight: "bold" }}>
         本番架電は無効です。現フェーズではオートコールを開始できません。
       </p>
       <p style={{ maxWidth: "40rem" }}>

@@ -108,7 +108,7 @@ function IntegrationSettingsCard({ integrationId }: { integrationId: Integration
       <p>
         接続ステータス: <strong>{CONNECTION_STATUS_LABEL_JA[status]}</strong>
       </p>
-      <p style={{ color: "#555", fontSize: "0.9rem", maxWidth: "36rem" }}>
+      <p style={{ color: "#9aa3ba", fontSize: "0.9rem", maxWidth: "36rem" }}>
         本番接続は次フェーズで実装予定です。ここには<strong>ダミー値のみ</strong>
         入力してください。実際のAPIキー・パスワード・トークンは入力しないでください
         (保存先はこのアプリのメモリ上のみで、外部には一切送信されません)。
@@ -143,7 +143,7 @@ export function ConnectionSettingsPanel() {
   return (
     <section aria-label="連携・プロバイダ設定">
       <h2>連携・プロバイダ設定(準備UI)</h2>
-      <p style={{ color: "#555", fontSize: "0.9rem", maxWidth: "40rem" }}>
+      <p style={{ color: "#9aa3ba", fontSize: "0.9rem", maxWidth: "40rem" }}>
         FileMaker / Zoom Phone / VOICEVOX / whisper.cpp / OpenAI / Claude の接続設定を
         準備します。このフェーズでは<strong>実API接続・実認証情報の保存は行いません</strong>。
       </p>

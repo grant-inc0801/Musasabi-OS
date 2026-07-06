@@ -5,3 +5,4 @@ export * from "./types";
 export * from "./MockCallAdapter";
 export * from "./session";
 export * from "./sharedKnowledge";
+export * from "./assistantPanel";

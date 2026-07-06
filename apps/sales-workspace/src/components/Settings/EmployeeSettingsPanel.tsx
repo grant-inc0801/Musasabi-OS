@@ -98,7 +98,7 @@ export function EmployeeSettingsPanel() {
             <option value="test">{CALL_MODE_LABEL_JA.test}</option>
           </select>
         </label>
-        <p style={{ color: "#a00", fontSize: "0.85rem", margin: "0.25rem 0 0" }}>
+        <p style={{ color: "#f0883e", fontSize: "0.85rem", margin: "0.25rem 0 0" }}>
           オートコールモードは全安全ゲート充足まで既定モードに設定できません。
         </p>
       </div>
@@ -109,7 +109,7 @@ export function EmployeeSettingsPanel() {
       <button type="button" onClick={handleReset}>
         既定値に戻す
       </button>
-      {savedAt && <span style={{ marginLeft: "0.5rem", color: "#080" }}>保存しました({savedAt})</span>}
+      {savedAt && <span style={{ marginLeft: "0.5rem", color: "#3fb950" }}>保存しました({savedAt})</span>}
     </section>
   );
 }

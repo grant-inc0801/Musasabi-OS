@@ -30,19 +30,33 @@ pub fn run() {
       // `app.setLoginItemSettings({ openAtLogin: true })` 相当)。
       let _ = app.autolaunch().enable();
 
-      // MUSA常駐アバターのオーバーレイウィンドウ(Phase 2)。表示ロジック自体は
-      // apps/sales-workspace/avatar.html + src/avatarMain.ts に実装されており、
-      // ここではウィンドウの生成(フレームレス・透過・最前面)のみを担当する。
-      WebviewWindowBuilder::new(app, "avatar", WebviewUrl::App("avatar.html".into()))
-        .title("MUSA")
-        .inner_size(120.0, 120.0)
-        .position(40.0, 40.0)
-        .decorations(false)
-        .transparent(true)
-        .always_on_top(true)
-        .skip_taskbar(true)
-        .resizable(false)
-        .build()?;
+      // MUSA常駐アバターのオーバーレイウィンドウ(Phase 2 / D-20260706-004)。
+      // 表示ロジック(アバター・吹き出し・ミニパネル)は apps/sales-workspace/avatar.html +
+      // src/avatarMain.ts に実装されており、ここではウィンドウの生成(フレームレス・透過・
+      // 最前面)と「デスクトップ右下」への配置のみを担当する。ウィンドウサイズは
+      // ミニパネル・吹き出しの表示領域込み(閉じている間は透過)。
+      let avatar_w = 340.0;
+      let avatar_h = 500.0;
+      let avatar_window =
+        WebviewWindowBuilder::new(app, "avatar", WebviewUrl::App("avatar.html".into()))
+          .title("MUSA")
+          .inner_size(avatar_w, avatar_h)
+          .decorations(false)
+          .transparent(true)
+          .always_on_top(true)
+          .skip_taskbar(true)
+          .resizable(false)
+          .build()?;
+      // プライマリモニタの右下(タスクバー分の余白込み)に配置する。
+      if let Ok(Some(monitor)) = avatar_window.primary_monitor() {
+        let size = monitor.size();
+        let scale = monitor.scale_factor();
+        let margin = (16.0 * scale) as i32;
+        let taskbar_margin = (56.0 * scale) as i32;
+        let x = size.width as i32 - (avatar_w * scale) as i32 - margin;
+        let y = size.height as i32 - (avatar_h * scale) as i32 - taskbar_margin;
+        let _ = avatar_window.set_position(tauri::PhysicalPosition::new(x, y));
+      }
 
       // システムトレイ常駐(Development Bible 第8章: 常駐アバター)。
       let open_item = MenuItem::with_id(app, "open", "開く", true, None::<&str>)?;
@@ -85,13 +99,23 @@ pub fn run() {
       Ok(())
     })
     .on_window_event(|window, event| {
-      // Xボタンではアプリを終了せずトレイに常駐させる(Electron版
-      // `mainWindow.on("close", ...)` 相当)。トレイの「終了」は app.exit() で
+      // メイン管理画面のXボタン・最小化では、アプリを終了せずウィンドウを隠して
+      // 右下アバターのみ常駐させる(D-20260706-004)。復帰はトレイ「開く」または
+      // ミニパネルの「メイン画面を開く」から行う。トレイの「終了」は app.exit() で
       // 直接プロセスを終了するため、このハンドラを経由しない。
       if window.label() == "main" {
-        if let WindowEvent::CloseRequested { api, .. } = event {
-          api.prevent_close();
-          let _ = window.hide();
+        match event {
+          WindowEvent::CloseRequested { api, .. } => {
+            api.prevent_close();
+            let _ = window.hide();
+          }
+          WindowEvent::Resized(_) => {
+            if window.is_minimized().unwrap_or(false) {
+              let _ = window.unminimize();
+              let _ = window.hide();
+            }
+          }
+          _ => {}
         }
       }
     })

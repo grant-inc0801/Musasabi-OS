@@ -51,7 +51,7 @@ export function SalesBrainPage() {
   return (
     <section aria-label="Sales Brain">
       <h2>Sales Brain / 学習データ</h2>
-      <p style={{ color: "#a00", fontSize: "0.9rem", maxWidth: "44rem" }}>
+      <p style={{ color: "#f0883e", fontSize: "0.9rem", maxWidth: "44rem" }}>
         現フェーズは Mock データによる表示のみです。実データの取り込み・永続化・実API接続は
         行いません(Pending)。
       </p>
@@ -93,11 +93,11 @@ export function SalesBrainPage() {
         {entries.map((entry, i) => (
           <li key={i} style={{ margin: "0.3rem 0" }}>
             <strong>[{TALK_FEEDBACK_CATEGORY_LABEL_JA[entry.category]}]</strong> {entry.comment}
-            <span style={{ color: "#888", fontSize: "0.8rem" }}>(出典: {entry.sourceSessionId})</span>
+            <span style={{ color: "#7d8598", fontSize: "0.8rem" }}>(出典: {entry.sourceSessionId})</span>
           </li>
         ))}
       </ul>
-      <p style={{ color: "#555", fontSize: "0.85rem" }}>
+      <p style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>
         テストモードで追加した指摘はこのナレッジへ集約される設計です(全AI社員で共通)。
         永続化(ローカルJSON/SQLite)は次フェーズで実装します。
       </p>
@@ -106,7 +106,7 @@ export function SalesBrainPage() {
 }
 
 const cellStyle: React.CSSProperties = {
-  border: "1px solid #ddd",
+  border: "1px solid #2d3650",
   padding: "0.35rem 0.6rem",
   textAlign: "left",
 };

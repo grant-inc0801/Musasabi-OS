@@ -37,7 +37,7 @@ export function CompanyPage({ onNavigateToCallTraining }: CompanyPageProps) {
     <section aria-label="AIカンパニー">
       <h2>AIカンパニー</h2>
 
-      <div style={{ border: "1px solid #ddd", padding: "0.75rem", maxWidth: "48rem", marginBottom: "1rem" }}>
+      <div style={{ border: "1px solid #2d3650", padding: "0.75rem", maxWidth: "48rem", marginBottom: "1rem" }}>
         <h3 style={{ marginTop: 0 }}>Company Genome v{COMPANY_GENOME.version}</h3>
         <p style={{ margin: "0.25rem 0" }}>
           <strong>Mission:</strong> {COMPANY_GENOME.mission}
@@ -63,7 +63,7 @@ export function CompanyPage({ onNavigateToCallTraining }: CompanyPageProps) {
             {selectedUnitId ? `(${getUnit(selectedUnitId)?.name ?? selectedUnitId})` : "(全社)"}
           </h3>
           {employees.length === 0 ? (
-            <p style={{ color: "#555" }}>この組織単位に所属するAI社員はいません。</p>
+            <p style={{ color: "#9aa3ba" }}>この組織単位に所属するAI社員はいません。</p>
           ) : (
             <table style={{ borderCollapse: "collapse" }}>
               <thead>
@@ -82,7 +82,7 @@ export function CompanyPage({ onNavigateToCallTraining }: CompanyPageProps) {
               </tbody>
             </table>
           )}
-          <p style={{ color: "#555", fontSize: "0.85rem" }}>
+          <p style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>
             オートコールは全安全ゲート充足まで有効化されません(現フェーズは全AI社員で無効)。
           </p>
           <button type="button" onClick={onNavigateToCallTraining}>
@@ -95,7 +95,7 @@ export function CompanyPage({ onNavigateToCallTraining }: CompanyPageProps) {
 }
 
 const cellStyle: React.CSSProperties = {
-  border: "1px solid #ddd",
+  border: "1px solid #2d3650",
   padding: "0.35rem 0.6rem",
   textAlign: "left",
 };
