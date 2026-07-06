@@ -5,10 +5,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "npm --prefix ../voice-engine run build && tsc -p tsconfig.json",
     "test": "npm run build && node --test dist/*.test.js"
   },
   "devDependencies": {
+    "@musasabi/voice-engine": "*",
     "@types/node": "^22.10.0",
     "typescript": "^5.5.4"
   }

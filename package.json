@@ -9,6 +9,10 @@
   ],
   "scripts": {
     "build": "npm run build --workspace=@musasabi/shared --workspace=@musasabi/avatar-2d --workspace=@musasabi/ai-core --workspace=@musasabi/integrations --workspace=@musasabi/voice-analysis --workspace=@musasabi/voice-engine --if-present && npm run build --workspaces --if-present",
+    "dev:desktop": "npm --prefix apps/desktop run dev",
+    "dev:web": "npm --prefix apps/sales-workspace run dev",
+    "build:desktop": "npm --prefix apps/desktop run package:win",
+    "package:win": "npm --prefix apps/desktop run package:win",
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"
   },

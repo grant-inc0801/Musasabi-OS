@@ -5,7 +5,7 @@
     "moduleResolution": "Node10",
     "outDir": "dist",
     "rootDir": "src",
-    "types": ["node", "electron"]
+    "types": ["node"]
   },
   "include": ["src"]
 }

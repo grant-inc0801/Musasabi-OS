@@ -1,0 +1,41 @@
+name: CI
+
+# PR / push 時の安全検証。コードやドキュメントを一切書き換えず、検証のみを行う
+# (contents: read の最小権限)。runaway 防止のため、このワークフローは Issue 生成・
+# コミット・push を行わない。
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Check required docs
+        run: node scripts/ci/check-required-docs.js
+
+      - name: Check for conflict markers
+        run: node scripts/ci/check-conflict-markers.js
+
+      - name: Check for secret patterns
+        run: node scripts/ci/check-secret-patterns.js
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build --if-present

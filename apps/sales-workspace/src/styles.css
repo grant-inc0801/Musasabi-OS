@@ -1,0 +1,163 @@
+/* β版管理画面のダークテーマ(D-20260706-004)。
+   コンポーネントは素のHTML要素+最小限のインラインスタイルで書かれているため、
+   ベースの配色・フォーム・テーブル・カードの見た目はこのグローバルCSSで統一する。 */
+
+:root {
+  --bg: #0d111c;
+  --bg-panel: #151a28;
+  --bg-card: #1c2333;
+  --border: #2d3650;
+  --text: #e6e9f2;
+  --text-muted: #9aa3ba;
+  --accent: #2f6feb;
+  --accent-hover: #4d82ee;
+  --warn: #f0883e;
+  --danger: #f85149;
+  --ok: #3fb950;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* 見出し・本文 */
+h1,
+h2,
+h3,
+h4 {
+  color: var(--text);
+}
+
+a {
+  color: var(--accent-hover);
+}
+
+/* フォーム部品 */
+button {
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.9;
+}
+
+/* ナビゲーション上の選択中タブ(disabled で表す既存実装)を強調表示にする */
+nav button:disabled,
+button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  opacity: 1;
+}
+
+input,
+select,
+textarea {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+input::placeholder {
+  color: var(--text-muted);
+}
+
+/* テーブル */
+table {
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-color: var(--border) !important;
+}
+
+th {
+  background: var(--bg-card);
+}
+
+/* ダッシュボードカード: セクションをカードとして描画する */
+main section,
+.card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+/* サイドバーレイアウト(App.tsx) */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  font-family: sans-serif;
+}
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  box-sizing: border-box;
+}
+
+.sidebar .brand {
+  font-size: 1.05rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+
+.sidebar button {
+  text-align: left;
+  width: 100%;
+}
+
+.sidebar .sidebar-note {
+  margin-top: auto;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.sidebar .status-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.75rem;
+}
+
+.sidebar .status-card strong {
+  color: var(--text);
+}
+
+.content {
+  flex: 1;
+  padding: 1.5rem 2rem;
+  min-width: 0;
+  box-sizing: border-box;
+}

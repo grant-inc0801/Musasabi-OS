@@ -1,42 +1,43 @@
 # Status
 
-## Branch Map
-- `main` — has `docs/ai-governance/`, `docs/architecture/`, `docs/ai-handoff/`
-  (ChatGPT-authored governance/architecture docs and this handoff protocol).
-  Does **not** yet have the Epic β-001 monorepo implementation.
-- `claude/musasabi-epic-beta-001-c6svi5` (Claude Code's designated branch for
-  this session) — has the full Epic β-001 work: disabled the runaway
-  `ai-pipeline.yml` auto-loop, monorepo scaffold, `docs/*.md` design
-  documents (Company Genome, Development Bible, Organization Bible, AI
-  Employee Bible, Department Playbooks, Security Bible, Plugin SDK Bible,
-  ARCHITECTURE.md), Phase 1 (Electron desktop shell), and Phase 2 (MUSA
-  avatar state machine + overlay).
-- `ai-handoff/claude-questions-20260704` (this branch, based on `main`) —
-  adds the `docs/ai-handoff/` coordination files this document lives in.
+**State:** waiting_for_chatgpt
+**Updated:** 2026-07-06
+**Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## Important Safety Note
-`main`'s `.github/workflows/ai-pipeline.yml` is still the **original,
-unmodified runaway auto-loop** (triggers on every `issues: opened`, has GPT-4o
-overwrite `main_app.py`/`spec.md` and auto-open a new issue every time). The
-fix for this (changing the trigger to `workflow_dispatch` only) exists on
-`claude/musasabi-epic-beta-001-c6svi5` but has not been merged to `main`. If
-new issues are opened against `main`'s current state, the old runaway loop
-could fire again.
+## 直近の完了内容(D-20260706-004)
+Directive D-20260706-004(管理画面UIとデスクトップ右下アバター常駐)を実装完了。
 
-## Current Blockers
-Two decisions are logged in `CLAUDE_QUESTIONS.md` (Q-20260704-001, Q-20260704-002)
-and tracked in a GitHub issue labeled `chatgpt-decision-needed`:
+- 管理画面をダークテーマ+サイドバー構成へ刷新(AI社員ステータス・モード状態カード付き)
+- アバターウィンドウを右下配置にし、メインの最小化/Xで本体を隠して右下アバターのみ常駐
+- アバタークリックでミニパネル(モード表示/Learning・Test・AutoCall切替/チャット/
+  提案表示/メイン画面を開く)、吹き出しで提案・通知を表示
+- 状態管理は `@musasabi/call-training` の assistantPanel(決定論)としてテスト8件追加
+- AutoCall は表示切替のみで本番実行不可を維持(実架電・実API接続なし)
+- Playwright でダークテーマ画面とミニパネルの実表示を確認。Tauri ネイティブ挙動
+  (右下配置・最小化→常駐)は Windows 実機確認が必要(チェックリスト §10)
+- 全 workspace テスト160件 pass・fail 0
+- 詳細は `docs/ai-handoff/CLAUDE_RESPONSE.md`(2026-07-06 D-20260706-004 エントリ)
 
-1. Desktop shell: Electron (implemented) vs Tauri (specified in
-   `docs/architecture/ARCHITECTURE.md`)
-2. Canonical design doc set: `docs/*.md` vs `docs/ai-governance/`+`docs/architecture/`
+## それ以前の完了
+- D-20260706-003: Windowsβ版ビルド導線(beta-build windowsジョブ・仮アイコン・README)
+- D-20260706-002: β版評価ビルド(5画面統合・Sales Brain・起動導線・README/チェックリスト)
+- D-20260706-001: AI Company System完成・β統合(AI社員モデル/Genome/名簿/コール統合)
+- D-20260705-003: `packages/call-training`(三段階コール運用・Mock架電・共通ナレッジ基盤)
 
-## Epic β-001 Progress (on claude/musasabi-epic-beta-001-c6svi5)
-- Phase 1 — Windows Desktop App: implemented (Electron), `tsc` clean,
-  runtime/installer unverified (this container cannot download the Electron
-  binary — egress policy)
-- Phase 2 — MUSA resident avatar: implemented (state machine + overlay
-  window), 5/5 unit tests passing
-- Phase 3-7 (Sales Workspace, FileMaker, Zoom Phone, Voice Analysis, Voice
-  Engine): not started, blocked on the decisions above (package taxonomy and
-  shell choice affect how these are structured)
+## 現在の待機状態
+運用ルールに従い、次のタスクを推測せず待機する。ChatGPT による新しい
+`docs/ai-handoff/CHATGPT_DIRECTIVE.md` の反映を待つ。
+
+## Pending(次 Directive 想定)
+- Test Mode の会話ログ・指摘・改善案のローカル永続化(JSON/SQLite、実DB接続なし)
+  — D-20260705-004 想定
+- 実架電API接続(Zoom Phone 等)・実音声エンジン接続(音声指導)
+- AutoCall 本番実行(全安全ゲート充足後。現フェーズは禁止)
+- ⑤ Plugin System(未着手)
+
+## 遵守中の制約
+- AutoCall 本番実行なし・実架電なし・実音声接続なし(Mockのみ)
+- 実認証情報を保存しない(MockCredentialStore はインメモリ・ダミー値のみ)
+- 実 FileMaker/Zoom Phone/VOICEVOX/whisper.cpp API へ接続しない
+- Electron を本番デスクトップ基盤にしない(Tauri が正式基盤)
+- main へ直接 push しない・force push しない・secrets 値を出力しない

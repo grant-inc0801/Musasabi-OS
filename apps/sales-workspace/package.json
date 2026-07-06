@@ -3,14 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "npm --prefix ../../packages/ai-core run build && npm --prefix ../../packages/avatar-2d run build && npm --prefix ../../packages/voice-analysis run build && vite build",
+    "build": "npm --prefix ../../packages/shared run build && npm --prefix ../../packages/ai-core run build && npm --prefix ../../packages/avatar-2d run build && npm --prefix ../../packages/integrations run build && npm --prefix ../../packages/voice-analysis run build && npm --prefix ../../packages/voice-engine run build && npm --prefix ../../packages/call-training run build && npm --prefix ../../packages/ai-company run build && vite build",
     "dev": "vite"
   },
   "dependencies": {
     "@musasabi/shared": "*",
     "@musasabi/ai-core": "*",
     "@musasabi/avatar-2d": "*",
+    "@musasabi/integrations": "*",
     "@musasabi/voice-analysis": "*",
+    "@musasabi/voice-engine": "*",
+    "@musasabi/call-training": "*",
+    "@musasabi/ai-company": "*",
+    "@tauri-apps/api": "^2.11.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

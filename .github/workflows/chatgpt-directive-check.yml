@@ -1,0 +1,34 @@
+name: ChatGPT Directive Check
+
+# docs/ai-handoff/CHATGPT_DIRECTIVE.md が更新されたら、handoff docs 一式が揃っている
+# ことを確認し、Claude Code 向けに現在の handoff 状態(次アクション)を可視化する。
+# 検証と出力のみで、実装は開始しない(runaway 防止)。
+on:
+  push:
+    paths:
+      - 'docs/ai-handoff/CHATGPT_DIRECTIVE.md'
+  pull_request:
+    paths:
+      - 'docs/ai-handoff/CHATGPT_DIRECTIVE.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check required handoff docs
+        run: node scripts/ci/check-required-docs.js
+
+      - name: Summarize handoff status for Claude Code
+        run: node scripts/ci/handoff-status.js >> "$GITHUB_STEP_SUMMARY"
