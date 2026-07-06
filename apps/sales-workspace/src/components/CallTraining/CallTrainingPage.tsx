@@ -11,13 +11,16 @@ import {
   AUTOCALL_GATES,
   TALK_FEEDBACK_CATEGORY_LABEL_JA,
 } from "@musasabi/call-training";
+import { addWorkLogEntry, listWorkLogEntries } from "@musasabi/call-training";
 import type {
   CallMode,
   TestCallSession,
   TalkFeedbackCategory,
+  WorkLogEntry,
 } from "@musasabi/call-training";
 import { appLogger } from "../../lib/appLogger";
 import { loadEmployeeSettings } from "../../lib/employeeSettings";
+import { loadWorkLog, saveWorkLog } from "../../lib/workLogStorage";
 
 // コールトレーニング画面(Directive D-20260705-003)。
 // Learning → Test → AutoCall の三段階。現フェーズは Test Mode を Mock で実装し、
@@ -109,6 +112,24 @@ export function CallTrainingPage() {
 }
 
 function LearningModeView() {
+  const [entries, setEntries] = useState<WorkLogEntry[]>(() => loadWorkLog());
+  const [text, setText] = useState("");
+
+  function handleAdd(): void {
+    const next = addWorkLogEntry(entries, {
+      departmentId: "dept-sales",
+      text,
+      nowMs: Date.now(),
+    });
+    if (next.length !== entries.length) {
+      setEntries(next);
+      saveWorkLog(next);
+      setText("");
+    }
+  }
+
+  const listed = listWorkLogEntries(entries);
+
   return (
     <div>
       <h3>ラーニングモード</h3>
@@ -117,6 +138,41 @@ function LearningModeView() {
         全AI社員共通のナレッジへ反映します。テストモードで蓄積した指摘もここに集約されます
         (実データ学習は次フェーズ)。
       </p>
+
+      <h4>日々の作業内容を学習させる(手動登録)</h4>
+      <p style={{ color: "#9aa3ba", fontSize: "0.85rem", maxWidth: "40rem" }}>
+        今日行った作業・気づき・うまくいった切り返しなどを登録すると、AI社員共通の
+        学習素材として蓄積されます(保存はこの端末内のみ。外部送信はしません)。
+      </p>
+      <div style={{ marginBottom: "0.75rem" }}>
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleAdd();
+          }}
+          placeholder="例: 「高い」と言われたら導入事例→数値の順で返すと通りやすかった"
+          style={{ width: "28rem" }}
+        />{" "}
+        <button type="button" onClick={handleAdd}>
+          学習させる
+        </button>
+      </div>
+      {listed.length === 0 ? (
+        <p style={{ color: "#9aa3ba" }}>まだ登録がありません。</p>
+      ) : (
+        <ul>
+          {listed.map((entry) => (
+            <li key={entry.id} style={{ margin: "0.3rem 0" }}>
+              {entry.text}{" "}
+              <span style={{ color: "#7d8598", fontSize: "0.8rem" }}>
+                ({new Date(entry.timestampMs).toLocaleString("ja-JP")})
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

@@ -30,13 +30,14 @@ pub fn run() {
       // `app.setLoginItemSettings({ openAtLogin: true })` 相当)。
       let _ = app.autolaunch().enable();
 
-      // MUSA常駐アバターのオーバーレイウィンドウ(Phase 2 / D-20260706-004)。
+      // MUSA常駐アバターのオーバーレイウィンドウ(Phase 2 / D-20260706-004 / -006)。
       // 表示ロジック(アバター・吹き出し・ミニパネル)は apps/sales-workspace/avatar.html +
-      // src/avatarMain.ts に実装されており、ここではウィンドウの生成(フレームレス・透過・
-      // 最前面)と「デスクトップ右下」への配置のみを担当する。ウィンドウサイズは
-      // ミニパネル・吹き出しの表示領域込み(閉じている間は透過)。
-      let avatar_w = 340.0;
-      let avatar_h = 500.0;
+      // src/avatarMain.ts に実装。常駐時に「アバター以外の透明画面を出さない」ため、
+      // ウィンドウは最初アバターのみのサイズで生成し、ミニパネル/吹き出しの開閉・
+      // サイズ変更時は JS 側(avatarMain.ts)が右下アンカーを維持したまま
+      // set_size / set_position でリサイズする(D-20260706-006)。
+      let avatar_w = 152.0; // 大サイズアバター(120px)+余白
+      let avatar_h = 152.0;
       let avatar_window =
         WebviewWindowBuilder::new(app, "avatar", WebviewUrl::App("avatar.html".into()))
           .title("MUSA")

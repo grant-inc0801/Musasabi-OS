@@ -1,5 +1,12 @@
 import { AvatarStateMachine, isAvatarState } from "@musasabi/avatar-2d";
-import type { AvatarState } from "@musasabi/avatar-2d";
+import {
+  AVATAR_SIZE_PRESETS,
+  AVATAR_SIZE_PRESET_LABEL_JA,
+  AVATAR_SIZE_PRESET_PX,
+  clampAvatarSizePx,
+  presetForSizePx,
+} from "@musasabi/avatar-2d";
+import type { AvatarState, AvatarSizePreset } from "@musasabi/avatar-2d";
 import { AVATAR_EVENTS } from "@musasabi/shared";
 import {
   createAssistantPanelState,
@@ -12,6 +19,7 @@ import {
 } from "@musasabi/call-training";
 import type { AssistantPanelState, CallMode } from "@musasabi/call-training";
 import { loadEmployeeSettings } from "./lib/employeeSettings";
+import { loadAvatarSettings, saveAvatarSettings } from "./lib/avatarSettings";
 
 // 右下常駐アバターウィンドウ本体(D-20260706-004)。
 // apps/desktop/src-tauri/src/lib.rs が avatar.html として右下に生成する。
@@ -36,9 +44,52 @@ const stateMachine = new AvatarStateMachine();
 let panelState: AssistantPanelState = createAssistantPanelState(
   loadEmployeeSettings().defaultCallMode,
 );
+let avatarSizePx = loadAvatarSettings().sizePx;
 
 function el<T extends HTMLElement>(id: string): T | null {
   return document.getElementById(id) as T | null;
+}
+
+// 常駐時に「アバター以外の透明画面を出さない」ため、ウィンドウ自体を表示内容に
+// 合わせてリサイズする(D-20260706-006)。右下アンカーを保つよう、サイズ変更分だけ
+// 位置を右下方向へ補正する。Tauri外(ブラウザ)では何もしない。
+const WINDOW_PADDING = 32; // #stack のpadding+影の余白
+const PANEL_SIZE = { w: 340, h: 560 };
+const BUBBLE_SIZE = { w: 340, h: 240 };
+
+function desiredWindowSize(): { w: number; h: number } {
+  if (panelState.panelOpen) {
+    return { w: PANEL_SIZE.w, h: PANEL_SIZE.h + avatarSizePx };
+  }
+  if (panelState.bubble !== null) {
+    return { w: BUBBLE_SIZE.w, h: BUBBLE_SIZE.h + avatarSizePx };
+  }
+  return { w: avatarSizePx + WINDOW_PADDING, h: avatarSizePx + WINDOW_PADDING };
+}
+
+async function resizeWindowToContent(): Promise<void> {
+  try {
+    const { getCurrentWindow, PhysicalPosition, PhysicalSize } = await import(
+      "@tauri-apps/api/window"
+    );
+    const win = getCurrentWindow();
+    const scale = await win.scaleFactor();
+    const current = await win.outerSize();
+    const position = await win.outerPosition();
+    const next = desiredWindowSize();
+    const nextW = Math.round(next.w * scale);
+    const nextH = Math.round(next.h * scale);
+    if (nextW === current.width && nextH === current.height) {
+      return;
+    }
+    // 右下アンカー: 右下座標(x+w, y+h)を固定したままサイズを変える。
+    const x = position.x + current.width - nextW;
+    const y = position.y + current.height - nextH;
+    await win.setSize(new PhysicalSize(nextW, nextH));
+    await win.setPosition(new PhysicalPosition(x, y));
+  } catch {
+    // ブラウザ単体(vite dev)ではウィンドウAPIが無い。表示のみで続行する。
+  }
 }
 
 function renderAvatar(state: AvatarState): void {
@@ -46,6 +97,38 @@ function renderAvatar(state: AvatarState): void {
   if (avatar) {
     avatar.textContent = AVATAR_STATE_EMOJI[state];
   }
+}
+
+/** アバターサイズ設定をCSS変数・サイズUI・ウィンドウサイズへ反映する。 */
+function applyAvatarSize(): void {
+  document.documentElement.style.setProperty("--avatar-size", `${avatarSizePx}px`);
+  const slider = el<HTMLInputElement>("size-slider");
+  if (slider) {
+    slider.value = String(avatarSizePx);
+  }
+  const presets = el("size-presets");
+  if (presets) {
+    const activePreset = presetForSizePx(avatarSizePx);
+    presets.replaceChildren(
+      ...AVATAR_SIZE_PRESETS.map((preset: AvatarSizePreset) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = AVATAR_SIZE_PRESET_LABEL_JA[preset];
+        button.classList.toggle("active", preset === activePreset);
+        button.addEventListener("click", () => {
+          setAvatarSize(AVATAR_SIZE_PRESET_PX[preset]);
+        });
+        return button;
+      }),
+    );
+  }
+}
+
+function setAvatarSize(sizePx: number): void {
+  avatarSizePx = clampAvatarSizePx(sizePx);
+  saveAvatarSettings({ sizePx: avatarSizePx });
+  applyAvatarSize();
+  void resizeWindowToContent();
 }
 
 function renderPanel(): void {
@@ -91,6 +174,9 @@ function renderPanel(): void {
     }),
   );
   chatLog.scrollTop = chatLog.scrollHeight;
+
+  // 表示内容(アバターのみ/吹き出し/ミニパネル)に合わせてウィンドウをリサイズする。
+  void resizeWindowToContent();
 }
 
 function handleSend(): void {
@@ -136,10 +222,14 @@ function setupUi(): void {
   el("open-main")?.addEventListener("click", () => {
     void openMainWindow();
   });
+  el<HTMLInputElement>("size-slider")?.addEventListener("input", (event) => {
+    setAvatarSize(Number((event.target as HTMLInputElement).value));
+  });
 }
 
 renderAvatar(stateMachine.getState());
 setupUi();
+applyAvatarSize();
 renderPanel();
 
 // メインウィンドウからのアバター状態遷移イベント(Tauri内のみ)。

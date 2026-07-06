@@ -28,13 +28,17 @@ export const MODE_SUGGESTION_JA: Record<CallMode, string> = {
   autocall: "AutoCallは承認待ちです",
 };
 
-/** 初期状態を作る。吹き出しには現在モードの提案を表示する。 */
+/**
+ * 初期状態を作る。吹き出しは非表示(null)で始める — 最小化・常駐時は
+ * 「アバター以外を表示しない」ため(D-20260706-006)。提案はモード切替や
+ * パネル操作のタイミングで表示する。
+ */
 export function createAssistantPanelState(defaultMode: CallMode = "test"): AssistantPanelState {
   return {
     panelOpen: false,
     mode: defaultMode,
     chat: [],
-    bubble: MODE_SUGGESTION_JA[defaultMode],
+    bubble: null,
   };
 }
 

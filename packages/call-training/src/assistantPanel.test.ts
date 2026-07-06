@@ -10,10 +10,15 @@ import {
   MODE_SUGGESTION_JA,
 } from "./assistantPanel";
 
-test("initial state is closed with the default mode's suggestion bubble", () => {
+test("initial state is closed with no bubble (avatar-only when resident)", () => {
   const s = createAssistantPanelState("test");
   assert.equal(s.panelOpen, false);
   assert.equal(s.mode, "test");
+  assert.equal(s.bubble, null);
+});
+
+test("switching modes surfaces the mode's suggestion bubble", () => {
+  const s = switchMode(createAssistantPanelState("learning"), "test");
   assert.equal(s.bubble, MODE_SUGGESTION_JA.test);
 });
 
