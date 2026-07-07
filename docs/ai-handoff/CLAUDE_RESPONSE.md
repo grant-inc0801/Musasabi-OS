@@ -3,6 +3,43 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-07 — Memory Engine(Company Brain)+ AutoCall安全ゲート管理
+
+### 実装内容
+ユーザー指示「次のPhaseからノンストップで実行して 承認必要な場合だけ聞いてきて」に
+基づき、Development Bible 第9章の Brain Memory Engine と、AutoCall 安全ゲートの
+管理機能を実装した。
+
+- **`packages/memory`**(新規): `MemoryEngine`(record/query/countByCategory/prune)。
+  行動を6分類(短期/長期/業務/ユーザー/会社/プロジェクト)で記録し、
+  短期メモリは24時間で自動削除、最大5000件で古い順に破棄。
+  persistence(JSON直列化・検証、壊れた要素は破棄)。テスト8件
+- **行動の自動記録**: テストコール開始/終了(業務)、トーク指摘(短期)、
+  Learning Mode の作業学習(長期)、AI社員設定保存(ユーザー)、
+  プラグイン有効/無効(会社)、安全ゲート変更(会社・監査記録)を
+  `recordMemory()` 経由で localStorage(`musasabi.memory`)へ保存。外部送信なし
+- **Company Brain ページ**(全社ナビに追加): 6分類の件数タイル+履歴一覧
+  (最新30件、分類フィルタ・テキスト検索つき)
+- **AutoCall安全ゲート管理**(`packages/call-training` の gateState): 8ゲートの
+  充足状態を管理者がチェックボックスで切替可能(localStorage保存・イミュータブル)。
+  **`real_account_link`(実アカウント連携)は未実装のためロック(充足不可)**で、
+  保存値を改ざんしても parse 時に未充足へ矯正。したがって全ゲート充足には到達できず、
+  `canPlaceRealCall` は false のまま=本番架電は構造的に不可。テスト5件
+- ゲートの変更は Memory に監査記録され、Company Brain から追跡できる
+
+### テスト結果
+- 全 workspace テスト **202件 pass・fail 0**(memory 8 + gateState 5 を追加)
+- vite build 成功。Playwright で実画面確認: ゲート充足→緑表示・ロックゲートは
+  disabled+🔒理由表示・開始ボタン無効のまま、Company Brain に行動4件が記録され
+  リロード後も Memory・ゲート状態とも保持
+
+### 承認が必要な事項(実施していない)
+- 実API接続(FileMaker/Zoom Phone/VOICEVOX/whisper.cpp)、GitHub Releases 公開、
+  AutoCall 本番有効化は引き続き未実施(ユーザー承認があるまで行わない)
+
+### 次に実施する内容
+- main への統合(PR→CI→マージ)と Beta Build 実行、インストーラArtifactの提供
+
 ## 2026-07-06 — ⑤ Plugin System 実装(Plugin SDK Bible 準拠)
 
 ### 実装内容

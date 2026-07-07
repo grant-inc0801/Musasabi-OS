@@ -10,10 +10,16 @@ import {
   AUTOCALL_GATE_LABEL_JA,
   AUTOCALL_GATES,
   TALK_FEEDBACK_CATEGORY_LABEL_JA,
+  LOCKED_GATE_REASON_JA,
+  isGateLocked,
+  satisfiedGates,
+  setGateSatisfied,
 } from "@musasabi/call-training";
 import { addWorkLogEntry, listWorkLogEntries } from "@musasabi/call-training";
 import type {
+  AutoCallGate,
   CallMode,
+  GateState,
   TestCallSession,
   TalkFeedbackCategory,
   WorkLogEntry,
@@ -22,6 +28,8 @@ import { appLogger } from "../../lib/appLogger";
 import { loadEmployeeSettings } from "../../lib/employeeSettings";
 import { loadWorkLog, saveWorkLog } from "../../lib/workLogStorage";
 import { saveSessionToCallLog } from "../../lib/callLogStorage";
+import { recordMemory } from "../../lib/memoryStorage";
+import { loadGateState, saveGateState } from "../../lib/gateStorage";
 
 // コールトレーニング画面(Directive D-20260705-003)。
 // Learning → Test → AutoCall の三段階。現フェーズは Test Mode を Mock で実装し、
@@ -53,6 +61,13 @@ export function CallTrainingPage() {
       const s = startTestCall(contact, adapter, Date.now());
       setSession(s);
       appLogger.info("test call started (mock, no real dialing)", { contact: s.contact });
+      recordMemory({
+        category: "work",
+        actor: "MUSA-101",
+        action: "テストコール開始",
+        detail: `連絡先: ${s.contact}(Mock架電)`,
+        tags: ["call-training", "test-mode"],
+      });
     } catch (error) {
       appLogger.warn("failed to start test call", { error: String(error) });
       alert(String(error));
@@ -68,6 +83,13 @@ export function CallTrainingPage() {
   function handleEnd(): void {
     if (!session) return;
     setSession(endTestCall(session, Date.now()));
+    recordMemory({
+      category: "work",
+      actor: "MUSA-101",
+      action: "テストコール終了",
+      detail: `連絡先: ${session.contact} / 発話 ${session.turns.length}件`,
+      tags: ["call-training", "test-mode"],
+    });
   }
 
   function handleAddFeedback(): void {
@@ -80,11 +102,40 @@ export function CallTrainingPage() {
         nowMs: Date.now(),
       }),
     );
+    recordMemory({
+      category: "short_term",
+      actor: "user",
+      action: "トーク指摘を登録",
+      detail: `[${TALK_FEEDBACK_CATEGORY_LABEL_JA[fbCategory]}] ${fbComment}`,
+      tags: ["call-training", "feedback"],
+    });
     setFbComment("");
   }
 
-  // 現フェーズでは全ゲート未充足のため常に false(本番架電は不可)。
-  const autoCallAllowed = canPlaceRealCall("autocall", []);
+  // 安全ゲートの充足状態(ローカル保存)。real_account_link はロック(充足不可)の
+  // ため、管理者が他の全ゲートを充足しても本番架電は構造的に有効化できない。
+  const [gateState, setGateState] = useState<GateState>(() => loadGateState());
+
+  function handleGateToggle(gate: AutoCallGate): void {
+    const nextValue = !gateState[gate];
+    try {
+      const next = setGateSatisfied(gateState, gate, nextValue);
+      setGateState(next);
+      saveGateState(next);
+      recordMemory({
+        category: "company",
+        actor: "user",
+        action: nextValue ? "AutoCall安全ゲートを充足" : "AutoCall安全ゲートを解除",
+        detail: `ゲート: ${AUTOCALL_GATE_LABEL_JA[gate]}`,
+        tags: ["autocall", "safety-gate"],
+      });
+    } catch (error) {
+      appLogger.warn("gate toggle rejected", { gate, error: String(error) });
+      alert(String(error instanceof Error ? error.message : error));
+    }
+  }
+
+  const autoCallAllowed = canPlaceRealCall("autocall", satisfiedGates(gateState));
 
   return (
     <section aria-label="コールトレーニング">
@@ -115,7 +166,9 @@ export function CallTrainingPage() {
           onAddFeedback={handleAddFeedback}
         />
       )}
-      {mode === "autocall" && <AutoCallModeView allowed={autoCallAllowed} />}
+      {mode === "autocall" && (
+        <AutoCallModeView allowed={autoCallAllowed} gateState={gateState} onToggle={handleGateToggle} />
+      )}
     </section>
   );
 }
@@ -133,6 +186,13 @@ function LearningModeView() {
     if (next.length !== entries.length) {
       setEntries(next);
       saveWorkLog(next);
+      recordMemory({
+        category: "long_term",
+        actor: "user",
+        action: "作業内容を学習登録",
+        detail: text,
+        tags: ["learning-mode", "work-log"],
+      });
       setText("");
     }
   }
@@ -298,7 +358,16 @@ function TestModeView(props: TestModeProps) {
   );
 }
 
-function AutoCallModeView({ allowed }: { allowed: boolean }) {
+function AutoCallModeView({
+  allowed,
+  gateState,
+  onToggle,
+}: {
+  allowed: boolean;
+  gateState: GateState;
+  onToggle: (gate: AutoCallGate) => void;
+}) {
+  const satisfiedCount = satisfiedGates(gateState).length;
   return (
     <div>
       <h3>オートコールモード(準備中・承認待ち)</h3>
@@ -306,16 +375,43 @@ function AutoCallModeView({ allowed }: { allowed: boolean }) {
         本番架電は無効です。現フェーズではオートコールを開始できません。
       </p>
       <p style={{ maxWidth: "40rem" }}>
-        以下の安全ゲートがすべて揃うまで、オートコールは有効化されません。
+        以下の安全ゲートがすべて揃うまで、オートコールは有効化されません。 管理者は各ゲートの
+        充足状態を切り替えられます(充足 {satisfiedCount}/{AUTOCALL_GATES.length})。 ゲートの
+        変更は Company Brain の Memory に監査記録されます。
       </p>
-      <ul>
-        {AUTOCALL_GATES.map((gate) => (
-          <li key={gate}>{AUTOCALL_GATE_LABEL_JA[gate]}(未充足)</li>
-        ))}
+      <ul style={{ listStyle: "none", paddingLeft: 0, maxWidth: "40rem" }}>
+        {AUTOCALL_GATES.map((gate) => {
+          const locked = isGateLocked(gate);
+          const satisfied = gateState[gate];
+          return (
+            <li key={gate} style={{ margin: "0.35rem 0" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <input
+                  type="checkbox"
+                  checked={satisfied}
+                  disabled={locked}
+                  onChange={() => onToggle(gate)}
+                />
+                <span style={{ color: satisfied ? "#3fb950" : undefined }}>
+                  {AUTOCALL_GATE_LABEL_JA[gate]}({satisfied ? "充足" : "未充足"})
+                </span>
+                {locked && (
+                  <span style={{ color: "#f0883e", fontSize: "0.8rem" }}>
+                    🔒 {LOCKED_GATE_REASON_JA}
+                  </span>
+                )}
+              </label>
+            </li>
+          );
+        })}
       </ul>
-      <button type="button" disabled>
+      <button type="button" disabled={!allowed}>
         {allowed ? "オートコール開始" : "オートコール開始(承認待ち)"}
       </button>
+      <p style={{ color: "#9aa3ba", fontSize: "0.85rem", maxWidth: "40rem" }}>
+        実アカウント連携ゲートは未実装のためロックされており、本フェーズでは
+        全ゲート充足に到達できません(本番架電は構造的に不可)。
+      </p>
     </div>
   );
 }

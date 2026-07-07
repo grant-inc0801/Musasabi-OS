@@ -10,6 +10,7 @@ import { SalesCallTrainingPage } from "./components/Sales/SalesCallTrainingPage"
 import { PublishingPage } from "./components/Publishing/PublishingPage";
 import { DeptDetailPage } from "./components/Department/DeptDetailPage";
 import { PluginsPage } from "./components/Plugins/PluginsPage";
+import { CompanyBrainPage } from "./components/Memory/CompanyBrainPage";
 import { loadSetupState } from "./lib/setupStorage";
 
 // β版管理画面(D-20260706 系 + ユーザーFB)。ダークテーマ+部門ツリー型サイドバー。
@@ -23,6 +24,7 @@ type Page =
   | "development"
   | "support"
   | "company"
+  | "company_brain"
   | "plugins"
   | "settings";
 
@@ -34,6 +36,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   development: "開発部",
   support: "サポート部",
   company: "AI社員管理",
+  company_brain: "Company Brain",
   plugins: "プラグイン",
   settings: "設定",
 };
@@ -59,6 +62,7 @@ const NAV_TREE: ReadonlyArray<{
 
 const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
   { label: "AI社員管理", page: "company" },
+  { label: "Company Brain", page: "company_brain" },
   { label: "プラグイン", page: "plugins" },
   { label: "設定", page: "settings" },
 ];
@@ -144,6 +148,8 @@ export function App() {
           <DeptDetailPage deptId="dept-development" />
         ) : page === "support" ? (
           <DeptDetailPage deptId="dept-support" />
+        ) : page === "company_brain" ? (
+          <CompanyBrainPage />
         ) : page === "plugins" ? (
           <PluginsPage />
         ) : page === "company" ? (

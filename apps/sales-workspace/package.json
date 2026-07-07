@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "npm --prefix ../../packages/shared run build && npm --prefix ../../packages/ai-core run build && npm --prefix ../../packages/avatar-2d run build && npm --prefix ../../packages/integrations run build && npm --prefix ../../packages/voice-analysis run build && npm --prefix ../../packages/voice-engine run build && npm --prefix ../../packages/call-training run build && npm --prefix ../../packages/ai-company run build && npm --prefix ../../packages/avatar-3d run build && npm --prefix ../../plugins/accounting-widget run build && vite build",
+    "build": "npm --prefix ../../packages/shared run build && npm --prefix ../../packages/ai-core run build && npm --prefix ../../packages/avatar-2d run build && npm --prefix ../../packages/integrations run build && npm --prefix ../../packages/voice-analysis run build && npm --prefix ../../packages/voice-engine run build && npm --prefix ../../packages/call-training run build && npm --prefix ../../packages/ai-company run build && npm --prefix ../../packages/avatar-3d run build && npm --prefix ../../packages/memory run build && npm --prefix ../../plugins/accounting-widget run build && vite build",
     "dev": "vite"
   },
   "dependencies": {
@@ -21,6 +21,7 @@
     "react-dom": "^18.3.1",
     "three": "^0.185.1",
     "@musasabi/avatar-3d": "*",
+    "@musasabi/memory": "*",
     "@musasabi/plugin-sdk": "*",
     "@musasabi/plugin-accounting-widget": "*"
   },

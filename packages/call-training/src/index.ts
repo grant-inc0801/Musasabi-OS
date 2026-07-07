@@ -4,6 +4,7 @@
 export * from "./types";
 export * from "./MockCallAdapter";
 export * from "./session";
+export * from "./gateState";
 export * from "./sharedKnowledge";
 export * from "./assistantPanel";
 export * from "./workLog";

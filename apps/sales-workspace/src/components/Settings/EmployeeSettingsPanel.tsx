@@ -8,6 +8,7 @@ import {
   type EmployeeSettings,
 } from "../../lib/employeeSettings";
 import { appLogger } from "../../lib/appLogger";
+import { recordMemory } from "../../lib/memoryStorage";
 
 // AI社員・音声・コールモード設定(D-20260706-001 実装指示5)。
 // 音声エンジンはMock表示のみで実接続しない。AutoCall は既定モードとして選択不可。
@@ -25,6 +26,13 @@ export function EmployeeSettingsPanel() {
     saveEmployeeSettings(settings);
     setSavedAt(new Date().toLocaleTimeString());
     appLogger.info("employee settings saved", { defaultEmployeeId: settings.defaultEmployeeId });
+    recordMemory({
+      category: "user",
+      actor: "user",
+      action: "AI社員設定を保存",
+      detail: `既定AI社員: ${settings.defaultEmployeeId} / 既定モード: ${CALL_MODE_LABEL_JA[settings.defaultCallMode]}`,
+      tags: ["settings"],
+    });
   }
 
   function handleReset(): void {
