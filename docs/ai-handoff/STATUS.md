@@ -4,7 +4,12 @@
 **Updated:** 2026-07-07
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Command Center チャット強化)
+## 直近の完了内容(営業部KPI実データ化)
+KPIページ最上部に実データKPI(架電数/完了率/アポ獲得/成約/未架電/アポ率/成約率)。
+テストコール履歴+営業リスト連動で Command Center 営業部パネルと同一値。
+データ無し時はMock表示の明示のみ。全 workspace テスト273件 pass・fail 0。
+
+## それ以前の完了(Command Center チャット強化)
 部署指定チャットに部署Mock応答(進捗/課題/タスク別・エラー部署は原因と対処)を
 追加。履歴は musasabi.deptChatHistory へ永続化(最大50件・再起動後も復元・
 バックアップ対象)。部署詳細パネルに「直近の指示(チャット)」を表示。
