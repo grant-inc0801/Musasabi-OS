@@ -6,7 +6,13 @@ import {
   DEPT_STATUS_LABEL_JA,
   DEPT_STATUSES,
   summarizeCompany,
+  withLiveSalesData,
 } from "@musasabi/ai-company";
+import { callLogStats } from "@musasabi/call-training";
+import { countByStatus } from "@musasabi/sales-list";
+import { loadCallLog } from "../../lib/callLogStorage";
+import { loadLeads } from "../../lib/salesListStorage";
+import { loadMemoryRecords } from "../../lib/memoryStorage";
 import { DepartmentCard } from "./DepartmentCard";
 import { DepartmentConnectionLines } from "./DepartmentConnectionLines";
 import { DepartmentDetailPanel } from "./DepartmentDetailPanel";
@@ -37,8 +43,34 @@ export function CommandCenterPage({
   // callback ref で state に載せ、マウント後にライン計測が走るようにする
   const [gridEl, setGridEl] = useState<HTMLDivElement | null>(null);
   const cardRefs = useRef(new Map<string, HTMLElement>());
-  const overview = useMemo(() => summarizeCompany(COMMAND_DEPARTMENTS), []);
-  const selected = COMMAND_DEPARTMENTS.find((d) => d.id === selectedId) ?? null;
+
+  // 営業部は実データ(テストコール履歴・営業リスト・Memory)を反映する。
+  // データが無い場合はMock表示のまま(withLiveSalesData 側で判定)。
+  const { departments, salesLive } = useMemo(() => {
+    const stats = callLogStats(loadCallLog());
+    const leadCounts = countByStatus(loadLeads());
+    const recentLogs = loadMemoryRecords()
+      .filter((r) => r.category === "work")
+      .slice(0, 5)
+      .map(
+        (r) =>
+          `${new Date(r.timestampMs).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })} ${r.action}`,
+      );
+    const live = {
+      callCount: stats.sessionCount,
+      appointmentCount: leadCounts.appointment,
+      wonCount: leadCounts.won,
+      notCalledCount: leadCounts.not_called,
+      recentLogs,
+    };
+    return {
+      departments: withLiveSalesData(COMMAND_DEPARTMENTS, live),
+      salesLive: { ...live, completedCallCount: stats.completedCount },
+    };
+  }, []);
+
+  const overview = useMemo(() => summarizeCompany(departments), [departments]);
+  const selected = departments.find((d) => d.id === selectedId) ?? null;
 
   return (
     <div className="command-center">
@@ -75,7 +107,7 @@ export function CommandCenterPage({
             connections={DEPT_CONNECTIONS}
           />
           <div className="cc-grid">
-            {COMMAND_DEPARTMENTS.map((dept) => (
+            {departments.map((dept) => (
               <DepartmentCard
                 key={dept.id}
                 dept={dept}
@@ -103,16 +135,17 @@ export function CommandCenterPage({
             <span className="legend-line" /> 部門間連携中
           </span>
         </div>
-        <DepartmentCommandChat departments={COMMAND_DEPARTMENTS} />
+        <DepartmentCommandChat departments={departments} />
       </main>
 
       <DepartmentDetailPanel
         dept={selected}
+        salesLive={salesLive}
         onClose={() => setSelectedId(null)}
         onOpenDetail={(deptId) => onOpenPage(DEPT_PAGE[deptId] ?? "company")}
       />
 
-      <AssistantAvatar departments={COMMAND_DEPARTMENTS} />
+      <AssistantAvatar departments={departments} />
     </div>
   );
 }

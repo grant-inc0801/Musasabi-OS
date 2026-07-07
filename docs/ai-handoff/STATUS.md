@@ -4,7 +4,12 @@
 **Updated:** 2026-07-07
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(D-20260706-007: Musasabi Command Center)
+## 直近の完了内容(Command Center 実データ連動+営業リストExcel出力)
+営業部パネル/詳細を実データ(テストコール履歴・営業リスト・Memory業務記録)と
+接続(データ無し時はMock表示を明示)。営業リストにExcel出力(絞り込み反映・8列)。
+全 workspace テスト252件 pass・fail 0。
+
+## それ以前の完了(D-20260706-007: Musasabi Command Center)
 シルバーグレー近未来UIを標準画面として実装。最小サイドバー+8部署パネル
 (ステータス色ランプ・発光枠)+白発光の部署間連携ライン+右詳細パネル
 (営業部コールシステムMock)+下部の部署指定チャット(音声Mock)+右下マスコット

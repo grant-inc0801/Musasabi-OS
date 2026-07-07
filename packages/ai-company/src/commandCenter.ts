@@ -156,6 +156,52 @@ export function summarizeCompany(departments: readonly CommandDepartment[]): Com
   };
 }
 
+/** 営業部の実データ(架電・営業リスト・Memoryから合成)。 */
+export interface SalesLiveData {
+  /** テストコール履歴の件数(実施済みセッション)。 */
+  callCount: number;
+  /** 営業リストのアポ獲得数。 */
+  appointmentCount: number;
+  /** 営業リストの成約数。 */
+  wonCount: number;
+  /** 未架電リード数(0なら営業部は「完了」、あれば「作業中」)。 */
+  notCalledCount: number;
+  /** Memoryの業務記録 最新ログ(表示用文字列)。 */
+  recentLogs: string[];
+}
+
+/**
+ * 営業部パネル/詳細へ実データを反映した新しい部署配列を返す(イミュータブル)。
+ * データが全く無い場合(全て0・ログなし)は元のMock値を維持する。
+ */
+export function withLiveSalesData(
+  departments: readonly CommandDepartment[],
+  live: SalesLiveData,
+): CommandDepartment[] {
+  const hasData =
+    live.callCount > 0 ||
+    live.appointmentCount > 0 ||
+    live.wonCount > 0 ||
+    live.notCalledCount > 0 ||
+    live.recentLogs.length > 0;
+  if (!hasData) {
+    return [...departments];
+  }
+  const totalLeads = live.notCalledCount + live.appointmentCount + live.wonCount;
+  return departments.map((d) => {
+    if (d.id !== "sales") return d;
+    return {
+      ...d,
+      status: live.notCalledCount > 0 ? "working" : "done",
+      logs: live.recentLogs.length > 0 ? live.recentLogs.slice(0, 5) : d.logs,
+      progressPercent:
+        totalLeads > 0
+          ? Math.round(((live.appointmentCount + live.wonCount) / totalLeads) * 100)
+          : d.progressPercent,
+    };
+  });
+}
+
 /**
  * アシスタント吹き出しの要約文(Directive 7: 承認待ちの所在・エラーの所在と
  * 原因・解決策・全体の進行状況)。決定的。

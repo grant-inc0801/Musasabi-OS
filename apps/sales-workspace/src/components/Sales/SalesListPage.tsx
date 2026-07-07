@@ -7,8 +7,10 @@ import {
   setLeadStatus,
 } from "@musasabi/sales-list";
 import type { LeadStatus, SalesLead } from "@musasabi/sales-list";
+import { buildXlsx } from "@musasabi/call-list";
 import { loadLeads, saveLeads, setCallHandoff } from "../../lib/salesListStorage";
 import { recordMemory } from "../../lib/memoryStorage";
+import { saveBinaryFile } from "../../lib/saveFile";
 
 // 営業リスト(Development Bible 第13章)。架電リスト制作課から取り込んだ店舗の
 // ステータス管理(未架電→架電済→アポ獲得→成約)とテストコールへの連携。
@@ -46,6 +48,38 @@ export function SalesListPage({ onNavigateToCallTraining }: { onNavigateToCallTr
     onNavigateToCallTraining();
   }
 
+  /** 営業リストをExcel(.xlsx)へ出力する(現在の絞り込みを反映)。 */
+  async function handleExport(): Promise<void> {
+    if (visible.length === 0) return;
+    const rows: string[][] = [
+      ["店舗名", "電話番号", "住所", "ジャンル", "取込元", "ステータス", "メモ", "更新日時"],
+      ...visible.map((l) => [
+        l.storeName,
+        l.phone,
+        l.address,
+        l.genre,
+        l.source,
+        LEAD_STATUS_LABEL_JA[l.status],
+        l.note,
+        new Date(l.updatedAtMs).toLocaleString("ja-JP"),
+      ]),
+    ];
+    const fileName = `営業リスト_${statusFilter === "all" ? "全件" : LEAD_STATUS_LABEL_JA[statusFilter]}.xlsx`;
+    try {
+      const outcome = await saveBinaryFile(fileName, buildXlsx(rows, "営業リスト"), "Excel ワークブック", ["xlsx"]);
+      if (outcome === "cancelled") return;
+      recordMemory({
+        category: "work",
+        actor: "user",
+        action: "営業リストをExcel出力",
+        detail: `${fileName} / ${visible.length}件`,
+        tags: ["sales-list", "excel"],
+      });
+    } catch (error) {
+      alert(`保存に失敗しました: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
   return (
     <>
       <section aria-label="営業リスト集計">
@@ -80,7 +114,10 @@ export function SalesListPage({ onNavigateToCallTraining }: { onNavigateToCallTr
                 {LEAD_STATUS_LABEL_JA[s]}
               </option>
             ))}
-          </select>
+          </select>{" "}
+          <button type="button" onClick={() => void handleExport()} disabled={visible.length === 0}>
+            Excel出力(.xlsx)
+          </button>
         </div>
         {visible.length === 0 ? (
           <p style={{ color: "var(--text-muted)" }}>
