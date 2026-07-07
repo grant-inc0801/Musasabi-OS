@@ -9,8 +9,10 @@ import {
   VAULT_FLOW_JA,
 } from "@musasabi/ai-company";
 import type { CommandDepartment } from "@musasabi/ai-company";
+import { recentEntriesFor } from "@musasabi/ai-company";
 import { MarketResearchDetail } from "./MarketResearchDetail";
 import { recordMemory } from "../../lib/memoryStorage";
+import { loadDeptChatHistory } from "../../lib/deptChatStorage";
 
 // 右側: 部署詳細パネル(D-20260706-007)。部署パネルのクリックで表示。
 // 営業部はコールシステム関連のMock情報を表示する(実架電なし)。
@@ -261,9 +263,30 @@ export function DepartmentDetailPanel({
         </ul>
       </div>
 
+      <RecentInstructionsBlock deptId={dept.id} />
+
       <button type="button" onClick={() => onOpenDetail(dept.id)}>
         詳細を見る
       </button>
     </aside>
+  );
+}
+
+/** この部署あての直近の指示(チャット履歴から。無ければ非表示)。 */
+function RecentInstructionsBlock({ deptId }: { deptId: string }) {
+  const recent = recentEntriesFor(loadDeptChatHistory(), deptId, 3);
+  if (recent.length === 0) return null;
+  return (
+    <div className="detail-block">
+      <strong>直近の指示(チャット)</strong>
+      <ul style={{ margin: "0.3rem 0 0", paddingLeft: "1.1rem", fontSize: "0.82rem" }}>
+        {recent.map((e) => (
+          <li key={e.atMs}>
+            {new Date(e.atMs).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}{" "}
+            {e.message}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

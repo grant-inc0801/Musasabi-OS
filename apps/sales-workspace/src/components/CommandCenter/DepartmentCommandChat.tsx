@@ -1,11 +1,14 @@
 import { useState } from "react";
-import type { CommandDepartment } from "@musasabi/ai-company";
+import type { CommandDepartment, DeptChatEntry } from "@musasabi/ai-company";
+import { buildDeptReplyJa } from "@musasabi/ai-company";
 import { VoiceInputButton } from "./VoiceInputButton";
 import { recordMemory } from "../../lib/memoryStorage";
+import { appendDeptChat, loadDeptChatHistory } from "../../lib/deptChatStorage";
 
-// 下部: 部署指定チャット指示欄(D-20260706-007)。
+// 下部: 部署指定チャット指示欄(D-20260706-007 + チャット強化フェーズ)。
 // 指示先部署プルダウン+入力欄+ファイル添付+音声入力Mock+送信+クイックテンプレート。
-// 送信内容はローカルの表示とMemory記録のみ(外部送信なし)。
+// 送信すると部署の状態に応じたMock応答をローカル生成して表示し、履歴を
+// localStorage(musasabi.deptChatHistory)へ永続化する(実AI API・外部送信なし)。
 
 const QUICK_TEMPLATES = [
   "進捗状況を教えて",
@@ -14,31 +17,29 @@ const QUICK_TEMPLATES = [
   "優先タスクを教えて",
 ];
 
-interface SentMessage {
-  dept: string;
-  text: string;
-  at: string;
-}
-
 export function DepartmentCommandChat({ departments }: { departments: readonly CommandDepartment[] }) {
   const [target, setTarget] = useState(departments[0]?.id ?? "");
   const [text, setText] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
-  const [sent, setSent] = useState<SentMessage[]>([]);
+  const [history, setHistory] = useState<DeptChatEntry[]>(() => loadDeptChatHistory());
 
   function handleSend(): void {
-    const deptName = departments.find((d) => d.id === target)?.name ?? target;
+    const dept = departments.find((d) => d.id === target);
     const message = text.trim();
-    if (message === "") return;
-    setSent((prev) => [
-      { dept: deptName, text: message + (fileName ? `(添付: ${fileName})` : ""), at: new Date().toLocaleTimeString("ja-JP") },
-      ...prev.slice(0, 2),
-    ]);
+    if (message === "" || !dept) return;
+    const entry: DeptChatEntry = {
+      deptId: dept.id,
+      deptName: dept.name,
+      message: message + (fileName ? `(添付: ${fileName})` : ""),
+      reply: buildDeptReplyJa(dept, message),
+      atMs: Date.now(),
+    };
+    setHistory(appendDeptChat(entry));
     recordMemory({
       category: "work",
       actor: "user",
       action: "部署へ指示",
-      detail: `${deptName}: ${message}`,
+      detail: `${dept.name}: ${message}`,
       tags: ["command-chat"],
     });
     setText("");
@@ -93,11 +94,14 @@ export function DepartmentCommandChat({ departments }: { departments: readonly C
           <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>添付: {fileName}</span>
         )}
       </div>
-      {sent.length > 0 && (
-        <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-          {sent.map((m, i) => (
-            <div key={i}>
-              {m.at} [{m.dept}] {m.text} — 送信しました(β版はMock応答なし)
+      {history.length > 0 && (
+        <div style={{ fontSize: "0.8rem", maxHeight: 96, overflowY: "auto" }}>
+          {history.slice(0, 3).map((m) => (
+            <div key={m.atMs} style={{ margin: "0.15rem 0" }}>
+              <div style={{ color: "var(--text-muted)" }}>
+                {new Date(m.atMs).toLocaleTimeString("ja-JP")} [{m.deptName}] {m.message}
+              </div>
+              <div>↩ {m.reply}(Mock応答)</div>
             </div>
           ))}
         </div>
