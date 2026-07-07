@@ -4,7 +4,13 @@
 **Updated:** 2026-07-07
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Memory Engine + AutoCall安全ゲート管理)
+## 直近の完了内容(議事録の自動生成 — Voice 第10章)
+テストコール終了時に議事録(要約・感情・キーワード・トーク比率・決定事項・宿題)を
+決定的に自動生成して表示。`packages/voice-analysis` に MinutesGenerator を追加
+(LLM推論・外部送信なし)。議事録作成は Memory(業務)へ記録。
+全 workspace テスト207件 pass・fail 0。
+
+## それ以前の完了(Memory Engine + AutoCall安全ゲート管理)
 ユーザー指示(ノンストップ実行)により、Development Bible 第9章の Brain Memory
 Engine(`packages/memory`+Company Brain ページ+行動の自動記録)と、AutoCall
 安全ゲート管理(gateState。`real_account_link` はロックで充足不可のため本番架電は

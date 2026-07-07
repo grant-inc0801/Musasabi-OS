@@ -24,6 +24,7 @@ import type {
   TalkFeedbackCategory,
   WorkLogEntry,
 } from "@musasabi/call-training";
+import { generateCallMinutes } from "@musasabi/voice-analysis";
 import { appLogger } from "../../lib/appLogger";
 import { loadEmployeeSettings } from "../../lib/employeeSettings";
 import { loadWorkLog, saveWorkLog } from "../../lib/workLogStorage";
@@ -89,6 +90,15 @@ export function CallTrainingPage() {
       action: "テストコール終了",
       detail: `連絡先: ${session.contact} / 発話 ${session.turns.length}件`,
       tags: ["call-training", "test-mode"],
+    });
+    // 議事録は保存済みセッションから決定的に再生成できるため、Memoryには要約のみ残す。
+    const minutes = generateCallMinutes(session.id, session.turns);
+    recordMemory({
+      category: "work",
+      actor: "MUSA-101",
+      action: "議事録を自動作成",
+      detail: minutes.analysis.summary,
+      tags: ["call-training", "minutes"],
     });
   }
 
@@ -352,8 +362,48 @@ function TestModeView(props: TestModeProps) {
           <p style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>
             指摘内容は全AI社員共通の改善ナレッジへ反映される設計です(集約は次フェーズで永続化)。
           </p>
+
+          {session.status === "completed" && <CallMinutesView session={session} />}
         </div>
       )}
+    </div>
+  );
+}
+
+/** 通話終了後の議事録(Development Bible 第10章)。保存済みターンから決定的に生成。 */
+function CallMinutesView({ session }: { session: TestCallSession }) {
+  const minutes = generateCallMinutes(session.id, session.turns);
+  return (
+    <div style={{ marginTop: "0.75rem", borderTop: "1px solid rgba(151,168,205,0.16)", paddingTop: "0.75rem" }}>
+      <h4>議事録(自動生成)</h4>
+      <p style={{ margin: "0.25rem 0" }}>{minutes.analysis.summary}</p>
+      <p style={{ margin: "0.25rem 0", color: "#9aa3ba", fontSize: "0.85rem" }}>
+        参加者: {minutes.participants.join(" / ")} ・ トーク比率(担当者):{" "}
+        {Math.round(minutes.analysis.talkRatio.rep * 100)}%
+      </p>
+      <strong style={{ fontSize: "0.9rem" }}>決定事項</strong>
+      {minutes.decisions.length === 0 ? (
+        <p style={{ margin: "0.2rem 0", color: "#9aa3ba" }}>なし</p>
+      ) : (
+        <ul style={{ margin: "0.2rem 0" }}>
+          {minutes.decisions.map((d) => (
+            <li key={d}>{d}</li>
+          ))}
+        </ul>
+      )}
+      <strong style={{ fontSize: "0.9rem" }}>宿題・フォローアップ</strong>
+      {minutes.actionItems.length === 0 ? (
+        <p style={{ margin: "0.2rem 0", color: "#9aa3ba" }}>なし</p>
+      ) : (
+        <ul style={{ margin: "0.2rem 0" }}>
+          {minutes.actionItems.map((a) => (
+            <li key={a}>{a}</li>
+          ))}
+        </ul>
+      )}
+      <p style={{ color: "#9aa3ba", fontSize: "0.8rem", margin: "0.4rem 0 0" }}>
+        議事録は保存済みの会話から決定的に生成されます(LLM推論・外部送信なし)。
+      </p>
     </div>
   );
 }
