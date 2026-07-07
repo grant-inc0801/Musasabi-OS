@@ -1,6 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { generateDailyPlan, recommendActions } from "@musasabi/ai-core";
 import type { Lead } from "@musasabi/ai-core";
+import { callLogStats } from "@musasabi/call-training";
+import { countByStatus } from "@musasabi/sales-list";
+import { loadCallLog } from "../../lib/callLogStorage";
+import { loadLeads } from "../../lib/salesListStorage";
 import { MOCK_LEADS } from "../../mockData";
 import { DailyPlanBoard } from "../DailyPlanBoard";
 import { LeadTable } from "../LeadTable";
@@ -14,12 +18,48 @@ import {
   totalCallResults,
 } from "./callResults";
 
-// 営業部 > KPI ページ(ユーザーFB)。コール結果をグラフと表の両方で表示し、
-// 件数(架電/アポ/成約)と率(アポ率/成約率)を算出する。売上は表示しない。
-// データはすべてMock(実データ連携は後続フェーズ)。
+// 営業部 > KPI ページ(ユーザーFB+実データ化フェーズ)。
+// 実データ(テストコール履歴・営業リスト)があれば最上部に「実データKPI」を表示し、
+// Mock値のグラフ/表はMockと明示して残す。売上は表示しない。
+
+/** 実データKPI(テストコール履歴+営業リスト)。データが無ければ null。 */
+function useLiveKpi() {
+  return useMemo(() => {
+    const stats = callLogStats(loadCallLog());
+    const leadCounts = countByStatus(loadLeads());
+    const hasLive =
+      stats.sessionCount > 0 ||
+      leadCounts.appointment > 0 ||
+      leadCounts.won > 0 ||
+      leadCounts.not_called > 0 ||
+      leadCounts.called > 0;
+    if (!hasLive) return null;
+    const appointmentRatePct =
+      stats.sessionCount > 0
+        ? Math.round((leadCounts.appointment / stats.sessionCount) * 100)
+        : 0;
+    const closeRatePct =
+      leadCounts.appointment > 0
+        ? Math.round((leadCounts.won / leadCounts.appointment) * 100)
+        : 0;
+    return {
+      callCount: stats.sessionCount,
+      completedPct:
+        stats.sessionCount > 0
+          ? Math.round((stats.completedCount / stats.sessionCount) * 100)
+          : 0,
+      appointment: leadCounts.appointment,
+      won: leadCounts.won,
+      notCalled: leadCounts.not_called,
+      appointmentRatePct,
+      closeRatePct,
+    };
+  }, []);
+}
 
 export function SalesKpiPage() {
   const [leads, setLeads] = useState<Lead[]>(MOCK_LEADS);
+  const live = useLiveKpi();
 
   useEffect(() => {
     const musasabi = window.musasabi;
@@ -38,6 +78,28 @@ export function SalesKpiPage() {
 
   return (
     <>
+      {live ? (
+        <section aria-label="実データKPI">
+          <h3>実データKPI(テストコール履歴+営業リスト・実架電なし)</h3>
+          <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+            <StatTile label="架電数(テストコール累計)" value={`${live.callCount}件`} />
+            <StatTile label="完了率" value={`${live.completedPct}%`} />
+            <StatTile label="アポ獲得数(営業リスト)" value={`${live.appointment}件`} />
+            <StatTile label="成約数(営業リスト)" value={`${live.won}件`} />
+            <StatTile label="未架電リード" value={`${live.notCalled}件`} />
+            <StatTile label="アポ率" value={`${live.appointmentRatePct}%`} />
+            <StatTile label="成約率" value={`${live.closeRatePct}%`} />
+          </div>
+          <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+            アポ率=アポ獲得数÷架電数、成約率=成約数÷アポ獲得数。
+            コマンドセンターの営業部パネルと同じデータソースです。
+          </p>
+        </section>
+      ) : (
+        <p style={{ color: "var(--warn)", fontSize: "0.9rem" }}>
+          実データ(テストコール履歴・営業リスト)がまだありません。以下はMock表示です。
+        </p>
+      )}
       <section aria-label="全体KPI">
         <h3>全体KPI(Mock)</h3>
         <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap", marginBottom: "1rem" }}>
