@@ -12,6 +12,8 @@ import { DeptDetailPage } from "./components/Department/DeptDetailPage";
 import { PluginsPage } from "./components/Plugins/PluginsPage";
 import { CompanyBrainPage } from "./components/Memory/CompanyBrainPage";
 import { VisionPage } from "./components/Vision/VisionPage";
+import { AutomationPage } from "./components/Automation/AutomationPage";
+import { noteNavigation } from "./lib/automationStorage";
 import { loadSetupState } from "./lib/setupStorage";
 
 // β版管理画面(D-20260706 系 + ユーザーFB)。ダークテーマ+部門ツリー型サイドバー。
@@ -27,6 +29,7 @@ type Page =
   | "company"
   | "company_brain"
   | "vision"
+  | "automation"
   | "plugins"
   | "settings";
 
@@ -40,6 +43,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   company: "AI社員管理",
   company_brain: "Company Brain",
   vision: "Vision(画面解析)",
+  automation: "Automation(操作記録)",
   plugins: "プラグイン",
   settings: "設定",
 };
@@ -67,6 +71,7 @@ const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
   { label: "AI社員管理", page: "company" },
   { label: "Company Brain", page: "company_brain" },
   { label: "Vision", page: "vision" },
+  { label: "Automation", page: "automation" },
   { label: "プラグイン", page: "plugins" },
   { label: "設定", page: "settings" },
 ];
@@ -78,6 +83,19 @@ export function App() {
 
   if (!setupDone) {
     return <FirstRunSetup onComplete={() => setSetupDone(true)} />;
+  }
+
+  // ユーザー操作によるページ遷移。Automation の記録中のみ記録候補として通知される
+  // (手動オプトイン)。再実行による遷移は replayNavigate を使い、再記録しない。
+  function navigate(next: Page): void {
+    noteNavigation(next, PAGE_TITLE_JA[next]);
+    setPage(next);
+  }
+
+  function replayNavigate(target: string): void {
+    if (target in PAGE_TITLE_JA) {
+      setPage(target as Page);
+    }
   }
 
   return (
@@ -94,7 +112,7 @@ export function App() {
                 <button
                   type="button"
                   className="nav-dept"
-                  onClick={() => setPage(dept.page as Page)}
+                  onClick={() => navigate(dept.page as Page)}
                   disabled={page === dept.page}
                 >
                   {dept.label}
@@ -107,7 +125,7 @@ export function App() {
                   key={child.page}
                   type="button"
                   className="nav-sub"
-                  onClick={() => setPage(child.page)}
+                  onClick={() => navigate(child.page)}
                   disabled={page === child.page}
                 >
                   ↳ {child.label}
@@ -125,7 +143,7 @@ export function App() {
             <button
               key={item.page}
               type="button"
-              onClick={() => setPage(item.page)}
+              onClick={() => navigate(item.page)}
               disabled={page === item.page}
             >
               {item.label}
@@ -156,6 +174,8 @@ export function App() {
           <CompanyBrainPage />
         ) : page === "vision" ? (
           <VisionPage />
+        ) : page === "automation" ? (
+          <AutomationPage onNavigate={replayNavigate} />
         ) : page === "plugins" ? (
           <PluginsPage />
         ) : page === "company" ? (
