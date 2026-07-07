@@ -106,7 +106,7 @@ export function CallListPage() {
     <>
       <section aria-label="検索条件">
         <h3 style={{ marginTop: 0 }}>架電リスト制作(飲食店抽出)</h3>
-        <p style={{ color: "#9aa3ba", fontSize: "0.85rem", maxWidth: "44rem" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "44rem" }}>
           抽出項目: 店舗名・郵便番号・住所・電話番号・ジャンル・営業時間・
           デリバリー有無・デリバリーサービス媒体。SerpAPIキーを入力すると
           Googleマップの実データを取得します(1市区町村につき1リクエスト・最大約20件)。
@@ -126,7 +126,7 @@ export function CallListPage() {
               autoComplete="off"
             />
           </label>
-          <p style={{ color: "#9aa3ba", fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
             キーはこの画面のメモリ上でのみ使用し、保存・記録はしません(アプリ再起動で消えます)。
             接続先は serpapi.com のみに制限されています。
           </p>
@@ -180,31 +180,31 @@ export function CallListPage() {
       {summary && (
         <section aria-label="件数集計">
           <h3 style={{ marginTop: 0 }}>件数集計</h3>
-          <p style={{ color: dataSource === "serpapi" ? "#3fb950" : "#f0883e", fontSize: "0.85rem" }}>
+          <p style={{ color: dataSource === "serpapi" ? "var(--ok)" : "var(--warn)", fontSize: "0.85rem" }}>
             データソース: {dataSource === "serpapi" ? "SerpAPI(Googleマップ実データ)" : "Mockデータ(サンプル)"}
             {dataSource === "serpapi" &&
               " ※デリバリー媒体はGoogleマップの検索結果に含まれないため空欄になります"}
           </p>
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
             <div className="card" style={{ minWidth: "8rem", textAlign: "center" }}>
-              <div style={{ color: "#9aa3ba", fontSize: "0.8rem" }}>合計</div>
+              <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>合計</div>
               <div style={{ fontSize: "1.6rem", fontWeight: 700 }}>{summary.total}</div>
-              <div style={{ color: "#7d8598", fontSize: "0.75rem" }}>件</div>
+              <div style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>件</div>
             </div>
             <div className="card" style={{ minWidth: "8rem", textAlign: "center" }}>
-              <div style={{ color: "#9aa3ba", fontSize: "0.8rem" }}>デリバリー対応</div>
+              <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>デリバリー対応</div>
               <div style={{ fontSize: "1.6rem", fontWeight: 700 }}>{summary.deliveryCount}</div>
-              <div style={{ color: "#7d8598", fontSize: "0.75rem" }}>件</div>
+              <div style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>件</div>
             </div>
             {summary.byCity.map((c) => (
               <div key={c.city} className="card" style={{ minWidth: "8rem", textAlign: "center" }}>
-                <div style={{ color: "#9aa3ba", fontSize: "0.8rem" }}>{c.city}</div>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>{c.city}</div>
                 <div style={{ fontSize: "1.6rem", fontWeight: 700 }}>{c.count}</div>
-                <div style={{ color: "#7d8598", fontSize: "0.75rem" }}>件</div>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>件</div>
               </div>
             ))}
           </div>
-          <p style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
             ジャンル別: {summary.byGenre.map((g) => `${g.genre} ${g.count}件`).join(" / ")}
           </p>
         </section>
@@ -251,7 +251,7 @@ export function CallListPage() {
 }
 
 const cellStyle: React.CSSProperties = {
-  border: "1px solid rgba(151,168,205,0.16)",
+  border: "1px solid var(--border)",
   padding: "0.35rem 0.6rem",
   textAlign: "left",
   verticalAlign: "top",

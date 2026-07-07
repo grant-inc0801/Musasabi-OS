@@ -7,33 +7,37 @@
    ベースの配色・ガラス面・フォーム・テーブルの見た目はこのグローバルCSSで統一する。 */
 
 :root {
-  --bg: #0a0d16;
-  /* Glass面: 半透明+blur。背景のグラデーションが透けて奥行きを作る */
-  --bg-panel: rgba(21, 26, 40, 0.55);
-  --bg-card: rgba(30, 37, 56, 0.5);
-  --border: rgba(151, 168, 205, 0.16);
-  --border-strong: rgba(151, 168, 205, 0.28);
-  --glass-highlight: rgba(255, 255, 255, 0.06);
-  --text: #e6e9f2;
-  --text-muted: #9aa3ba;
+  /* シルバーグレー×メタリック調(ユーザーFB第3弾)。
+     Glass面は白系半透明、地はシルバーのグラデーションで金属の光沢を出す */
+  --bg: #c3c8d0;
+  --bg-panel: rgba(255, 255, 255, 0.55);
+  --bg-card: rgba(255, 255, 255, 0.5);
+  --border: rgba(84, 94, 110, 0.28);
+  --border-strong: rgba(84, 94, 110, 0.45);
+  --glass-highlight: rgba(255, 255, 255, 0.85);
+  --text: #22262d;
+  --text-muted: #5b6270;
   --accent: #2f6feb;
-  --accent-hover: #4d82ee;
-  --warn: #f0883e;
-  --danger: #f85149;
-  --ok: #3fb950;
-  --blur: blur(16px) saturate(1.25);
+  --accent-hover: #1e5cd6;
+  --warn: #b35a09;
+  --danger: #c93430;
+  --ok: #1a7f37;
+  --blur: blur(16px) saturate(1.15);
+  /* メタリック面(ボタン等): 上端が明るく下端がわずかに沈むグラデーション */
+  --metal: linear-gradient(180deg, #f6f7f9, #dadde3);
+  --metal-strong: linear-gradient(180deg, #eceef1, #c9cdd4);
 }
 
 html,
 body {
   margin: 0;
   color: var(--text);
-  /* Dark基調+控えめな色の芯(Glass面が透かす対象)。固定にしてスクロールで動かさない */
+  /* シルバーの地金: 斜めの光沢(白のハイライト)+下端に向かって沈むグレー。
+     固定にしてスクロールで動かさない */
   background:
-    radial-gradient(900px 600px at 85% -10%, rgba(47, 111, 235, 0.16), transparent 60%),
-    radial-gradient(700px 500px at -10% 30%, rgba(99, 91, 255, 0.10), transparent 60%),
-    radial-gradient(800px 600px at 60% 110%, rgba(25, 158, 112, 0.07), transparent 60%),
-    var(--bg);
+    radial-gradient(1000px 700px at 80% -15%, rgba(255, 255, 255, 0.7), transparent 60%),
+    radial-gradient(700px 500px at -10% 35%, rgba(255, 255, 255, 0.4), transparent 55%),
+    linear-gradient(180deg, #dcdfe4 0%, #c3c8d0 55%, #aeb4bf 100%);
   background-attachment: fixed;
 }
 
@@ -74,20 +78,21 @@ a {
   color: var(--accent-hover);
 }
 
-/* フォーム部品(Glass) */
+/* フォーム部品(メタリック) */
 button {
-  background: var(--bg-card);
+  background: var(--metal);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.4rem 0.85rem;
   cursor: pointer;
   font-size: 0.9rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 button:hover:not(:disabled) {
   border-color: var(--accent);
-  background: rgba(47, 111, 235, 0.14);
+  background: linear-gradient(180deg, #f0f4fd, #d8e2f7);
 }
 
 button:disabled {
@@ -114,7 +119,7 @@ button.active {
 input,
 select,
 textarea {
-  background: rgba(10, 13, 22, 0.6);
+  background: rgba(255, 255, 255, 0.75);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -152,7 +157,7 @@ main section,
   margin-bottom: 1rem;
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
-    0 8px 28px rgba(0, 0, 0, 0.35);
+    0 8px 24px rgba(45, 52, 64, 0.18);
 }
 
 /* サイドバーレイアウト(App.tsx) */
@@ -164,7 +169,8 @@ main section,
 .sidebar {
   width: 220px;
   flex-shrink: 0;
-  background: rgba(15, 19, 31, 0.6);
+  /* サイドバーはひとまわり濃いメタリック面 */
+  background: linear-gradient(180deg, rgba(238, 240, 243, 0.85), rgba(203, 208, 215, 0.82));
   -webkit-backdrop-filter: var(--blur);
   backdrop-filter: var(--blur);
   border-right: 1px solid var(--border);

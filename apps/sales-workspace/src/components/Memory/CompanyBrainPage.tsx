@@ -37,18 +37,18 @@ export function CompanyBrainPage() {
     <>
       <section aria-label="Memory概要">
         <h3 style={{ marginTop: 0 }}>Brain Memory(行動記録)</h3>
-        <p style={{ color: "#9aa3ba", fontSize: "0.85rem", maxWidth: "44rem" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "44rem" }}>
           AI社員とあなたの行動を6分類で自動記録します(Development Bible 第9章)。
           保存はこの端末内のみで、外部送信はしません。短期メモリは24時間で自動削除されます。
         </p>
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
           {MEMORY_CATEGORIES.map((c) => (
             <div key={c} className="card" style={{ minWidth: "7.5rem", textAlign: "center" }}>
-              <div style={{ color: "#9aa3ba", fontSize: "0.8rem" }}>
+              <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
                 {MEMORY_CATEGORY_LABEL_JA[c]}
               </div>
               <div style={{ fontSize: "1.6rem", fontWeight: 700 }}>{counts[c]}</div>
-              <div style={{ color: "#7d8598", fontSize: "0.75rem" }}>件</div>
+              <div style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>件</div>
             </div>
           ))}
         </div>
@@ -56,14 +56,14 @@ export function CompanyBrainPage() {
 
       <section aria-label="自己改善">
         <h3 style={{ marginTop: 0 }}>自己改善(短期→長期の昇格)</h3>
-        <p style={{ color: "#9aa3ba", fontSize: "0.85rem", maxWidth: "44rem" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "44rem" }}>
           同じ行動の短期メモリが繰り返された場合、長期ナレッジへ昇格できます
           (Development Bible 第9章の昇格戦略・第18章 Self Evolution。決定的ロジックのみ)。
         </p>
         <button type="button" onClick={handlePromote}>
           繰り返された短期メモリを長期へ昇格
         </button>
-        {promotedNote && <p style={{ color: "#3fb950", margin: "0.5rem 0 0" }}>{promotedNote}</p>}
+        {promotedNote && <p style={{ color: "var(--ok)", margin: "0.5rem 0 0" }}>{promotedNote}</p>}
       </section>
 
       <section aria-label="Memory履歴">
@@ -90,7 +90,7 @@ export function CompanyBrainPage() {
           />
         </div>
         {records.length === 0 ? (
-          <p style={{ color: "#9aa3ba" }}>
+          <p style={{ color: "var(--text-muted)" }}>
             記録がまだありません。テストコールや設定変更などの操作が自動で記録されます。
           </p>
         ) : (
@@ -123,7 +123,7 @@ export function CompanyBrainPage() {
 }
 
 const cellStyle: React.CSSProperties = {
-  border: "1px solid rgba(151,168,205,0.16)",
+  border: "1px solid var(--border)",
   padding: "0.35rem 0.6rem",
   textAlign: "left",
   verticalAlign: "top",

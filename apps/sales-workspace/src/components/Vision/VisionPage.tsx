@@ -28,7 +28,7 @@ export function VisionPage() {
     <>
       <section aria-label="画面解析">
         <h3 style={{ marginTop: 0 }}>画面解析(手動オプトイン)</h3>
-        <p style={{ color: "#9aa3ba", fontSize: "0.85rem", maxWidth: "44rem" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "44rem" }}>
           下のボタンを押した時のみ、このアプリ自身の画面を解析します
           (UI認識・ボタン検出・テキスト抽出・ウィンドウ情報)。
           常時監視・自動実行はせず、解析はローカル処理のみで外部送信はしません。
@@ -42,7 +42,7 @@ export function VisionPage() {
           <p style={{ margin: "0.75rem 0 0" }}>
             <strong>要約:</strong> {analysis.summaryJa}
             <br />
-            <span style={{ color: "#7d8598", fontSize: "0.8rem" }}>
+            <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
               解析日時: {new Date(analysis.analyzedAtMs).toLocaleString("ja-JP")}
               (実行は Company Brain に記録されます)
             </span>
@@ -58,7 +58,7 @@ export function VisionPage() {
               {(Object.keys(UI_NODE_KIND_LABEL_JA) as Array<keyof typeof UI_NODE_KIND_LABEL_JA>).map(
                 (kind) => (
                   <div key={kind} className="card" style={{ minWidth: "7rem", textAlign: "center" }}>
-                    <div style={{ color: "#9aa3ba", fontSize: "0.8rem" }}>
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
                       {UI_NODE_KIND_LABEL_JA[kind]}
                     </div>
                     <div style={{ fontSize: "1.4rem", fontWeight: 700 }}>
@@ -117,7 +117,7 @@ export function VisionPage() {
 }
 
 const cellStyle: React.CSSProperties = {
-  border: "1px solid rgba(151,168,205,0.16)",
+  border: "1px solid var(--border)",
   padding: "0.35rem 0.6rem",
   textAlign: "left",
   verticalAlign: "top",

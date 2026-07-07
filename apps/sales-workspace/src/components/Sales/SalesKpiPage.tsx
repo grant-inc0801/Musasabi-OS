@@ -113,7 +113,7 @@ export function SalesKpiPage() {
             </tr>
           </tbody>
         </table>
-        <p style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
           アポ率=アポ獲得数÷架電数、成約率=成約数÷アポ獲得数。すべてMock値です。
         </p>
       </section>
@@ -128,14 +128,14 @@ export function SalesKpiPage() {
 function StatTile({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>{label}</div>
+      <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{label}</div>
       <div style={{ fontSize: "1.6rem", fontWeight: "bold" }}>{value}</div>
     </div>
   );
 }
 
 const cellStyle: React.CSSProperties = {
-  border: "1px solid rgba(151,168,205,0.16)",
+  border: "1px solid var(--border)",
   padding: "0.35rem 0.6rem",
   textAlign: "left",
 };

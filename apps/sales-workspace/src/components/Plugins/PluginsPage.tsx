@@ -52,7 +52,7 @@ export function PluginsPage() {
     <>
       <section aria-label="プラグイン一覧">
         <h3 style={{ marginTop: 0 }}>インストール済みプラグイン({plugins.length}件)</h3>
-        <p style={{ color: "#9aa3ba", fontSize: "0.85rem", maxWidth: "44rem" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "44rem" }}>
           プラグインはリポジトリ内(plugins/)で審査・ビルドされたもののみ読み込みます
           (外部からの取得・動的コード実行はしません。審査プロセスは Plugin SDK Bible 第5章)。
         </p>
@@ -72,7 +72,7 @@ export function PluginsPage() {
                 <td style={cellStyle}>
                   {p.manifest.name}
                   <br />
-                  <span style={{ color: "#7d8598", fontSize: "0.8rem" }}>
+                  <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
                     @musasabi/plugin-{p.manifest.id}
                   </span>
                 </td>
@@ -96,7 +96,7 @@ export function PluginsPage() {
       <section aria-label="ウィジェットプレビュー">
         <h3 style={{ marginTop: 0 }}>提供中のダッシュボードウィジェット({widgets.length}件)</h3>
         {widgets.length === 0 ? (
-          <p style={{ color: "#9aa3ba" }}>有効なウィジェットはありません。</p>
+          <p style={{ color: "var(--text-muted)" }}>有効なウィジェットはありません。</p>
         ) : (
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
             {widgets.map((w) => (
@@ -110,7 +110,7 @@ export function PluginsPage() {
                   ))}
                 </ul>
                 {w.note && (
-                  <p style={{ color: "#9aa3ba", fontSize: "0.8rem", margin: 0 }}>{w.note}</p>
+                  <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", margin: 0 }}>{w.note}</p>
                 )}
               </div>
             ))}
@@ -122,7 +122,7 @@ export function PluginsPage() {
 }
 
 const cellStyle: React.CSSProperties = {
-  border: "1px solid rgba(151,168,205,0.16)",
+  border: "1px solid var(--border)",
   padding: "0.35rem 0.6rem",
   textAlign: "left",
   verticalAlign: "top",

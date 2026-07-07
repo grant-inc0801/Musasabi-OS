@@ -37,7 +37,7 @@
         padding: 10px 12px;
         font-size: 13px;
         line-height: 1.5;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        /* 外側シャドウは透過ウィンドウでは輪郭の外に膜として見えるため使わない。 */
         cursor: pointer;
       }
       #bubble.hidden {
@@ -52,9 +52,8 @@
         border: 1px solid rgba(151, 168, 205, 0.2);
         border-radius: 12px;
         padding: 12px;
-        box-shadow:
-          inset 0 1px 0 rgba(255, 255, 255, 0.07),
-          0 8px 24px rgba(0, 0, 0, 0.5);
+        /* ガラス面はパネルの輪郭(角丸)内のみ。外側シャドウは膜に見えるため無し。 */
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
         display: flex;
         flex-direction: column;
         gap: 8px;
@@ -177,7 +176,8 @@
         line-height: 1;
         cursor: pointer;
         user-select: none;
-        filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
+        /* drop-shadow は透過ウィンドウでアバター周囲に膜として描画されるため使わない。
+           キャラクターの輪郭外は完全透過。 */
       }
       #avatar canvas {
         width: 100% !important;

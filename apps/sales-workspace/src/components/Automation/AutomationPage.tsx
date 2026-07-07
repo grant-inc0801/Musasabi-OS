@@ -68,7 +68,7 @@ export function AutomationPage({ onNavigate }: { onNavigate: (page: string) => v
     <>
       <section aria-label="操作記録">
         <h3 style={{ marginTop: 0 }}>操作記録(手動オプトイン)</h3>
-        <p style={{ color: "#9aa3ba", fontSize: "0.85rem", maxWidth: "44rem" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "44rem" }}>
           「記録を開始」を押してから停止するまでの間のみ、このアプリ内のページ遷移を
           記録します。常時記録・他アプリの記録・外部送信はしません。保存したルーチンは
           「再実行」でそのままの順に画面を辿れます(記録・再実行は Company Brain に
@@ -76,7 +76,7 @@ export function AutomationPage({ onNavigate }: { onNavigate: (page: string) => v
         </p>
         {recording ? (
           <div>
-            <p style={{ color: "#3fb950", fontWeight: "bold" }}>
+            <p style={{ color: "var(--ok)", fontWeight: "bold" }}>
               ● 記録中({routineRecorder.stepCount}操作)— サイドバーからページを移動すると記録されます
             </p>
             <input
@@ -100,7 +100,7 @@ export function AutomationPage({ onNavigate }: { onNavigate: (page: string) => v
       <section aria-label="保存済みルーチン">
         <h3 style={{ marginTop: 0 }}>保存済みルーチン({routines.length}件)</h3>
         {routines.length === 0 ? (
-          <p style={{ color: "#9aa3ba" }}>まだルーチンがありません。</p>
+          <p style={{ color: "var(--text-muted)" }}>まだルーチンがありません。</p>
         ) : (
           <table style={{ borderCollapse: "collapse" }}>
             <thead>
@@ -135,7 +135,7 @@ export function AutomationPage({ onNavigate }: { onNavigate: (page: string) => v
 }
 
 const cellStyle: React.CSSProperties = {
-  border: "1px solid rgba(151,168,205,0.16)",
+  border: "1px solid var(--border)",
   padding: "0.35rem 0.6rem",
   textAlign: "left",
   verticalAlign: "top",

@@ -87,6 +87,13 @@ const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
 
 export function App() {
   const [page, setPage] = useState<Page>("sales_kpi");
+  // 部署ボタン押下で小分類項目を開閉する(アコーディオン。ユーザーFB第3弾)。
+  // 既定では現在ページを含む営業部のみ開いた状態にする。
+  const [expandedDepts, setExpandedDepts] = useState<Record<string, boolean>>({ 営業部: true });
+
+  function toggleDept(label: string): void {
+    setExpandedDepts((prev) => ({ ...prev, [label]: !prev[label] }));
+  }
   // 初回セットアップが未完了なら、通常UIの前にセットアップウィザードを表示する。
   const [setupDone, setSetupDone] = useState<boolean>(() => isSetupComplete(loadSetupState()));
 
@@ -115,36 +122,51 @@ export function App() {
         </div>
 
         <nav style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-          {NAV_TREE.map((dept) => (
-            <div key={dept.label}>
-              {dept.page ? (
-                <button
-                  type="button"
-                  className="nav-dept"
-                  onClick={() => navigate(dept.page as Page)}
-                  disabled={page === dept.page}
-                >
-                  {dept.label}
-                </button>
-              ) : (
-                <div className="nav-dept-label">{dept.label}</div>
-              )}
-              {dept.children?.map((child) => (
-                <button
-                  key={child.page}
-                  type="button"
-                  className="nav-sub"
-                  onClick={() => navigate(child.page)}
-                  disabled={page === child.page}
-                >
-                  ↳ {child.label}
-                </button>
-              ))}
-            </div>
-          ))}
+          {NAV_TREE.map((dept) => {
+            const expanded = expandedDepts[dept.label] === true;
+            return (
+              <div key={dept.label}>
+                {dept.children ? (
+                  <button
+                    type="button"
+                    className="nav-dept"
+                    onClick={() => toggleDept(dept.label)}
+                    aria-expanded={expanded}
+                  >
+                    <span style={{ display: "inline-block", width: "1em" }}>
+                      {expanded ? "▾" : "▸"}
+                    </span>
+                    {dept.label}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="nav-dept"
+                    onClick={() => navigate(dept.page as Page)}
+                    disabled={page === dept.page}
+                  >
+                    <span style={{ display: "inline-block", width: "1em" }} />
+                    {dept.label}
+                  </button>
+                )}
+                {expanded &&
+                  dept.children?.map((child) => (
+                    <button
+                      key={child.page}
+                      type="button"
+                      className="nav-sub"
+                      onClick={() => navigate(child.page)}
+                      disabled={page === child.page}
+                    >
+                      ↳ {child.label}
+                    </button>
+                  ))}
+              </div>
+            );
+          })}
         </nav>
 
-        <div style={{ fontSize: "0.75rem", color: "#9aa3ba", margin: "0.75rem 0 0.1rem" }}>
+        <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: "0.75rem 0 0.1rem" }}>
           全社
         </div>
         <nav style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
@@ -209,9 +231,9 @@ function MusasabiMark() {
       <rect x="3" y="3" width="94" height="94" rx="13" fill="#000" />
       <polygon
         fill="#fff"
-        points="80,24.5 75.5,21.5 70,20.5 66.5,16 63.5,22.5 57.5,27 46,33.5 33.5,37.5 23.5,38.5 33,45 41.5,50.5 34.5,60 18.5,63.5 31.5,67.5 14.5,80 41.5,63.5 53,54.5 65.5,46 74.5,40 85.5,31.5 88.5,29 87.5,33 79,38.5 75.5,34.5 77.5,29"
+        points="82,20 76,17.5 71,11.5 66.5,19 58,24.5 42,31.5 20,35.5 31.5,43 40.5,47.5 34.5,56 16.5,60 30,64.5 11.5,77.5 37,62.5 50,52 63.5,41.5 75.5,37.5 87.5,33.5 76,30 79.5,24.5"
       />
-      <circle cx="70.5" cy="25.5" r="2.4" fill="#000" />
+      <circle cx="73.5" cy="21.5" r="2.4" fill="#000" />
     </svg>
   );
 }
