@@ -61,3 +61,4 @@ export {
 } from "./summary";
 export * from "./commandCenter";
 export * from "./marketResearch";
+export * from "./knowledgeVault";

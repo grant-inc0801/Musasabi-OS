@@ -1,4 +1,5 @@
 import { buildResearchAndPublishingSummaryJa } from "./marketResearch";
+import { buildVaultSummaryJa } from "./knowledgeVault";
 
 // Musasabi Command Center のデータモデル(Directive D-20260706-007)。
 // 部署パネル・ステータス色・部署間連携・アシスタント要約(吹き出し)を扱う。
@@ -105,9 +106,18 @@ export const COMMAND_DEPARTMENTS: readonly CommandDepartment[] = [
     name: "企画部",
     memberCount: 2,
     status: "working",
-    tasks: ["四半期企画の立案", "市場調査"],
+    tasks: [
+      "四半期企画の立案",
+      "自動化・新ツールのマニュアル/操作ガイド作成",
+      "新サービスの提案資料・営業資料・プレゼン作成",
+      "リリースノート作成と保管庫への保存・整理",
+    ],
     progressPercent: 35,
-    logs: ["14:00 市場調査データを収集中"],
+    logs: [
+      "14:20 保管庫操作ガイドを作成(保存待ち)",
+      "14:00 市場調査データを収集中",
+      "13:30 テストコール操作マニュアルv1.1を保管庫へ保存",
+    ],
   },
   {
     id: "accounting",
@@ -245,6 +255,8 @@ export function buildAssistantSummaryJa(departments: readonly CommandDepartment[
   }
   // 市場調査部・出版部クリーン運営の要約(D-20260706-009)
   lines.push(...buildResearchAndPublishingSummaryJa());
+  // 保管庫の要約(D-20260706-010)
+  lines.push(...buildVaultSummaryJa());
   const avg = Math.round(
     departments.reduce((sum, d) => sum + d.progressPercent, 0) / Math.max(departments.length, 1),
   );

@@ -1,12 +1,16 @@
+import { useState } from "react";
 import {
   CLEAN_CHECK_STATUS_COLOR,
   DEPT_STATUS_COLOR,
   DEPT_STATUS_LABEL_JA,
+  PLANNING_DOC_STATUSES,
   PUBLISHING_CLEAN_CHECKS,
   PUBLISHING_STAFF,
+  VAULT_FLOW_JA,
 } from "@musasabi/ai-company";
 import type { CommandDepartment } from "@musasabi/ai-company";
 import { MarketResearchDetail } from "./MarketResearchDetail";
+import { recordMemory } from "../../lib/memoryStorage";
 
 // 右側: 部署詳細パネル(D-20260706-007)。部署パネルのクリックで表示。
 // 営業部はコールシステム関連のMock情報を表示する(実架電なし)。
@@ -138,6 +142,48 @@ function PublishingCleanBlock() {
   );
 }
 
+/**
+ * 企画部の資料作成・保管庫連携(D-20260706-010)。マニュアル・提案資料を作成し
+ * 保管庫へ保存するMockフロー。実ファイル保存はしない。
+ */
+function PlanningDocsBlock() {
+  const [savedNote, setSavedNote] = useState<string | null>(null);
+
+  function handleSaveToVault(): void {
+    setSavedNote("「保管庫操作ガイド v1.0」を保管庫へ保存しました(Mock)。");
+    recordMemory({
+      category: "work",
+      actor: "AIドキュメントライター",
+      action: "企画部: 資料を保管庫へ保存",
+      detail: "保管庫操作ガイド v1.0(Mock)",
+      tags: ["planning", "vault"],
+    });
+  }
+
+  return (
+    <div className="detail-block">
+      <strong>資料作成・保管庫連携(Mock)</strong>
+      <p style={{ margin: "0.35rem 0", fontSize: "0.78rem", color: "var(--text-muted)" }}>
+        フロー: {VAULT_FLOW_JA}
+      </p>
+      {PLANNING_DOC_STATUSES.map((s) => (
+        <div key={s.label} style={{ margin: "0.3rem 0" }}>
+          <strong style={{ fontSize: "0.8rem" }}>{s.label}</strong>
+          <ul style={{ margin: "0.1rem 0 0", paddingLeft: "1.1rem", fontSize: "0.78rem" }}>
+            {s.items.map((i) => (
+              <li key={i}>{i}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      <button type="button" onClick={handleSaveToVault} style={{ marginTop: "0.4rem" }}>
+        保存待ち資料を保管庫へ保存(Mock)
+      </button>
+      {savedNote && <p style={{ color: "var(--ok)", fontSize: "0.8rem", margin: "0.4rem 0 0" }}>{savedNote}</p>}
+    </div>
+  );
+}
+
 export function DepartmentDetailPanel({
   dept,
   salesLive,
@@ -184,6 +230,7 @@ export function DepartmentDetailPanel({
       {dept.id === "sales" && <SalesCallSystemBlock live={salesLive} />}
       {dept.id === "market_research" && <MarketResearchDetail />}
       {dept.id === "publishing" && <PublishingCleanBlock />}
+      {dept.id === "planning" && <PlanningDocsBlock />}
 
       <div className="detail-block">
         <strong>作業内容</strong>
