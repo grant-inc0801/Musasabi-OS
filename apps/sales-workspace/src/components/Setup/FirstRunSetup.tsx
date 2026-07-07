@@ -64,7 +64,7 @@ export function FirstRunSetup({ onComplete }: { onComplete: () => void }) {
 
   return (
     <main style={{ fontFamily: "sans-serif", padding: "2rem", maxWidth: "36rem" }}>
-      <p style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>初回セットアップ</p>
+      <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>初回セットアップ</p>
       <h1>{content.title}</h1>
       <p style={{ lineHeight: 1.7 }}>{content.body}</p>
       <button type="button" onClick={handleNext}>

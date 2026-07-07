@@ -59,7 +59,7 @@ export function HBarChart({ series, rows, unit = "", maxValue }: HBarChartProps)
       {series.length > 1 && (
         <div style={{ display: "flex", gap: "1rem", marginBottom: "0.4rem", flexWrap: "wrap" }}>
           {series.map((s) => (
-            <span key={s.key} style={{ fontSize: "0.8rem", color: "#9aa3ba" }}>
+            <span key={s.key} style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
               <span
                 style={{
                   display: "inline-block",
@@ -80,7 +80,7 @@ export function HBarChart({ series, rows, unit = "", maxValue }: HBarChartProps)
         {Array.from({ length: gridSteps + 1 }, (_, i) => {
           const x = LABEL_W + (plotW * i) / gridSteps;
           return (
-            <line key={i} x1={x} y1={0} x2={x} y2={height - 8} stroke="rgba(151,168,205,0.18)" strokeWidth={1} />
+            <line key={i} x1={x} y1={0} x2={x} y2={height - 8} stroke="var(--border-strong)" strokeWidth={1} />
           );
         })}
         {rows.map((row, rowIndex) => {
@@ -92,7 +92,7 @@ export function HBarChart({ series, rows, unit = "", maxValue }: HBarChartProps)
                 y={groupY + groupH / 2 + 4}
                 textAnchor="end"
                 fontSize={12}
-                fill="#e6e9f2"
+                fill="var(--text)"
               >
                 {row.label}
               </text>
@@ -109,7 +109,7 @@ export function HBarChart({ series, rows, unit = "", maxValue }: HBarChartProps)
                       x={LABEL_W + Math.max(width, 2) + 6}
                       y={y + BAR_H - 2}
                       fontSize={11}
-                      fill="#9aa3ba"
+                      fill="var(--text-muted)"
                     >
                       {value}
                       {unit}

@@ -65,7 +65,7 @@ export function CompanyPage({ onNavigateToCallTraining }: CompanyPageProps) {
             全社員を表示
           </button>
           {selectedUnit && (
-            <span style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>
+            <span style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
               選択中: {selectedUnit.name}
             </span>
           )}
@@ -73,7 +73,7 @@ export function CompanyPage({ onNavigateToCallTraining }: CompanyPageProps) {
         <ul className="org-tree">
           <OrgNode unitId={COMPANY_ID} selectedUnitId={selectedUnitId} onSelect={setSelectedUnitId} />
         </ul>
-        <p style={{ color: "#9aa3ba", fontSize: "0.8rem" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
           AI社員が所属する組織のみ表示しています(組織全体の定義は docs/ORGANIZATION_BIBLE.md)。
         </p>
       </section>
@@ -83,7 +83,7 @@ export function CompanyPage({ onNavigateToCallTraining }: CompanyPageProps) {
           AI社員名簿{selectedUnit ? `(${selectedUnit.name}: ${employees.length}名)` : `(全社: ${employees.length}名)`}
         </h3>
         {employees.length === 0 ? (
-          <p style={{ color: "#9aa3ba" }}>この組織単位に所属するAI社員はいません。</p>
+          <p style={{ color: "var(--text-muted)" }}>この組織単位に所属するAI社員はいません。</p>
         ) : (
           <table style={{ borderCollapse: "collapse" }}>
             <thead>
@@ -102,7 +102,7 @@ export function CompanyPage({ onNavigateToCallTraining }: CompanyPageProps) {
             </tbody>
           </table>
         )}
-        <p style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
           オートコールは全安全ゲート充足まで有効化されません(現フェーズは全AI社員で無効)。
         </p>
         <button type="button" onClick={onNavigateToCallTraining}>
@@ -125,7 +125,7 @@ export function CompanyPage({ onNavigateToCallTraining }: CompanyPageProps) {
 }
 
 const cellStyle: React.CSSProperties = {
-  border: "1px solid rgba(151,168,205,0.16)",
+  border: "1px solid var(--border)",
   padding: "0.35rem 0.6rem",
   textAlign: "left",
 };

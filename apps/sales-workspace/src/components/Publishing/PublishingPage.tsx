@@ -35,28 +35,28 @@ export function PublishingPage() {
     <>
       <section aria-label="出版部サマリー">
         <h2>出版部</h2>
-        <p style={{ color: "#f0883e", fontSize: "0.9rem" }}>
+        <p style={{ color: "var(--warn)", fontSize: "0.9rem" }}>
           β版はMock値の表示のみです(実売上データ連携・実制作パイプラインは後続フェーズ)。
         </p>
         <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap" }}>
           <div>
-            <div style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>総販売数</div>
+            <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>総販売数</div>
             <div style={{ fontSize: "1.6rem", fontWeight: "bold" }}>{totalUnits}部</div>
           </div>
           <div>
-            <div style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>総売上</div>
+            <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>総売上</div>
             <div style={{ fontSize: "1.6rem", fontWeight: "bold" }}>{formatJpy(totalRevenue)}</div>
           </div>
           {publishingSummary && (
             <>
               <div>
-                <div style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>本日進捗</div>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>本日進捗</div>
                 <div style={{ fontSize: "1.6rem", fontWeight: "bold" }}>
                   {publishingSummary.progressPercent}%
                 </div>
               </div>
               <div>
-                <div style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>状態</div>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>状態</div>
                 <div style={{ fontSize: "1.6rem", fontWeight: "bold" }}>
                   {DEPARTMENT_STATUS_LABEL_JA[publishingSummary.status]}
                 </div>
@@ -65,7 +65,7 @@ export function PublishingPage() {
           )}
         </div>
         {publishingSummary && (
-          <p style={{ color: "#9aa3ba" }}>本日の作業: {publishingSummary.todaySummary}</p>
+          <p style={{ color: "var(--text-muted)" }}>本日の作業: {publishingSummary.todaySummary}</p>
         )}
       </section>
 
@@ -99,7 +99,7 @@ export function PublishingPage() {
 }
 
 const cellStyle: React.CSSProperties = {
-  border: "1px solid rgba(151,168,205,0.16)",
+  border: "1px solid var(--border)",
   padding: "0.35rem 0.6rem",
   textAlign: "left",
 };

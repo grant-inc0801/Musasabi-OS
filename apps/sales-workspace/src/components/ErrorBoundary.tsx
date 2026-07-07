@@ -50,7 +50,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           申し訳ありません。画面の表示中に問題が発生しました。下のボタンから再読み込みを
           お試しください。問題が続く場合は、設定のログ画面の内容を添えてお問い合わせください。
         </p>
-        <p style={{ color: "#f0883e", fontFamily: "monospace", fontSize: "0.9rem" }}>
+        <p style={{ color: "var(--warn)", fontFamily: "monospace", fontSize: "0.9rem" }}>
           {error.message}
         </p>
         <button type="button" onClick={this.handleReload}>

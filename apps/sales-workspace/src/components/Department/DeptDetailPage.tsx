@@ -14,22 +14,22 @@ export function DeptDetailPage({ deptId }: { deptId: string }) {
       <h2>{dept.name}</h2>
       <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap" }}>
         <div>
-          <div style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>AI社員</div>
+          <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>AI社員</div>
           <div style={{ fontSize: "1.6rem", fontWeight: "bold" }}>{dept.employeeCount}名</div>
         </div>
         <div>
-          <div style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>本日進捗</div>
+          <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>本日進捗</div>
           <div style={{ fontSize: "1.6rem", fontWeight: "bold" }}>{dept.progressPercent}%</div>
         </div>
         <div>
-          <div style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>状態</div>
+          <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>状態</div>
           <div style={{ fontSize: "1.6rem", fontWeight: "bold" }}>
             {DEPARTMENT_STATUS_LABEL_JA[dept.status]}
           </div>
         </div>
       </div>
-      <p style={{ color: "#9aa3ba" }}>本日の作業: {dept.todaySummary}(Mock)</p>
-      <p style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>
+      <p style={{ color: "var(--text-muted)" }}>本日の作業: {dept.todaySummary}(Mock)</p>
+      <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
         この部門の専用ページ(タスク一覧・成果物など)は後続フェーズで実装予定です。
       </p>
     </section>

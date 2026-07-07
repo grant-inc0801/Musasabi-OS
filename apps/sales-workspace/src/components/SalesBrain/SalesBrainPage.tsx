@@ -70,7 +70,7 @@ export function SalesBrainPage() {
       <section aria-label="共通ナレッジ">
         <h3 style={{ marginTop: 0 }}>全AI社員共通トーク改善ナレッジ(計{knowledge.size}件)</h3>
         {knowledge.size === 0 ? (
-          <p style={{ color: "#9aa3ba" }}>
+          <p style={{ color: "var(--text-muted)" }}>
             まだ指摘がありません。コールトレーニングのテストモードでテストコールを行い、
             「指摘を追加」すると、ここに全AI社員共通のナレッジとして蓄積されます。
           </p>
@@ -90,7 +90,7 @@ export function SalesBrainPage() {
               {entries.map((entry, i) => (
                 <li key={i} style={{ margin: "0.3rem 0" }}>
                   <strong>[{TALK_FEEDBACK_CATEGORY_LABEL_JA[entry.category]}]</strong> {entry.comment}
-                  <span style={{ color: "#7d8598", fontSize: "0.8rem" }}>
+                  <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
                     (出典: {entry.sourceSessionId})
                   </span>
                 </li>
@@ -98,7 +98,7 @@ export function SalesBrainPage() {
             </ul>
           </>
         )}
-        <p style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
           保存はこの端末内のみ(localStorage)。実DB接続・外部送信はしません。
         </p>
       </section>
@@ -106,7 +106,7 @@ export function SalesBrainPage() {
       <section aria-label="テストコール履歴">
         <h3 style={{ marginTop: 0 }}>テストコール履歴(最新{Math.min(sessions.length, 20)}件)</h3>
         {sessions.length === 0 ? (
-          <p style={{ color: "#9aa3ba" }}>まだテストコールの履歴がありません。</p>
+          <p style={{ color: "var(--text-muted)" }}>まだテストコールの履歴がありません。</p>
         ) : (
           <table style={{ borderCollapse: "collapse" }}>
             <thead>
@@ -139,14 +139,14 @@ export function SalesBrainPage() {
 function StatTile({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>{label}</div>
+      <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{label}</div>
       <div style={{ fontSize: "1.6rem", fontWeight: "bold" }}>{value}</div>
     </div>
   );
 }
 
 const cellStyle: React.CSSProperties = {
-  border: "1px solid rgba(151,168,205,0.16)",
+  border: "1px solid var(--border)",
   padding: "0.35rem 0.6rem",
   textAlign: "left",
 };

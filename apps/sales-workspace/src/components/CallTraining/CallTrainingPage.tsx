@@ -219,7 +219,7 @@ function LearningModeView() {
       </p>
 
       <h4>日々の作業内容を学習させる(手動登録)</h4>
-      <p style={{ color: "#9aa3ba", fontSize: "0.85rem", maxWidth: "40rem" }}>
+      <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "40rem" }}>
         今日行った作業・気づき・うまくいった切り返しなどを登録すると、AI社員共通の
         学習素材として蓄積されます(保存はこの端末内のみ。外部送信はしません)。
       </p>
@@ -239,13 +239,13 @@ function LearningModeView() {
         </button>
       </div>
       {listed.length === 0 ? (
-        <p style={{ color: "#9aa3ba" }}>まだ登録がありません。</p>
+        <p style={{ color: "var(--text-muted)" }}>まだ登録がありません。</p>
       ) : (
         <ul>
           {listed.map((entry) => (
             <li key={entry.id} style={{ margin: "0.3rem 0" }}>
               {entry.text}{" "}
-              <span style={{ color: "#7d8598", fontSize: "0.8rem" }}>
+              <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
                 ({new Date(entry.timestampMs).toLocaleString("ja-JP")})
               </span>
             </li>
@@ -278,7 +278,7 @@ function TestModeView(props: TestModeProps) {
   return (
     <div>
       <h3>テストモード(Mock架電)</h3>
-      <p style={{ color: "#f0883e", fontSize: "0.9rem", maxWidth: "40rem" }}>
+      <p style={{ color: "var(--warn)", fontSize: "0.9rem", maxWidth: "40rem" }}>
         実際の外部架電は行いません(Mock Call Adapter)。連絡先はテスト用のダミー値を
         入力してください。
       </p>
@@ -300,8 +300,8 @@ function TestModeView(props: TestModeProps) {
       </div>
 
       {session && (
-        <div style={{ border: "1px solid rgba(151,168,205,0.16)", padding: "0.75rem", maxWidth: "48rem" }}>
-          <p style={{ margin: "0 0 0.5rem", color: "#9aa3ba" }}>
+        <div style={{ border: "1px solid var(--border)", padding: "0.75rem", maxWidth: "48rem" }}>
+          <p style={{ margin: "0 0 0.5rem", color: "var(--text-muted)" }}>
             連絡先: {session.contact} / 状態: {inProgress ? "通話中" : "終了"}
           </p>
           <div style={{ maxHeight: "16rem", overflowY: "auto", marginBottom: "0.5rem" }}>
@@ -359,7 +359,7 @@ function TestModeView(props: TestModeProps) {
               </li>
             ))}
           </ul>
-          <p style={{ color: "#9aa3ba", fontSize: "0.85rem" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
             指摘内容は全AI社員共通の改善ナレッジへ反映される設計です(集約は次フェーズで永続化)。
           </p>
 
@@ -374,16 +374,16 @@ function TestModeView(props: TestModeProps) {
 function CallMinutesView({ session }: { session: TestCallSession }) {
   const minutes = generateCallMinutes(session.id, session.turns);
   return (
-    <div style={{ marginTop: "0.75rem", borderTop: "1px solid rgba(151,168,205,0.16)", paddingTop: "0.75rem" }}>
+    <div style={{ marginTop: "0.75rem", borderTop: "1px solid var(--border)", paddingTop: "0.75rem" }}>
       <h4>議事録(自動生成)</h4>
       <p style={{ margin: "0.25rem 0" }}>{minutes.analysis.summary}</p>
-      <p style={{ margin: "0.25rem 0", color: "#9aa3ba", fontSize: "0.85rem" }}>
+      <p style={{ margin: "0.25rem 0", color: "var(--text-muted)", fontSize: "0.85rem" }}>
         参加者: {minutes.participants.join(" / ")} ・ トーク比率(担当者):{" "}
         {Math.round(minutes.analysis.talkRatio.rep * 100)}%
       </p>
       <strong style={{ fontSize: "0.9rem" }}>決定事項</strong>
       {minutes.decisions.length === 0 ? (
-        <p style={{ margin: "0.2rem 0", color: "#9aa3ba" }}>なし</p>
+        <p style={{ margin: "0.2rem 0", color: "var(--text-muted)" }}>なし</p>
       ) : (
         <ul style={{ margin: "0.2rem 0" }}>
           {minutes.decisions.map((d) => (
@@ -393,7 +393,7 @@ function CallMinutesView({ session }: { session: TestCallSession }) {
       )}
       <strong style={{ fontSize: "0.9rem" }}>宿題・フォローアップ</strong>
       {minutes.actionItems.length === 0 ? (
-        <p style={{ margin: "0.2rem 0", color: "#9aa3ba" }}>なし</p>
+        <p style={{ margin: "0.2rem 0", color: "var(--text-muted)" }}>なし</p>
       ) : (
         <ul style={{ margin: "0.2rem 0" }}>
           {minutes.actionItems.map((a) => (
@@ -401,7 +401,7 @@ function CallMinutesView({ session }: { session: TestCallSession }) {
           ))}
         </ul>
       )}
-      <p style={{ color: "#9aa3ba", fontSize: "0.8rem", margin: "0.4rem 0 0" }}>
+      <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", margin: "0.4rem 0 0" }}>
         議事録は保存済みの会話から決定的に生成されます(LLM推論・外部送信なし)。
       </p>
     </div>
@@ -421,7 +421,7 @@ function AutoCallModeView({
   return (
     <div>
       <h3>オートコールモード(準備中・承認待ち)</h3>
-      <p style={{ color: "#f0883e", fontWeight: "bold" }}>
+      <p style={{ color: "var(--warn)", fontWeight: "bold" }}>
         本番架電は無効です。現フェーズではオートコールを開始できません。
       </p>
       <p style={{ maxWidth: "40rem" }}>
@@ -442,11 +442,11 @@ function AutoCallModeView({
                   disabled={locked}
                   onChange={() => onToggle(gate)}
                 />
-                <span style={{ color: satisfied ? "#3fb950" : undefined }}>
+                <span style={{ color: satisfied ? "var(--ok)" : undefined }}>
                   {AUTOCALL_GATE_LABEL_JA[gate]}({satisfied ? "充足" : "未充足"})
                 </span>
                 {locked && (
-                  <span style={{ color: "#f0883e", fontSize: "0.8rem" }}>
+                  <span style={{ color: "var(--warn)", fontSize: "0.8rem" }}>
                     🔒 {LOCKED_GATE_REASON_JA}
                   </span>
                 )}
@@ -458,7 +458,7 @@ function AutoCallModeView({
       <button type="button" disabled={!allowed}>
         {allowed ? "オートコール開始" : "オートコール開始(承認待ち)"}
       </button>
-      <p style={{ color: "#9aa3ba", fontSize: "0.85rem", maxWidth: "40rem" }}>
+      <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "40rem" }}>
         実アカウント連携ゲートは未実装のためロックされており、本フェーズでは
         全ゲート充足に到達できません(本番架電は構造的に不可)。
       </p>
