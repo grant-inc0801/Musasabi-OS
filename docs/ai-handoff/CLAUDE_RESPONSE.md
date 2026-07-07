@@ -3,6 +3,28 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-07 — Self Improvement: 短期→長期メモリ昇格(第18章)
+
+### 実装内容
+ノンストップ実行の最終フェーズ。Development Bible 第3章優先順位の最後
+「7. Self Improvement」として、第9章 Memory の昇格戦略を実装した。
+
+- **`packages/self-improvement`**(スタブから実装へ): `promoteRepeatedShortTerm` —
+  同じ行動(action)の短期メモリが2回以上繰り返された場合、内容を集約した
+  長期ナレッジ1件へ決定的に昇格。`promoted:<action>` タグで二重昇格を防止。
+  テスト4件
+- **Company Brain に「自己改善」セクション**: 手動の昇格ボタン。昇格件数/対象なしを
+  表示し、昇格後は件数タイル・履歴に即時反映
+- LLM推論・外部送信なし(すべてローカルの決定的ロジック)
+
+### テスト結果
+- 全 workspace テスト **224件 pass・fail 0**(self-improvement 4件を追加)
+- vite build 成功。Playwright で昇格→長期エントリ表示→二重昇格防止を実画面確認
+
+### これで Development Bible 第3章の優先順位 1〜7 がすべて着手済み
+残るは承認が必要な事項のみ: 実API接続(FileMaker/Zoom Phone/VOICEVOX/whisper.cpp)、
+実画面キャプチャ・実OCR、GitHub Releases 公開、AutoCall 本番有効化。
+
 ## 2026-07-07 — Automation: 手動オプトイン操作記録→再実行(第12章)
 
 ### 実装内容

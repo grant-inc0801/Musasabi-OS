@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { MEMORY_CATEGORIES, MEMORY_CATEGORY_LABEL_JA, MemoryEngine } from "@musasabi/memory";
 import type { MemoryCategory } from "@musasabi/memory";
-import { loadMemoryRecords } from "../../lib/memoryStorage";
+import { loadMemoryRecords, promoteMemoriesNow } from "../../lib/memoryStorage";
 
 // Company Brain ページ(Development Bible 第9章 Brain Memory Engine)。
 // アプリ内の行動記録(Memory)を6分類の件数タイルと履歴一覧で可視化する。
@@ -10,9 +10,21 @@ import { loadMemoryRecords } from "../../lib/memoryStorage";
 const HISTORY_LIMIT = 30;
 
 export function CompanyBrainPage() {
-  const engine = useMemo(() => new MemoryEngine(loadMemoryRecords()), []);
+  const [reloadKey, setReloadKey] = useState(0);
+  const engine = useMemo(() => new MemoryEngine(loadMemoryRecords()), [reloadKey]);
   const [category, setCategory] = useState<MemoryCategory | "all">("all");
   const [text, setText] = useState("");
+  const [promotedNote, setPromotedNote] = useState<string | null>(null);
+
+  function handlePromote(): void {
+    const count = promoteMemoriesNow();
+    setPromotedNote(
+      count === 0
+        ? "昇格対象はありませんでした(同じ行動の短期メモリが2回以上必要です)。"
+        : `${count}件を長期ナレッジへ昇格しました。`,
+    );
+    setReloadKey((k) => k + 1);
+  }
 
   const counts = engine.countByCategory();
   const records = engine.query({
@@ -40,6 +52,18 @@ export function CompanyBrainPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section aria-label="自己改善">
+        <h3 style={{ marginTop: 0 }}>自己改善(短期→長期の昇格)</h3>
+        <p style={{ color: "#9aa3ba", fontSize: "0.85rem", maxWidth: "44rem" }}>
+          同じ行動の短期メモリが繰り返された場合、長期ナレッジへ昇格できます
+          (Development Bible 第9章の昇格戦略・第18章 Self Evolution。決定的ロジックのみ)。
+        </p>
+        <button type="button" onClick={handlePromote}>
+          繰り返された短期メモリを長期へ昇格
+        </button>
+        {promotedNote && <p style={{ color: "#3fb950", margin: "0.5rem 0 0" }}>{promotedNote}</p>}
       </section>
 
       <section aria-label="Memory履歴">

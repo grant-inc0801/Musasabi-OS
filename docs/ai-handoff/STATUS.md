@@ -4,7 +4,13 @@
 **Updated:** 2026-07-07
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Automation 手動オプトイン操作記録→再実行 — 第12章)
+## 直近の完了内容(Self Improvement 短期→長期メモリ昇格 — 第18章)
+繰り返された短期メモリ(同一行動2回以上)を長期ナレッジへ決定的に昇格する
+`packages/self-improvement` を実装し、Company Brain に手動昇格UIを追加
+(二重昇格防止つき)。全 workspace テスト224件 pass・fail 0。
+**これで Development Bible 第3章の優先順位1〜7がすべて着手済み。**
+
+## それ以前の完了(Automation 手動オプトイン操作記録→再実行 — 第12章)
 承認済みの手動オプトイン方針で Automation を実装。「記録を開始」中のみアプリ内
 ページ遷移を記録し、ルーチンとして保存・再実行(再実行回数を追跡)。記録・再実行は
 Memory へ監査記録。他アプリ・OS操作の記録なし・外部送信なし。

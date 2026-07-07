@@ -1,3 +1,6 @@
-// Self Improvement Engine。リファクタリング提案・改善提案・性能改善を扱う。
-// Development Bible 第18章を参照。優先順位の最後(Automation の後)に実装する。
-export {};
+// Self Improvement Engine(Development Bible 第18章 Self Evolution)。
+// 現フェーズは Memory の昇格戦略(第9章): 繰り返された短期メモリを
+// 長期ナレッジへ決定的に昇格する。LLM推論・外部送信なし。
+
+export { PROMOTION_THRESHOLD, promoteRepeatedShortTerm } from "./promoteMemories";
+export type { PromotionResult } from "./promoteMemories";
