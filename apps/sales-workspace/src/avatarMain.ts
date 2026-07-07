@@ -15,6 +15,12 @@ import type { AssistantPanelState, CallMode } from "@musasabi/call-training";
 import { AvatarManager } from "@musasabi/avatar-3d";
 import { loadEmployeeSettings } from "./lib/employeeSettings";
 import { loadAvatarSettings, saveAvatarSettings } from "./lib/avatarSettings";
+import {
+  AVATAR_APPEARANCE_KEY,
+  AVATAR_VRM_UPDATED_KEY,
+  loadAvatarAppearance,
+} from "./lib/avatarAppearance";
+import { loadVrmBlob } from "./lib/vrmStore";
 
 // 右下常駐アバターウィンドウ本体(D-20260706-004)。
 // apps/desktop/src-tauri/src/lib.rs が avatar.html として右下に生成する。
@@ -49,6 +55,7 @@ type Avatar3d = {
   renderFrame: (timeMs: number) => void;
   resize: (px: number) => void;
   loadVrm: (url: string) => Promise<void>;
+  setAppearance: (a: { bodyColor: string; bellyColor: string; eyeColor: string }) => void;
 };
 let avatar3d: Avatar3d | null = null;
 
@@ -66,11 +73,13 @@ async function initAvatar3d(): Promise<void> {
     container.textContent = ""; // 絵文字を消してcanvasへ置き換え
     container.appendChild(canvas);
     renderer.resize(avatarSizePx);
+    renderer.setAppearance(loadAvatarAppearance());
     avatar3d = {
       manager,
       renderFrame: (t) => renderer.renderFrame(t),
       resize: (px) => renderer.resize(px),
       loadVrm: (url) => manager.loadAvatar(url),
+      setAppearance: (a) => renderer.setAppearance(a),
     };
     const loop = (t: number): void => {
       manager.tick(t);
@@ -78,11 +87,36 @@ async function initAvatar3d(): Promise<void> {
       requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
+    // 設定画面で保存されたVRMがあれば読み込む(IndexedDB共有)。
+    void loadSavedVrm();
   } catch {
     // WebGLが使えない環境では絵文字プレースホルダーのまま動かす。
     avatar3d = null;
   }
 }
+
+/** 設定画面(アバター作成)で保存されたVRMを常駐アバターへ反映する。 */
+async function loadSavedVrm(): Promise<void> {
+  if (!avatar3d) return;
+  try {
+    const blob = await loadVrmBlob();
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    await avatar3d.loadVrm(url).finally(() => URL.revokeObjectURL(url));
+  } catch {
+    // VRMが壊れている場合は標準ムササビのまま続行する。
+  }
+}
+
+// 設定画面(別ウィンドウ)での「保存して反映」を storage イベントで検知して反映する。
+window.addEventListener("storage", (event) => {
+  if (event.key === AVATAR_APPEARANCE_KEY) {
+    avatar3d?.setAppearance(loadAvatarAppearance());
+  } else if (event.key === AVATAR_VRM_UPDATED_KEY) {
+    avatar3d?.setAppearance(loadAvatarAppearance());
+    void loadSavedVrm();
+  }
+});
 
 function el<T extends HTMLElement>(id: string): T | null {
   return document.getElementById(id) as T | null;
@@ -104,8 +138,16 @@ const BUBBLE_SIZE = { w: 340, h: 240 };
 
 function desiredWindowSize(): { w: number; h: number } {
   if (panelState.panelOpen) {
-    // アバターサイズに依存しない固定サイズ(スライダー中に窓が動かないように)。
-    return PANEL_SIZE;
+    // パネルの実寸を測ってウィンドウをコンテンツにフィットさせる
+    // (固定の見積もりサイズだと膜がパネルより大きく見えるバグの修正)。
+    // アバター領域はスライダー上限(AVATAR_MAX)分だけ確保し、スライダー操作では
+    // ウィンドウを動かさない方針は維持する。
+    const panelEl = el("panel");
+    const panelH =
+      panelEl && !panelEl.classList.contains("hidden") && panelEl.offsetHeight > 0
+        ? panelEl.offsetHeight
+        : PANEL_SIZE.h - AVATAR_MAX - 50;
+    return { w: PANEL_SIZE.w, h: panelH + 8 + HANDLE_HEIGHT + AVATAR_MAX + 16 };
   }
   if (panelState.bubble !== null) {
     return { w: BUBBLE_SIZE.w, h: BUBBLE_SIZE.h + avatarSizePx };
@@ -279,33 +321,8 @@ function setupUi(): void {
   el<HTMLInputElement>("size-slider")?.addEventListener("input", (event) => {
     setAvatarSize(Number((event.target as HTMLInputElement).value));
   });
-  // VRoid Studio 製 VRM の読み込み(ローカルファイルのみ。外部送信なし)。
-  el("load-vrm")?.addEventListener("click", () => {
-    el<HTMLInputElement>("vrm-file")?.click();
-  });
-  el<HTMLInputElement>("vrm-file")?.addEventListener("change", (event) => {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) {
-      return;
-    }
-    if (!avatar3d) {
-      panelState = showBubbleState("この環境では3D表示を利用できません(WebGL無効)。");
-      renderPanel();
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    avatar3d
-      .loadVrm(url)
-      .then(() => {
-        panelState = showBubbleState(`VRMアバターを読み込みました: ${file.name}`);
-        renderPanel();
-      })
-      .catch((error) => {
-        panelState = showBubbleState(`VRMの読み込みに失敗しました: ${String(error)}`);
-        renderPanel();
-      })
-      .finally(() => URL.revokeObjectURL(url));
-  });
+  // VRMの取り込みは管理画面の「設定 > アバター作成」へ移行した(ユーザーFB第4弾)。
+  // 保存されたVRM/カラーは storage イベント経由でこのウィンドウへ反映される。
 }
 
 function showBubbleState(text: string): AssistantPanelState {

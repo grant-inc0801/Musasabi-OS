@@ -15,4 +15,14 @@ export type { FetchJson } from "./SerpApiGoogleMapsProvider";
 export { summarizeCallList } from "./aggregate";
 export type { CallListSummary } from "./aggregate";
 export { callListToRows } from "./toRows";
+export {
+  DELIVERY_MEDIA,
+  MockMediaSearchProvider,
+  SerpApiMediaSearchProvider,
+  applyMediaToResults,
+  buildMediaSearchUrl,
+  mediaStoreKey,
+  parseMediaSearchResponse,
+} from "./mediaSearch";
+export type { MediaSearchProvider } from "./mediaSearch";
 export { buildXlsx } from "./xlsx";

@@ -25,6 +25,15 @@
           "url": "https://serpapi.com/*"
         }
       ]
+    },
+    "dialog:default",
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [
+        {
+          "path": "**"
+        }
+      ]
     }
   ]
 }

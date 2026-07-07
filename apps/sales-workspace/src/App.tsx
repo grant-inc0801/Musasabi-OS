@@ -2,6 +2,7 @@ import { useState } from "react";
 import { isSetupComplete } from "@musasabi/shared";
 import { ConnectionSettingsPanel } from "./components/Settings/ConnectionSettingsPanel";
 import { EmployeeSettingsPanel } from "./components/Settings/EmployeeSettingsPanel";
+import { AvatarStudioPanel } from "./components/Settings/AvatarStudioPanel";
 import { CompanyPage } from "./components/Company/CompanyPage";
 import { SalesBrainPage } from "./components/SalesBrain/SalesBrainPage";
 import { FirstRunSetup } from "./components/Setup/FirstRunSetup";
@@ -215,6 +216,7 @@ export function App() {
           <CompanyPage onNavigateToCallTraining={() => setPage("sales_call_training")} />
         ) : (
           <>
+            <AvatarStudioPanel />
             <EmployeeSettingsPanel />
             <ConnectionSettingsPanel />
           </>

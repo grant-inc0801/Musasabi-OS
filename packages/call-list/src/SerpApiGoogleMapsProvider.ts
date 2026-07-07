@@ -4,6 +4,7 @@ import type {
   PlaceSearchResult,
   RestaurantRecord,
 } from "./types";
+import { PREFECTURE_WIDE_LABEL } from "./types";
 
 // SerpAPI(serpapi.com)の google_maps エンジン経由で実店舗情報を取得する
 // プロバイダ(ユーザー承認済み・APIキーはユーザーが実行時に入力)。
@@ -100,17 +101,19 @@ export class SerpApiGoogleMapsProvider implements MapsPlaceProvider {
     private readonly fetchJson: FetchJson,
   ) {}
 
-  /** 市区町村ごとに1リクエスト(1ページ・最大約20件)。 */
+  /** 市区町村ごとに1リクエスト(1ページ・最大約20件)。未入力なら都道府県全域で1リクエスト。 */
   async search(query: PlaceSearchQuery): Promise<PlaceSearchResult[]> {
     const cities = query.cities.map((c) => c.trim()).filter((c) => c !== "");
+    const targets = cities.length > 0 ? cities : [""];
     const out: PlaceSearchResult[] = [];
-    for (const city of cities) {
+    for (const city of targets) {
+      const label = city === "" ? PREFECTURE_WIDE_LABEL : city;
       const payload = await this.fetchJson(buildSerpApiUrl(this.apiKey, query.prefecture, city));
       const error = (payload as { error?: unknown } | null)?.error;
       if (typeof error === "string") {
-        throw new Error(`SerpAPIエラー(${city}): ${error}`);
+        throw new Error(`SerpAPIエラー(${label}): ${error}`);
       }
-      out.push(parseSerpApiMapsResponse(payload, city));
+      out.push(parseSerpApiMapsResponse(payload, label));
     }
     return out;
   }

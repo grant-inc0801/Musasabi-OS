@@ -4,6 +4,7 @@ import type {
   PlaceSearchResult,
   RestaurantRecord,
 } from "./types";
+import { PREFECTURE_WIDE_LABEL } from "./types";
 
 // Mock 版 Googleマップ店舗情報プロバイダ。
 // 実 Google Maps / Places API へは接続しない(承認後に実装を差し替える)。
@@ -60,6 +61,10 @@ function digits(random: () => number, count: number): string {
 
 function buildRecord(prefecture: string, city: string, index: number): RestaurantRecord {
   const random = rng(hashSeed(`${prefecture}/${city}/${index}`));
+  // 全域検索では店名・住所に「全域」を出さず都道府県名ベースにする。
+  const isWide = city === PREFECTURE_WIDE_LABEL;
+  const areaName = isWide ? prefecture.replace(/[都道府県]$/u, "") : city;
+  const addressCity = isWide ? "" : city;
   const genre = pick(random, GENRES);
   const deliveryAvailable = random() < 0.55;
   const services = deliveryAvailable
@@ -69,9 +74,9 @@ function buildRecord(prefecture: string, city: string, index: number): Restauran
     services.push(pick(random, DELIVERY_SERVICES));
   }
   return {
-    storeName: `${pick(random, STORE_PREFIX)} ${city}${pick(random, STORE_SUFFIX)} ${index + 1}号店`,
+    storeName: `${pick(random, STORE_PREFIX)} ${areaName}${pick(random, STORE_SUFFIX)} ${index + 1}号店`,
     postalCode: `${digits(random, 3)}-${digits(random, 4)}`,
-    address: `${prefecture}${city}${Math.floor(random() * 9) + 1}丁目${Math.floor(random() * 20) + 1}-${Math.floor(random() * 15) + 1}`,
+    address: `${prefecture}${addressCity}${Math.floor(random() * 9) + 1}丁目${Math.floor(random() * 20) + 1}-${Math.floor(random() * 15) + 1}`,
     phone: `0${Math.floor(random() * 9) + 1}-${digits(random, 4)}-${digits(random, 4)}`,
     genre,
     businessHours: pick(random, HOURS),
@@ -85,8 +90,10 @@ export class MockGoogleMapsProvider implements MapsPlaceProvider {
 
   search(query: PlaceSearchQuery): Promise<PlaceSearchResult[]> {
     const cities = query.cities.map((c) => c.trim()).filter((c) => c !== "");
+    // 市区町村が未入力なら都道府県全域として1件の検索にする。
+    const targets = cities.length > 0 ? cities : [PREFECTURE_WIDE_LABEL];
     return Promise.resolve(
-      cities.map((city) => {
+      targets.map((city) => {
         // 市区町村ごとに8〜15件を決定的に生成する。
         const count = 8 + (hashSeed(`${query.prefecture}/${city}`) % 8);
         const records = Array.from({ length: count }, (_, i) =>
