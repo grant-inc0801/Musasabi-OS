@@ -13,6 +13,9 @@ import { SalesCallTrainingPage } from "./components/Sales/SalesCallTrainingPage"
 import { PublishingPage } from "./components/Publishing/PublishingPage";
 import { PlanningPage } from "./components/Planning/PlanningPage";
 import { MarketResearchPage } from "./components/MarketResearch/MarketResearchPage";
+import { MarketingPage } from "./components/BackOffice/MarketingPage";
+import { AccountingPage } from "./components/BackOffice/AccountingPage";
+import { HrPage } from "./components/BackOffice/HrPage";
 import { DeptDetailPage } from "./components/Department/DeptDetailPage";
 import { PluginsPage } from "./components/Plugins/PluginsPage";
 import { CompanyBrainPage } from "./components/Memory/CompanyBrainPage";
@@ -39,6 +42,9 @@ type Page =
   | "development"
   | "dev_call_list"
   | "support"
+  | "marketing"
+  | "accounting"
+  | "hr"
   | "company"
   | "company_brain"
   | "vision"
@@ -58,6 +64,9 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   development: "開発部",
   dev_call_list: "開発部 — 架電リスト制作課",
   support: "サポート部",
+  marketing: "マーケティング部",
+  accounting: "経理部",
+  hr: "人事部",
   company: "AI社員管理",
   company_brain: "Company Brain",
   vision: "Vision(画面解析)",
@@ -92,6 +101,9 @@ const NAV_TREE: ReadonlyArray<{
     ],
   },
   { label: "サポート部", page: "support" },
+  { label: "マーケティング部", page: "marketing" },
+  { label: "経理部", page: "accounting" },
+  { label: "人事部", page: "hr" },
 ];
 
 const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
@@ -251,6 +263,12 @@ export function App() {
           <CallListPage />
         ) : page === "support" ? (
           <DeptDetailPage deptId="dept-support" />
+        ) : page === "marketing" ? (
+          <MarketingPage />
+        ) : page === "accounting" ? (
+          <AccountingPage />
+        ) : page === "hr" ? (
+          <HrPage />
         ) : page === "company_brain" ? (
           <CompanyBrainPage />
         ) : page === "vision" ? (
