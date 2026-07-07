@@ -4,7 +4,13 @@
 **Updated:** 2026-07-07
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Self Improvement 短期→長期メモリ昇格 — 第18章)
+## 直近の完了内容(開発部「架電リスト制作課」新設)
+ユーザー指示により開発部に架電リスト制作課を追加。都道府県プルダウン+市区町村の
+複数自由入力→検索(現在はMock。実Google Maps APIは承認後)→件数集計→
+Excel(.xlsx)出力(依存なしXLSXビルダー・8項目)。検索・出力は Memory へ記録。
+全 workspace テスト230件 pass・fail 0。
+
+## それ以前の完了(Self Improvement 短期→長期メモリ昇格 — 第18章)
 繰り返された短期メモリ(同一行動2回以上)を長期ナレッジへ決定的に昇格する
 `packages/self-improvement` を実装し、Company Brain に手動昇格UIを追加
 (二重昇格防止つき)。全 workspace テスト224件 pass・fail 0。

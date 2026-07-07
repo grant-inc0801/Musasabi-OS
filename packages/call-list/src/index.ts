@@ -1,0 +1,10 @@
+// 架電リスト制作課(開発部)— Googleマップ由来の飲食店情報抽出とExcel出力。
+// 現フェーズの検索は Mock のみ(実 Google Maps / Places API への接続は承認後)。
+// Excel(.xlsx)は依存ライブラリなしで生成する。外部送信なし。
+
+export * from "./types";
+export { MockGoogleMapsProvider } from "./MockGoogleMapsProvider";
+export { summarizeCallList } from "./aggregate";
+export type { CallListSummary } from "./aggregate";
+export { callListToRows } from "./toRows";
+export { buildXlsx } from "./xlsx";

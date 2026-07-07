@@ -13,6 +13,7 @@ import { PluginsPage } from "./components/Plugins/PluginsPage";
 import { CompanyBrainPage } from "./components/Memory/CompanyBrainPage";
 import { VisionPage } from "./components/Vision/VisionPage";
 import { AutomationPage } from "./components/Automation/AutomationPage";
+import { CallListPage } from "./components/CallList/CallListPage";
 import { noteNavigation } from "./lib/automationStorage";
 import { loadSetupState } from "./lib/setupStorage";
 
@@ -25,6 +26,7 @@ type Page =
   | "sales_brain"
   | "publishing"
   | "development"
+  | "dev_call_list"
   | "support"
   | "company"
   | "company_brain"
@@ -39,6 +41,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   sales_brain: "営業部 — Sales Brain",
   publishing: "出版部",
   development: "開発部",
+  dev_call_list: "開発部 — 架電リスト制作課",
   support: "サポート部",
   company: "AI社員管理",
   company_brain: "Company Brain",
@@ -63,7 +66,13 @@ const NAV_TREE: ReadonlyArray<{
     ],
   },
   { label: "出版部", page: "publishing" },
-  { label: "開発部", page: "development" },
+  {
+    label: "開発部",
+    children: [
+      { label: "部門トップ", page: "development" },
+      { label: "架電リスト制作課", page: "dev_call_list" },
+    ],
+  },
   { label: "サポート部", page: "support" },
 ];
 
@@ -168,6 +177,8 @@ export function App() {
           <PublishingPage />
         ) : page === "development" ? (
           <DeptDetailPage deptId="dept-development" />
+        ) : page === "dev_call_list" ? (
+          <CallListPage />
         ) : page === "support" ? (
           <DeptDetailPage deptId="dept-support" />
         ) : page === "company_brain" ? (
