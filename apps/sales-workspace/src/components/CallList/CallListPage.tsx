@@ -1,25 +1,40 @@
 import { useState } from "react";
 import {
   MockGoogleMapsProvider,
+  SerpApiGoogleMapsProvider,
   PREFECTURES_JA,
   buildXlsx,
   callListToRows,
   summarizeCallList,
 } from "@musasabi/call-list";
-import type { CallListSummary, PlaceSearchResult } from "@musasabi/call-list";
+import type { CallListSummary, MapsPlaceProvider, PlaceSearchResult } from "@musasabi/call-list";
 import { recordMemory } from "../../lib/memoryStorage";
+import { fetchJsonExternal } from "../../lib/httpClient";
 
 // 架電リスト制作課(開発部)。Googleマップ由来の飲食店情報を抽出し、
-// 件数集計と Excel(.xlsx)出力を行う。現フェーズの検索は Mock プロバイダのみ
-// (実 Google Maps / Places API への接続は承認後に差し替え)。外部送信なし。
+// 件数集計と Excel(.xlsx)出力を行う。
+// - APIキー未入力: Mock プロバイダ(決定的サンプルデータ)
+// - SerpAPIキー入力時: 実データ取得(ユーザー承認済み)。キーはこの画面の
+//   メモリ上でのみ保持し、localStorage 等へは保存しない(実認証情報の保存なし)。
 
-const provider = new MockGoogleMapsProvider();
+const mockProvider = new MockGoogleMapsProvider();
+
+function selectProvider(apiKey: string): MapsPlaceProvider {
+  const key = apiKey.trim();
+  return key === ""
+    ? mockProvider
+    : new SerpApiGoogleMapsProvider(key, fetchJsonExternal);
+}
 
 export function CallListPage() {
   const [prefecture, setPrefecture] = useState<string>(PREFECTURES_JA[12]); // 東京都
   const [cities, setCities] = useState<string[]>([""]);
   const [results, setResults] = useState<PlaceSearchResult[] | null>(null);
   const [summary, setSummary] = useState<CallListSummary | null>(null);
+  // SerpAPIキー(メモリ保持のみ。localStorage等へ保存しない)
+  const [apiKey, setApiKey] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [dataSource, setDataSource] = useState<"mock" | "serpapi" | null>(null);
 
   function updateCity(index: number, value: string): void {
     setCities((prev) => prev.map((c, i) => (i === index ? value : c)));
@@ -33,23 +48,33 @@ export function CallListPage() {
     setCities((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== index)));
   }
 
-  function handleSearch(): void {
+  async function handleSearch(): Promise<void> {
     const filled = cities.map((c) => c.trim()).filter((c) => c !== "");
     if (filled.length === 0) {
       alert("市区町村を1件以上入力してください。");
       return;
     }
-    const found = provider.search({ prefecture, cities: filled });
-    setResults(found);
-    const sum = summarizeCallList(found);
-    setSummary(sum);
-    recordMemory({
-      category: "work",
-      actor: "MUSA-301",
-      action: "架電リストを検索",
-      detail: `${prefecture} ${filled.join("・")} / ${sum.total}件(Mockデータ)`,
-      tags: ["call-list", "dept-development"],
-    });
+    const provider = selectProvider(apiKey);
+    const source = provider === mockProvider ? "mock" : "serpapi";
+    setSearching(true);
+    try {
+      const found = await provider.search({ prefecture, cities: filled });
+      setResults(found);
+      setDataSource(source);
+      const sum = summarizeCallList(found);
+      setSummary(sum);
+      recordMemory({
+        category: "work",
+        actor: "MUSA-301",
+        action: "架電リストを検索",
+        detail: `${prefecture} ${filled.join("・")} / ${sum.total}件(${source === "serpapi" ? "SerpAPI実データ" : "Mockデータ"})`,
+        tags: ["call-list", "dept-development"],
+      });
+    } catch (error) {
+      alert(`検索に失敗しました: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setSearching(false);
+    }
   }
 
   function handleExport(): void {
@@ -81,11 +106,31 @@ export function CallListPage() {
     <>
       <section aria-label="検索条件">
         <h3 style={{ marginTop: 0 }}>架電リスト制作(飲食店抽出)</h3>
-        <p style={{ color: "#f0883e", fontSize: "0.85rem", maxWidth: "44rem" }}>
-          現在はMockデータで動作します(実 Google Maps API への接続は承認後)。
+        <p style={{ color: "#9aa3ba", fontSize: "0.85rem", maxWidth: "44rem" }}>
           抽出項目: 店舗名・郵便番号・住所・電話番号・ジャンル・営業時間・
-          デリバリー有無・デリバリーサービス媒体。
+          デリバリー有無・デリバリーサービス媒体。SerpAPIキーを入力すると
+          Googleマップの実データを取得します(1市区町村につき1リクエスト・最大約20件)。
+          未入力の場合はMockデータで動作します。
         </p>
+
+        <div style={{ marginBottom: "0.75rem" }}>
+          <label>
+            SerpAPIキー(実データ取得用・任意)
+            <br />
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="未入力の場合はMockデータ"
+              style={{ width: "24rem" }}
+              autoComplete="off"
+            />
+          </label>
+          <p style={{ color: "#9aa3ba", fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
+            キーはこの画面のメモリ上でのみ使用し、保存・記録はしません(アプリ再起動で消えます)。
+            接続先は serpapi.com のみに制限されています。
+          </p>
+        </div>
 
         <div style={{ marginBottom: "0.75rem" }}>
           <label>
@@ -124,8 +169,8 @@ export function CallListPage() {
           </button>
         </div>
 
-        <button type="button" onClick={handleSearch}>
-          検索
+        <button type="button" onClick={() => void handleSearch()} disabled={searching}>
+          {searching ? "検索中…" : "検索"}
         </button>{" "}
         <button type="button" onClick={handleExport} disabled={!results || results.length === 0}>
           Excel出力(.xlsx)
@@ -135,6 +180,11 @@ export function CallListPage() {
       {summary && (
         <section aria-label="件数集計">
           <h3 style={{ marginTop: 0 }}>件数集計</h3>
+          <p style={{ color: dataSource === "serpapi" ? "#3fb950" : "#f0883e", fontSize: "0.85rem" }}>
+            データソース: {dataSource === "serpapi" ? "SerpAPI(Googleマップ実データ)" : "Mockデータ(サンプル)"}
+            {dataSource === "serpapi" &&
+              " ※デリバリー媒体はGoogleマップの検索結果に含まれないため空欄になります"}
+          </p>
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
             <div className="card" style={{ minWidth: "8rem", textAlign: "center" }}>
               <div style={{ color: "#9aa3ba", fontSize: "0.8rem" }}>合計</div>

@@ -83,15 +83,17 @@ function buildRecord(prefecture: string, city: string, index: number): Restauran
 export class MockGoogleMapsProvider implements MapsPlaceProvider {
   readonly name = "mock-google-maps";
 
-  search(query: PlaceSearchQuery): PlaceSearchResult[] {
+  search(query: PlaceSearchQuery): Promise<PlaceSearchResult[]> {
     const cities = query.cities.map((c) => c.trim()).filter((c) => c !== "");
-    return cities.map((city) => {
-      // 市区町村ごとに8〜15件を決定的に生成する。
-      const count = 8 + (hashSeed(`${query.prefecture}/${city}`) % 8);
-      const records = Array.from({ length: count }, (_, i) =>
-        buildRecord(query.prefecture, city, i),
-      );
-      return { city, records };
-    });
+    return Promise.resolve(
+      cities.map((city) => {
+        // 市区町村ごとに8〜15件を決定的に生成する。
+        const count = 8 + (hashSeed(`${query.prefecture}/${city}`) % 8);
+        const records = Array.from({ length: count }, (_, i) =>
+          buildRecord(query.prefecture, city, i),
+        );
+        return { city, records };
+      }),
+    );
   }
 }

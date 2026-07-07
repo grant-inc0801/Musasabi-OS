@@ -17,6 +17,7 @@
     "@musasabi/voice-engine": "*",
     "@pixiv/three-vrm": "^3.5.4",
     "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-http": "^2.4.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "three": "^0.185.1",

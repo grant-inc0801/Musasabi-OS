@@ -17,6 +17,14 @@
     "core:window:allow-outer-position",
     "core:window:allow-inner-size",
     "core:window:allow-outer-size",
-    "core:window:allow-start-dragging"
+    "core:window:allow-start-dragging",
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "https://serpapi.com/*"
+        }
+      ]
+    }
   ]
 }
