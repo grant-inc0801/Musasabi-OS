@@ -60,3 +60,4 @@ export {
   type DepartmentStatus,
 } from "./summary";
 export * from "./commandCenter";
+export * from "./marketResearch";

@@ -1,3 +1,5 @@
+import { buildResearchAndPublishingSummaryJa } from "./marketResearch";
+
 // Musasabi Command Center のデータモデル(Directive D-20260706-007)。
 // 部署パネル・ステータス色・部署間連携・アシスタント要約(吹き出し)を扱う。
 // β版は Mock データ(決定論)。実API接続・実架電はしない。
@@ -125,15 +127,39 @@ export const COMMAND_DEPARTMENTS: readonly CommandDepartment[] = [
     progressPercent: 60,
     logs: ["13:10 採用計画書を提出(承認待ち)"],
   },
+  {
+    id: "market_research",
+    name: "市場調査部",
+    memberCount: 5,
+    status: "working",
+    tasks: [
+      "AI最新情報の収集(Mock)",
+      "新AIサービスの調査・技術評価",
+      "AIサービス組み合わせ研究",
+      "開発部・企画部への提案作成",
+    ],
+    progressPercent: 62,
+    logs: [
+      "14:10 新AI音声サービス3件を発見",
+      "13:45 日本語STTモデルを評価(採用候補)",
+      "13:20 開発部へ技術提案を送付",
+      "12:40 CEO提案資料を整理(承認待ち)",
+    ],
+  },
 ];
 
-/** 部署間連携(Directive の例)。 */
+/** 部署間連携(D-20260706-007 + D-20260706-009 で市場調査部の連携を追加)。 */
 export const DEPT_CONNECTIONS: readonly DeptConnection[] = [
   { from: "sales", to: "support" },
   { from: "support", to: "marketing" },
   { from: "publishing", to: "planning" },
   { from: "planning", to: "accounting" },
   { from: "development", to: "hr" },
+  // 市場調査部: 開発部・企画部・出版部と連携(新技術→ツール化/商品化/出版活用)
+  { from: "market_research", to: "development" },
+  { from: "market_research", to: "planning" },
+  { from: "market_research", to: "publishing" },
+  { from: "development", to: "planning" },
 ];
 
 /** 全社サマリー(左サイドバー表示用)。 */
@@ -217,6 +243,8 @@ export function buildAssistantSummaryJa(departments: readonly CommandDepartment[
     if (d.errorCause) lines.push(`原因は${d.errorCause}。`);
     if (d.errorFix) lines.push(`${d.errorFix}。`);
   }
+  // 市場調査部・出版部クリーン運営の要約(D-20260706-009)
+  lines.push(...buildResearchAndPublishingSummaryJa());
   const avg = Math.round(
     departments.reduce((sum, d) => sum + d.progressPercent, 0) / Math.max(departments.length, 1),
   );

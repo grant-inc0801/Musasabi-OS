@@ -1,5 +1,12 @@
-import { DEPT_STATUS_COLOR, DEPT_STATUS_LABEL_JA } from "@musasabi/ai-company";
+import {
+  CLEAN_CHECK_STATUS_COLOR,
+  DEPT_STATUS_COLOR,
+  DEPT_STATUS_LABEL_JA,
+  PUBLISHING_CLEAN_CHECKS,
+  PUBLISHING_STAFF,
+} from "@musasabi/ai-company";
 import type { CommandDepartment } from "@musasabi/ai-company";
+import { MarketResearchDetail } from "./MarketResearchDetail";
 
 // 右側: 部署詳細パネル(D-20260706-007)。部署パネルのクリックで表示。
 // 営業部はコールシステム関連のMock情報を表示する(実架電なし)。
@@ -91,6 +98,46 @@ function SalesCallSystemBlock({ live }: { live?: SalesLiveProps }) {
   );
 }
 
+/**
+ * 出版部のクリーン運営/規約チェック(D-20260706-009)。AI編集長が
+ * 利用ルール・著作権・類似性・出版可否をMockで管理する。実出版・実投稿はしない。
+ */
+function PublishingCleanBlock() {
+  return (
+    <>
+      <div className="detail-block">
+        <strong>クリーン運営 / 規約チェック(Mock・AI編集長)</strong>
+        <ul style={{ margin: "0.3rem 0 0", paddingLeft: "1rem", fontSize: "0.82rem", listStyle: "none" }}>
+          {PUBLISHING_CLEAN_CHECKS.map((c) => (
+            <li key={c.item} style={{ margin: "0.2rem 0", display: "flex", alignItems: "center", gap: 6 }}>
+              <span
+                className="dept-lamp"
+                style={{
+                  background: CLEAN_CHECK_STATUS_COLOR[c.status],
+                  boxShadow: `0 0 6px ${CLEAN_CHECK_STATUS_COLOR[c.status]}`,
+                }}
+              />
+              {c.item}: {c.status}
+            </li>
+          ))}
+        </ul>
+        <p style={{ margin: "0.5rem 0 0", fontSize: "0.78rem", color: "var(--text-muted)" }}>
+          高リスク案件・新規販売チャネルはCEO/管理部の承認待ちへ回します(Mock)。
+          実出版・実投稿・実販売は行いません。
+        </p>
+      </div>
+      <div className="detail-block">
+        <strong>出版部AI社員(Mock)</strong>
+        <ul style={{ margin: "0.3rem 0 0", paddingLeft: "1.1rem", fontSize: "0.82rem" }}>
+          {PUBLISHING_STAFF.map((name) => (
+            <li key={name}>{name}</li>
+          ))}
+        </ul>
+      </div>
+    </>
+  );
+}
+
 export function DepartmentDetailPanel({
   dept,
   salesLive,
@@ -135,6 +182,8 @@ export function DepartmentDetailPanel({
       )}
 
       {dept.id === "sales" && <SalesCallSystemBlock live={salesLive} />}
+      {dept.id === "market_research" && <MarketResearchDetail />}
+      {dept.id === "publishing" && <PublishingCleanBlock />}
 
       <div className="detail-block">
         <strong>作業内容</strong>
