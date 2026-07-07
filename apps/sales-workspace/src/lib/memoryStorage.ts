@@ -1,5 +1,6 @@
 import { MemoryEngine, parseMemory, serializeMemory } from "@musasabi/memory";
 import type { MemoryCategory, MemoryRecord } from "@musasabi/memory";
+import { promoteRepeatedShortTerm } from "@musasabi/self-improvement";
 import { appLogger } from "./appLogger";
 
 // Brain Memory のローカル永続化(この端末のlocalStorageのみ。外部送信なし)。
@@ -40,4 +41,23 @@ export function recordMemory(input: {
 /** 表示用: 現在のMemory全件(新しい順)。 */
 export function loadMemoryRecords(): MemoryRecord[] {
   return loadEngine().toRecords();
+}
+
+/**
+ * Self Improvement: 繰り返された短期メモリを長期ナレッジへ昇格する(手動実行)。
+ * 昇格した件数を返す。昇格自体も監査として長期メモリに残る。
+ */
+export function promoteMemoriesNow(): number {
+  try {
+    const engine = loadEngine();
+    const { promoted } = promoteRepeatedShortTerm(engine.toRecords());
+    for (const p of promoted) {
+      engine.record({ ...p, nowMs: Date.now() });
+    }
+    localStorage.setItem(STORAGE_KEY, serializeMemory(engine.toRecords()));
+    return promoted.length;
+  } catch (error) {
+    appLogger.warn("failed to promote memories", { error: String(error) });
+    return 0;
+  }
 }
