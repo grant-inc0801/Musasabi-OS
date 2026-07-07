@@ -63,3 +63,4 @@ export * from "./commandCenter";
 export * from "./marketResearch";
 export * from "./knowledgeVault";
 export * from "./backOffice";
+export * from "./deptChat";
