@@ -21,6 +21,15 @@ import {
   loadAvatarAppearance,
 } from "./lib/avatarAppearance";
 import { loadVrmBlob } from "./lib/vrmStore";
+import {
+  AUTOMATION_LAST_RUN_KEY,
+  AUTOMATION_RECORDING_KEY,
+  isRecordingFlagOn,
+  loadRoutines,
+  sendAutomationCommand,
+} from "./lib/automationStorage";
+import { addWorkLogEntry } from "@musasabi/call-training";
+import { loadWorkLog, saveWorkLog } from "./lib/workLogStorage";
 
 // 右下常駐アバターウィンドウ本体(D-20260706-004)。
 // apps/desktop/src-tauri/src/lib.rs が avatar.html として右下に生成する。
@@ -223,14 +232,44 @@ function setAvatarSize(sizePx: number): void {
   }
 }
 
+// 2階層メニューの状態(ユーザーFB第5弾)。大項目押下で小項目を開閉する。
+type MajorMenu = "call" | "biz";
+type BizView = "learning" | "development" | "support";
+let expandedMajor: MajorMenu | null = "call";
+let bizView: BizView | null = null;
+let selectedRoutineId: string | null = null;
+
+function menuButton(
+  kind: "major" | "minor",
+  label: string,
+  active: boolean,
+  onClick: () => void,
+  withLamp = true,
+): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = kind;
+  button.classList.toggle("active", active);
+  if (withLamp) {
+    const lamp = document.createElement("span");
+    lamp.className = "lamp";
+    button.append(lamp);
+  }
+  const text = document.createElement("span");
+  text.textContent = label;
+  button.append(text);
+  button.addEventListener("click", onClick);
+  return button;
+}
+
 function renderPanel(): void {
   const panel = el("panel");
   const bubble = el("bubble");
   const modeLabel = el("mode-label");
-  const modeRow = el("mode-row");
+  const menu = el("menu");
   const modeNote = el("mode-note");
   const chatLog = el("chat-log");
-  if (!panel || !bubble || !modeLabel || !modeRow || !modeNote || !chatLog) {
+  if (!panel || !bubble || !modeLabel || !menu || !modeNote || !chatLog) {
     return;
   }
 
@@ -242,24 +281,71 @@ function renderPanel(): void {
   modeNote.textContent =
     panelState.mode === "autocall" ? "オートコールは承認待ちです(本番実行不可)" : "";
 
-  // モード切替(縦配置。該当モードに緑ランプ点灯)
-  modeRow.replaceChildren(
-    ...CALL_MODES.map((mode: CallMode) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.classList.toggle("active", mode === panelState.mode);
-      const lamp = document.createElement("span");
-      lamp.className = "lamp";
-      const label = document.createElement("span");
-      label.textContent = CALL_MODE_LABEL_JA[mode];
-      button.append(lamp, label);
-      button.addEventListener("click", () => {
-        panelState = switchMode(panelState, mode);
+  // 大項目 → 小項目の2階層メニュー(小項目に緑ランプ点灯)
+  const items: HTMLElement[] = [];
+
+  // 大項目1: コールシステム(小項目 = Learning / Test / AutoCall)
+  items.push(
+    menuButton(
+      "major",
+      `${expandedMajor === "call" ? "▾" : "▸"} コールシステム`,
+      false,
+      () => {
+        expandedMajor = expandedMajor === "call" ? null : "call";
         renderPanel();
-      });
-      return button;
-    }),
+      },
+      false,
+    ),
   );
+  if (expandedMajor === "call") {
+    for (const mode of CALL_MODES as readonly CallMode[]) {
+      items.push(
+        menuButton("minor", CALL_MODE_LABEL_JA[mode], mode === panelState.mode, () => {
+          panelState = switchMode(panelState, mode);
+          renderPanel();
+        }),
+      );
+    }
+  }
+
+  // 大項目2: 業務支援(小項目 = Learning / Development / Support)
+  items.push(
+    menuButton(
+      "major",
+      `${expandedMajor === "biz" ? "▾" : "▸"} 業務支援`,
+      false,
+      () => {
+        expandedMajor = expandedMajor === "biz" ? null : "biz";
+        renderPanel();
+      },
+      false,
+    ),
+  );
+  if (expandedMajor === "biz") {
+    const recording = isRecordingFlagOn();
+    items.push(
+      menuButton("minor", "Learning(作業内容の学習)", bizView === "learning", () => {
+        bizView = bizView === "learning" ? null : "learning";
+        renderPanel();
+      }),
+      menuButton(
+        "minor",
+        recording ? "Development(記録中…)" : "Development(自動化ツール開発)",
+        bizView === "development" || recording,
+        () => {
+          bizView = bizView === "development" ? null : "development";
+          renderPanel();
+        },
+      ),
+      menuButton("minor", "Support(自動化を実行)", bizView === "support", () => {
+        bizView = bizView === "support" ? null : "support";
+        renderPanel();
+      }),
+    );
+  }
+  menu.replaceChildren(...items);
+
+  renderBizViews();
 
   chatLog.replaceChildren(
     ...panelState.chat.map((message) => {
@@ -274,6 +360,95 @@ function renderPanel(): void {
   // 表示内容(アバターのみ/吹き出し/ミニパネル)に合わせてウィンドウをリサイズする。
   resizeWindowToContent();
 }
+
+/** 業務支援の小項目コンテンツ(Learning/Development/Support)の表示切替と中身。 */
+function renderBizViews(): void {
+  const showBiz = expandedMajor === "biz" && panelState.panelOpen;
+  el("biz-learning")?.classList.toggle("hidden", !(showBiz && bizView === "learning"));
+  el("biz-development")?.classList.toggle("hidden", !(showBiz && bizView === "development"));
+  el("biz-support")?.classList.toggle("hidden", !(showBiz && bizView === "support"));
+
+  // Development: 記録状態に応じてボタン表示を切り替え
+  const devToggle = el<HTMLButtonElement>("biz-dev-toggle");
+  const devNote = el("biz-dev-note");
+  if (devToggle && devNote) {
+    const recording = isRecordingFlagOn();
+    devToggle.textContent = recording ? "記録を停止して保存" : "記録を開始";
+    devNote.textContent = recording
+      ? "● 記録中 — メイン画面でページを移動すると操作が記録されます"
+      : "";
+  }
+
+  // Support: 保存済み自動化の名前一覧(選択中にランプ点灯。選択で実行)
+  const supportList = el("biz-support-list");
+  if (supportList && showBiz && bizView === "support") {
+    const routines = loadRoutines();
+    if (routines.length === 0) {
+      const p = document.createElement("p");
+      p.className = "hint";
+      p.textContent = "保存された自動化はまだありません(Developmentで作成できます)。";
+      supportList.replaceChildren(p);
+    } else {
+      supportList.replaceChildren(
+        ...routines.map((routine) =>
+          menuButton("minor", `${routine.name}(${routine.steps.length}操作)`, routine.id === selectedRoutineId, () => {
+            selectedRoutineId = routine.id;
+            sendAutomationCommand({ cmd: "replay", id: routine.id, ts: Date.now() });
+            panelState = showBubbleState(`自動化「${routine.name}」を実行します(メイン画面で再生)。`);
+            renderPanel();
+          }),
+        ),
+      );
+    }
+  }
+}
+
+/** 業務支援ビューのイベント登録(初期化時に1回)。 */
+function setupBizViews(): void {
+  el("biz-learn-add")?.addEventListener("click", () => {
+    const input = el<HTMLInputElement>("biz-learn-input");
+    const note = el("biz-learn-note");
+    if (!input || input.value.trim() === "") return;
+    const next = addWorkLogEntry(loadWorkLog(), {
+      departmentId: "dept-sales",
+      text: input.value,
+      nowMs: Date.now(),
+    });
+    saveWorkLog(next);
+    if (note) note.textContent = "学習素材として保存しました。";
+    input.value = "";
+    renderPanel();
+  });
+
+  el("biz-dev-toggle")?.addEventListener("click", () => {
+    const nameInput = el<HTMLInputElement>("biz-dev-name");
+    if (isRecordingFlagOn()) {
+      sendAutomationCommand({ cmd: "stop", name: nameInput?.value ?? "", ts: Date.now() });
+      panelState = showBubbleState("記録を停止しました。名前を付けて自動化を保存します。");
+      if (nameInput) nameInput.value = "";
+    } else {
+      sendAutomationCommand({ cmd: "start", ts: Date.now() });
+      panelState = showBubbleState("記録を開始しました。メイン画面で操作してください。");
+    }
+    // フラグ反映は storage イベントで来るが、体感を良くするため少し待って再描画
+    setTimeout(renderPanel, 150);
+  });
+}
+
+// メイン画面側の記録フラグ・実行完了の変化を検知してランプ/表示を更新する。
+window.addEventListener("storage", (event) => {
+  if (event.key === AUTOMATION_RECORDING_KEY) {
+    renderPanel();
+  } else if (event.key === AUTOMATION_LAST_RUN_KEY && event.newValue !== null) {
+    try {
+      const info = JSON.parse(event.newValue) as { name?: string };
+      panelState = showBubbleState(`自動化「${info.name ?? ""}」の実行が完了しました。`);
+      renderPanel();
+    } catch {
+      /* 通知のみ */
+    }
+  }
+});
 
 function handleSend(): void {
   const input = el<HTMLInputElement>("chat-input");
@@ -331,6 +506,7 @@ function showBubbleState(text: string): AssistantPanelState {
 
 renderAvatar(stateMachine.getState());
 setupUi();
+setupBizViews();
 applyAvatarSize();
 renderPanel();
 void initAvatar3d();

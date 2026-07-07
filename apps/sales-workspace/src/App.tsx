@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { isSetupComplete } from "@musasabi/shared";
 import { ConnectionSettingsPanel } from "./components/Settings/ConnectionSettingsPanel";
 import { EmployeeSettingsPanel } from "./components/Settings/EmployeeSettingsPanel";
@@ -15,7 +15,8 @@ import { CompanyBrainPage } from "./components/Memory/CompanyBrainPage";
 import { VisionPage } from "./components/Vision/VisionPage";
 import { AutomationPage } from "./components/Automation/AutomationPage";
 import { CallListPage } from "./components/CallList/CallListPage";
-import { noteNavigation } from "./lib/automationStorage";
+import { installAutomationRemoteControl, noteNavigation } from "./lib/automationStorage";
+import brandIcon from "./assets/brand-icon.png";
 import { loadSetupState } from "./lib/setupStorage";
 
 // β版管理画面(D-20260706 系 + ユーザーFB)。ダークテーマ+部門ツリー型サイドバー。
@@ -95,6 +96,15 @@ export function App() {
   function toggleDept(label: string): void {
     setExpandedDepts((prev) => ({ ...prev, [label]: !prev[label] }));
   }
+
+  // ミニパネル(業務支援)からの遠隔コマンド(記録開始/停止/再実行)を受け付ける。
+  useEffect(() => {
+    return installAutomationRemoteControl((target) => {
+      if (target in PAGE_TITLE_JA) {
+        setPage(target as Page);
+      }
+    });
+  }, []);
   // 初回セットアップが未完了なら、通常UIの前にセットアップウィザードを表示する。
   const [setupDone, setSetupDone] = useState<boolean>(() => isSetupComplete(loadSetupState()));
 
@@ -226,16 +236,15 @@ export function App() {
   );
 }
 
-/** ブランドマーク(白ムササビ/黒角丸。アプリアイコンと同デザインのインラインSVG)。 */
+/** ブランドマーク(公式アイコン画像。apps/desktop のアプリアイコンと同一ソース)。 */
 function MusasabiMark() {
   return (
-    <svg width="20" height="20" viewBox="0 0 100 100" style={{ verticalAlign: "-4px" }}>
-      <rect x="3" y="3" width="94" height="94" rx="13" fill="#000" />
-      <polygon
-        fill="#fff"
-        points="82,20 76,17.5 71,11.5 66.5,19 58,24.5 42,31.5 20,35.5 31.5,43 40.5,47.5 34.5,56 16.5,60 30,64.5 11.5,77.5 37,62.5 50,52 63.5,41.5 75.5,37.5 87.5,33.5 76,30 79.5,24.5"
-      />
-      <circle cx="73.5" cy="21.5" r="2.4" fill="#000" />
-    </svg>
+    <img
+      src={brandIcon}
+      width={20}
+      height={20}
+      alt=""
+      style={{ verticalAlign: "-4px", borderRadius: 4 }}
+    />
   );
 }
