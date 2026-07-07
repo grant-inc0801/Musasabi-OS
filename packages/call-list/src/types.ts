@@ -19,9 +19,12 @@ export interface RestaurantRecord {
 /** 検索条件: 都道府県(プルダウン)+ 市区町村(自由入力・複数可)。 */
 export interface PlaceSearchQuery {
   prefecture: string;
-  /** 空文字は無視される。 */
+  /** 空文字は無視される。全て空なら都道府県全域で検索する。 */
   cities: string[];
 }
+
+/** 市区町村未指定(都道府県全域)検索時の表示ラベル。 */
+export const PREFECTURE_WIDE_LABEL = "全域";
 
 /** 検索結果: 市区町村ごとの店舗リスト。 */
 export interface PlaceSearchResult {

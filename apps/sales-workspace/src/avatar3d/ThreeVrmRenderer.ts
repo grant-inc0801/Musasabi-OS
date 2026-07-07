@@ -17,8 +17,12 @@ export class ThreeVrmRenderer implements VrmRenderer {
   private readonly clock = new THREE.Clock();
   private placeholder: THREE.Group | null = null;
   private placeholderBody: THREE.MeshStandardMaterial | null = null;
+  private placeholderBelly: THREE.MeshStandardMaterial | null = null;
+  private placeholderDark: THREE.MeshStandardMaterial | null = null;
   private vrm: VRM | null = null;
   private breathY = 0;
+  /** アバター作成(設定)で選んだ体色。表情の tint 復帰にも使う。 */
+  private baseBodyHex = 0x8d8d94;
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
@@ -37,7 +41,20 @@ export class ThreeVrmRenderer implements VrmRenderer {
 
     this.placeholder = buildMusasabiPlaceholder();
     this.placeholderBody = this.placeholder.userData.bodyMaterial as THREE.MeshStandardMaterial;
+    this.placeholderBelly = this.placeholder.userData.bellyMaterial as THREE.MeshStandardMaterial;
+    this.placeholderDark = this.placeholder.userData.darkMaterial as THREE.MeshStandardMaterial;
     this.scene.add(this.placeholder);
+  }
+
+  /**
+   * アバター作成(設定画面)で選んだ外観カラーを適用する。
+   * VRM 読込中はマテリアルを持たないため無効(VRM 側の見た目を尊重)。
+   */
+  setAppearance(appearance: { bodyColor: string; bellyColor: string; eyeColor: string }): void {
+    this.baseBodyHex = new THREE.Color(appearance.bodyColor).getHex();
+    this.placeholderBody?.color.set(appearance.bodyColor);
+    this.placeholderBelly?.color.set(appearance.bellyColor);
+    this.placeholderDark?.color.set(appearance.eyeColor);
   }
 
   /** VRM(VRoid Studio 製など)を読み込み、プレースホルダーと差し替える。 */
@@ -75,13 +92,14 @@ export class ThreeVrmRenderer implements VrmRenderer {
       return;
     }
     // プレースホルダーでは体色をわずかに変えて状態を示す(視認性優先・控えめ)。
+    // neutral/relaxed では設定で選んだ体色(baseBodyHex)へ戻す。
     if (this.placeholderBody) {
       const tint: Record<VrmExpressionPreset, number> = {
-        neutral: 0x8d8d94,
+        neutral: this.baseBodyHex,
         happy: 0x9aa06e,
         angry: 0xa07a6e,
         sad: 0x6e7ea0,
-        relaxed: 0x8d8d94,
+        relaxed: this.baseBodyHex,
         surprised: 0xa0956e,
       };
       this.placeholderBody.color.setHex(tint[preset]);
@@ -191,5 +209,7 @@ function buildMusasabiPlaceholder(): THREE.Group {
   group.add(tail);
 
   group.userData.bodyMaterial = body;
+  group.userData.bellyMaterial = belly;
+  group.userData.darkMaterial = dark;
   return group;
 }

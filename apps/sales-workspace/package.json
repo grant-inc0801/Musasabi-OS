@@ -28,7 +28,9 @@
     "@musasabi/self-improvement": "*",
     "@musasabi/call-list": "*",
     "@musasabi/plugin-sdk": "*",
-    "@musasabi/plugin-accounting-widget": "*"
+    "@musasabi/plugin-accounting-widget": "*",
+    "@tauri-apps/plugin-dialog": "^2.4.0",
+    "@tauri-apps/plugin-fs": "^2.4.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",

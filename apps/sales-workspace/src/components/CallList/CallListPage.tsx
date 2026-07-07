@@ -1,15 +1,25 @@
 import { useState } from "react";
 import {
   MockGoogleMapsProvider,
+  MockMediaSearchProvider,
   SerpApiGoogleMapsProvider,
+  SerpApiMediaSearchProvider,
   PREFECTURES_JA,
+  applyMediaToResults,
   buildXlsx,
   callListToRows,
+  mediaStoreKey,
   summarizeCallList,
 } from "@musasabi/call-list";
-import type { CallListSummary, MapsPlaceProvider, PlaceSearchResult } from "@musasabi/call-list";
+import type {
+  CallListSummary,
+  MapsPlaceProvider,
+  MediaSearchProvider,
+  PlaceSearchResult,
+} from "@musasabi/call-list";
 import { recordMemory } from "../../lib/memoryStorage";
 import { fetchJsonExternal } from "../../lib/httpClient";
+import { saveBinaryFile } from "../../lib/saveFile";
 
 // 架電リスト制作課(開発部)。Googleマップ由来の飲食店情報を抽出し、
 // 件数集計と Excel(.xlsx)出力を行う。
@@ -26,6 +36,13 @@ function selectProvider(apiKey: string): MapsPlaceProvider {
     : new SerpApiGoogleMapsProvider(key, fetchJsonExternal);
 }
 
+const mockMediaProvider = new MockMediaSearchProvider();
+
+function selectMediaProvider(apiKey: string): MediaSearchProvider {
+  const key = apiKey.trim();
+  return key === "" ? mockMediaProvider : new SerpApiMediaSearchProvider(key, fetchJsonExternal);
+}
+
 export function CallListPage() {
   const [prefecture, setPrefecture] = useState<string>(PREFECTURES_JA[12]); // 東京都
   const [cities, setCities] = useState<string[]>([""]);
@@ -35,6 +52,8 @@ export function CallListPage() {
   const [apiKey, setApiKey] = useState("");
   const [searching, setSearching] = useState(false);
   const [dataSource, setDataSource] = useState<"mock" | "serpapi" | null>(null);
+  const [mediaProgress, setMediaProgress] = useState<string | null>(null);
+  const [mediaDone, setMediaDone] = useState(false);
 
   function updateCity(index: number, value: string): void {
     setCities((prev) => prev.map((c, i) => (i === index ? value : c)));
@@ -49,11 +68,8 @@ export function CallListPage() {
   }
 
   async function handleSearch(): Promise<void> {
+    // 市区町村が空欄の場合は都道府県全域で検索する(ユーザーFB第4弾)。
     const filled = cities.map((c) => c.trim()).filter((c) => c !== "");
-    if (filled.length === 0) {
-      alert("市区町村を1件以上入力してください。");
-      return;
-    }
     const provider = selectProvider(apiKey);
     const source = provider === mockProvider ? "mock" : "serpapi";
     setSearching(true);
@@ -61,13 +77,14 @@ export function CallListPage() {
       const found = await provider.search({ prefecture, cities: filled });
       setResults(found);
       setDataSource(source);
+      setMediaDone(false);
       const sum = summarizeCallList(found);
       setSummary(sum);
       recordMemory({
         category: "work",
         actor: "MUSA-301",
         action: "架電リストを検索",
-        detail: `${prefecture} ${filled.join("・")} / ${sum.total}件(${source === "serpapi" ? "SerpAPI実データ" : "Mockデータ"})`,
+        detail: `${prefecture} ${filled.length > 0 ? filled.join("・") : "全域"} / ${sum.total}件(${source === "serpapi" ? "SerpAPI実データ" : "Mockデータ"})`,
         tags: ["call-list", "dept-development"],
       });
     } catch (error) {
@@ -77,29 +94,63 @@ export function CallListPage() {
     }
   }
 
-  function handleExport(): void {
+  /**
+   * 媒体検索: リスト中の各店舗について、Google 検索(SerpAPI)で店舗名または
+   * 電話番号が一致するデリバリーサイト掲載を探し、利用媒体を同じリストへ統合する。
+   * 1店舗=1リクエスト(SerpAPIのクォータを消費)。
+   */
+  async function handleMediaSearch(): Promise<void> {
+    if (!results || results.length === 0 || mediaProgress !== null) return;
+    const provider = selectMediaProvider(apiKey);
+    const records = results.flatMap((r) => r.records);
+    const mediaByStore = new Map<string, string[]>();
+    try {
+      for (let i = 0; i < records.length; i += 1) {
+        setMediaProgress(`${i + 1}/${records.length}`);
+        const media = await provider.searchMedia(records[i]);
+        mediaByStore.set(mediaStoreKey(records[i]), media);
+      }
+    } catch (error) {
+      alert(
+        `媒体検索の途中でエラーが発生しました(取得済みの分だけ反映します): ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    } finally {
+      setMediaProgress(null);
+    }
+    const merged = applyMediaToResults(results, mediaByStore);
+    setResults(merged);
+    setSummary(summarizeCallList(merged));
+    setMediaDone(true);
+    recordMemory({
+      category: "work",
+      actor: "MUSA-301",
+      action: "デリバリー媒体を照合",
+      detail: `${mediaByStore.size}/${records.length}店舗を照合(${provider.name === "mock-media" ? "Mock" : "Google検索"})`,
+      tags: ["call-list", "media-search"],
+    });
+  }
+
+  async function handleExport(): Promise<void> {
     if (!results || results.length === 0) return;
     const bytes = buildXlsx(callListToRows(results));
     const cityLabel = results.map((r) => r.city).join("・");
     const fileName = `架電リスト_${prefecture}${cityLabel}.xlsx`;
-    const blob = new Blob([bytes], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a); // DOM外のアンカーだとファイル名が反映されない
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    recordMemory({
-      category: "work",
-      actor: "MUSA-301",
-      action: "架電リストをExcel出力",
-      detail: `${fileName} / ${summary?.total ?? 0}件`,
-      tags: ["call-list", "excel"],
-    });
+    try {
+      // Tauriでは保存先を選ぶダイアログを表示、ブラウザではダウンロード。
+      const outcome = await saveBinaryFile(fileName, bytes, "Excel ワークブック", ["xlsx"]);
+      if (outcome === "cancelled") return;
+      recordMemory({
+        category: "work",
+        actor: "MUSA-301",
+        action: "架電リストをExcel出力",
+        detail: `${fileName} / ${summary?.total ?? 0}件${mediaDone ? "(媒体照合済み)" : ""}`,
+        tags: ["call-list", "excel"],
+      });
+    } catch (error) {
+      alert(`保存に失敗しました: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   return (
@@ -169,12 +220,33 @@ export function CallListPage() {
           </button>
         </div>
 
-        <button type="button" onClick={() => void handleSearch()} disabled={searching}>
+        <button type="button" onClick={() => void handleSearch()} disabled={searching || mediaProgress !== null}>
           {searching ? "検索中…" : "検索"}
         </button>{" "}
-        <button type="button" onClick={handleExport} disabled={!results || results.length === 0}>
+        <button
+          type="button"
+          onClick={() => void handleMediaSearch()}
+          disabled={!results || results.length === 0 || searching || mediaProgress !== null}
+          title="店舗名または電話番号が一致するデリバリーサイト掲載をGoogle検索で照合します"
+        >
+          {mediaProgress ? `媒体検索中… ${mediaProgress}` : "媒体検索"}
+        </button>{" "}
+        <button
+          type="button"
+          onClick={() => void handleExport()}
+          disabled={!results || results.length === 0 || mediaProgress !== null}
+        >
           Excel出力(.xlsx)
         </button>
+        {mediaDone && (
+          <p style={{ color: "var(--ok)", fontSize: "0.85rem", margin: "0.5rem 0 0" }}>
+            媒体検索の結果をリストへ統合しました。このままExcel出力すると媒体列も含まれます。
+          </p>
+        )}
+        <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", margin: "0.5rem 0 0", maxWidth: "44rem" }}>
+          市区町村が空欄の場合は都道府県全域で検索します。媒体検索は1店舗につき
+          1リクエストを消費します(SerpAPIキー入力時)。
+        </p>
       </section>
 
       {summary && (
