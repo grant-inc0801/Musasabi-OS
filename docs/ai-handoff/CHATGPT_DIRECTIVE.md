@@ -1,255 +1,181 @@
 # ChatGPT Directive
 
 ## Directive ID
-D-20260706-008
+D-20260706-009
 
 ## Title
-Phase 3以降の自律実行指示：AI Company Systemから部署別システムまで確認不要で継続
+市場調査部追加と出版部クリーン運営体制
 
 ## 決定
-現在のUI再現フェーズが完了したら、確認が必要な設計判断・認証情報・実API接続・安全判断がない限り、そのまま次Phaseへ進んでください。
+Musasabi OSに「市場調査部」を追加してください。市場調査部はAIの最新情報、新サービス、OSS、API、モデル、ツール、競合サービスをMockで収集・蓄積・評価し、開発部・企画部と連携して新しいツール案やサービス展開案を作成し、最終的にCEO提案へ進める部署です。
 
-Claude Codeは、作業完了ごとに必ず停止するのではなく、明確な確認要項がない場合は自律的に次の優先タスクへ進んでください。
+あわせて、出版部のAI編集長に外部サービスの利用ルール、著作権、AI生成コンテンツ運用ルール、類似性チェックを管理する役割を追加し、クリーンな出版運営ができる体制を整えてください。
 
-## 継続ルール
+現フェーズでは実Web巡回、実API接続、外部サービスへの投稿・販売・出版実行は行わず、MockとReadiness UIで実装してください。
 
-### 停止せず進めてよい場合
+## 市場調査部の実装
 
-以下は確認不要で継続してください。
+### ミッション
+AI技術・新サービス・論文・OSS・スタートアップ・最新トレンドを継続的に収集・分析し、Musasabi OSの競争力向上につながる提案を行う。
 
-- MockデータでのUI実装
-- 既存設計に沿ったコンポーネント追加
-- テスト追加
-- README更新
-- Windows確認チェックリスト更新
-- `CLAUDE_RESPONSE.md` の日本語更新
-- 部署・AI社員・タスク・KPIのMock実装
-- 既存安全ルール内でのUI改善
-- 型定義・状態管理・デザインシステム整備
+### 主な役割
+- AI最新情報の収集Mock
+- 新AIサービスの調査Mock
+- OSS / API / モデル / SDK の評価Mock
+- AIサービス同士の組み合わせ研究
+- 開発部への技術提案Mock
+- 企画部への商品化・効率化提案Mock
+- CEOへの最終提案Mock
 
-### 停止して確認する場合
+### 調査対象Mock
+OpenAI、Anthropic、Google、Microsoft、Meta、xAI、Hugging Face、GitHub Trending、Product Hunt、arXiv、AI系ニュース、OSS、MCP、Agent、Automation、Robotics、UI、Voice、Video、料金改定などをMockデータとして表示する。
 
-以下の場合のみ停止し、`chatgpt-decision-needed` または `chatgpt-next-directive` Issueを作成してください。
+### 技術評価項目
+精度、コスト、API有無、商用利用可否、日本語性能、ライセンス、導入難易度、期待インパクト、実装期間、リスク、推奨度。
 
-- 実API接続が必要
-- 認証情報が必要
-- 実電話発信が必要
-- AutoCall本番実行を有効化する必要がある
-- FileMaker本番DBへ接続または書き込みが必要
-- Zoom Phone本番APIへ接続が必要
-- ユーザー操作履歴の自動監視が必要
-- 主要アーキテクチャを破壊的に変更する必要がある
-- セキュリティ・課金・法務判断が必要
+### AI組み合わせ研究例
+- OpenAI + Claude + Codex + VRoid + VOICEVOX → 営業AI社員、デスクトップAI秘書、出版AI編集長
+- Whisper + VOICEVOX + Zoom Phone + Sales Brain → テストコール改善AI、音声コーチ、AutoCall品質管理
+- GitHub Trending + Product Hunt + Claude Code → 新規AIツール企画・Issue化システム
 
-## 次Phase優先順位
+### 部署間連携
+- 市場調査部 → 開発部：どのAIサービスを掛け合わせるとどんなツールが作れるか検討
+- 市場調査部 → 企画部：効率化・社内利用・外販サービス化を検討
+- 開発部 → 企画部：実装可能性と商品化の検討
+- 企画部 → CEO / 管理部：最終提案・承認待ち
 
-UI再現フェーズ完了後は、以下の順番で自律実行してください。
+### UI
+中央部署パネル一覧に「市場調査部」を追加する。
 
-## Phase 3：AI Company System
+市場調査部パネル表示項目：部署名、社員数、ステータス。
 
-Musasabi OSの核となるAI会社システムを実装してください。
+市場調査部詳細パネルに以下を表示する。
+- AI最新情報
+- 新サービス一覧
+- 技術評価一覧
+- OSS / API / モデル候補
+- AI組み合わせ候補
+- 開発部への連携案
+- 企画部への連携案
+- CEO提案待ち
+- 採用済み技術
+- 保留案件
 
-実装対象：
+### KPI Mock
+本日収集件数、新AIサービス発見数、技術評価件数、開発部連携件数、企画部連携件数、CEO提案待ち件数、採用候補件数。
 
-- 会社全体モデル
-- 部署モデル
-- AI社員モデル
-- 役職
-- 権限
-- KPI
-- タスク
-- 作業ログ
-- 承認待ち
-- エラー
-- 部署間連携
-- 部署間連携ライン用データ
-- Company Summary
-- Department Summary
-- Employee Summary
+### AI社員 Mock
+- AIリサーチャー
+- AIアナリスト
+- AIアーキテクト
+- AIプロダクトストラテジスト
+- AIトレンドウォッチャー
 
-### 必須型・Mockデータ例
+### データモデル案
+MarketResearchDepartment、AiTechnologyItem、AiServiceResearchItem、AiServiceEvaluation、AiCombinationCandidate、DevelopmentHandoffProposal、PlanningHandoffProposal、CeoProposal、MarketResearchKpi、TechnologyAdoptionStatus。
 
-- CompanySummary
-- Department
-- DepartmentStatus
-- DepartmentConnection
-- AiEmployee
-- EmployeeRole
-- DepartmentTask
-- DepartmentKpi
-- ApprovalItem
-- ErrorItem
-- WorkLogEntry
+### チャット欄
+指示先部署プルダウンに「市場調査部」を追加する。
 
-## Phase 4：部署別システム
+指示例：
+- 最新AIサービスを調査して
+- 営業部に使えるAIを探して
+- 出版部で使えるAIツール案を出して
+- 開発部と連携して新ツール案をまとめて
+- CEO提案用に整理して
 
-AI Company Systemの上に、部署ごとの機能を構築してください。
+## 出版部AI編集長のクリーン運営体制
 
-### 営業部
+### 目的
+Kindle / note / その他外部販売サービスで、利用ルール違反、著作権トラブル、既存作品との酷似、AI利用ルール違反が起きないよう、出版前に確認できるMock体制を整える。
 
-- コールシステムMock
-- Learning Mode
-- Test Mode
-- AutoCall Mode（本番実行不可）
-- 架電数
-- 接続率
-- アポ獲得数
-- 成約数
-- コール状況
-- Sales Brain
-- スクリプト改善
-- テストコール履歴
-- 音声コーチMock
+### AI編集長の追加責務
+- 外部サービス利用ルール確認Mock
+- Kindle / note 等の投稿・販売ルール把握Mock
+- AI生成コンテンツ利用可否チェックMock
+- 著作権・商標・引用ルール確認Mock
+- 既存作品との酷似チェックMock
+- 表現リスク確認Mock
+- 出版前チェックリスト作成
+- 修正指示作成
+- クリーン運営ステータス管理
+- 承認が必要な案件をCEOまたは管理部へ回すMock
 
-### 出版部
+### 出版前チェック表示
+出版部詳細パネルに「クリーン運営 / 規約チェック」セクションを追加し、以下をMock表示する。
 
-- 成果物一覧
-- 販売数
-- 売上Mock
-- Kindle / note 準備中表示
-- 執筆ステータス
-- 編集ステータス
-- 校正ステータス
-- 表紙制作ステータス
-- 類似作品チェックMock
-- AI編集長
-- AI著者
-- AI校正担当
+- 利用ルール確認ステータス
+- AI生成利用ルール確認
+- 著作権チェック
+- 類似作品チェック
+- 引用・参考文献チェック
+- 表紙素材権利チェック
+- 販売プラットフォーム適合性
+- 年齢制限・表現リスク
+- 出版可否判定
 
-### AI企画部
+### 出版部AI社員
+- AI編集長：規約・品質・出版可否の最終管理
+- AI校正担当：誤字脱字・文章品質
+- AI類似性チェッカー：既存作品との酷似確認Mock
+- AI権利管理担当：素材・引用・著作権確認Mock
+- AI販売戦略担当：Kindle / note 等の販売設計Mock
 
-- 新機能提案
-- Issue案作成Mock
-- Claude Code / ChatGPTハンドオフ状態
-- プロダクト改善タスク
-- AI PMタスク
+### 出版部の連携
+- 市場調査部 → 出版部：新しい出版サービス・販売先・AI執筆ツール情報
+- 出版部 → 企画部：商品企画・販売戦略
+- 出版部 → 管理部：規約・権利・リスク確認
+- 出版部 → CEO / 管理部：高リスク案件や新規販売チャネルの承認待ちMock
 
-### 管理部
+## アバター吹き出し
+アバターは市場調査部と出版部の状態も要約する。
 
-- 全社サマリー
-- AI社員一覧
-- 権限管理Mock
-- 売上Mock
-- 稼働率
-- 承認待ち一覧
-- エラー一覧
+例：市場調査部が新しいAI音声サービスを3件発見しました。開発部と連携すると営業部のテストコール改善ツールに応用できそうです。
 
-## Phase 5：Assistant Avatar拡張
-
-現時点では実3D/VRMは後続扱いでよいですが、UI上はアバター体験を強化してください。
-
-- 右下常駐
-- 吹き出し要約
-- 承認待ち要約
-- エラー原因・解決案要約
-- 部署別提案
-- サイズ変更
-- 表情差分Mock
-- クリックでミニパネル
-- チャット欄と連動
-
-VRoid / VRM / three.js実描画はPending Issueとして扱ってください。
-
-## Phase 6：Desktop Assistant基盤
-
-実機やOS権限が必要なものはPending扱いにしつつ、MockでUI・設計を進めてください。
-
-- 常駐アバター
-- メイン画面復帰
-- ミニパネル
-- モード切替
-- 作業メモ登録
-- Learningへの手動反映
-- 提案通知
-- 承認通知
-
-OS操作の無断監視は禁止です。
-
-## Phase 7：外部連携Readiness
-
-実接続はしません。準備UIとMockのみ実装してください。
-
-- FileMaker readiness UI
-- Zoom Phone readiness UI
-- VOICEVOX readiness UI
-- whisper.cpp readiness UI
-- Office readiness UI
-- Calendar readiness UI
-- GitHub readiness UI
-
-実認証情報の保存は禁止です。
-
-## Phase 8：AI Self Evolution設計
-
-実行はまだMockに留め、設計とUIを進めてください。
-
-- AI社員が課題を発見
-- 改善案を作成
-- Issue案を作成
-- ChatGPT承認待ち
-- Claude Code実装待ち
-- テスト結果
-- PR状態
-- 承認後反映
-
-runaway workflowは絶対に再導入しないでください。
-
-## UI方針
-
-前DirectiveのUI方針を維持してください。
-
-- シルバーグレー基調
-- メタリック調
-- 近未来
-- ガラス風UI
-- 部署パネル中心
-- ステータス色分け
-- 白光の部署間連携ライン
-- 下部の部署指定チャット欄
-- 右下の3D風ムササビアバター
-
-アプリアイコンは最新の白黒ムササビアイコンを維持してください。
+例：出版部で類似作品チェックが承認待ちです。AI編集長が表現類似リスクを確認し、必要に応じてCEO承認へ進めます。
 
 ## 安全ルール
-
 Claude Codeは以下を行わないこと。
 
+- 実Web巡回
+- 実API接続
+- 有料API利用
+- 認証情報保存
+- 実出版 / 実投稿 / 実販売
 - 実電話番号への発信
-- AutoCall本番実行の有効化
+- AutoCall本番実行
 - FileMaker本番DBへの書き込み
 - Zoom Phone本番APIへの接続
-- 実認証情報の保存
 - ユーザー操作の無断監視
 - secretsの表示
 - force push
-- runaway issue-open workflowの再導入
+- runaway workflowの再導入
 
-## 完了報告ルール
-
-各Phaseまたは大きなタスクが完了したら、以下を日本語で更新してください。
-
-- `docs/ai-handoff/CLAUDE_RESPONSE.md`
-- `docs/ai-handoff/STATUS.md`
-- 必要に応じてREADME
-- 必要に応じてWindows確認チェックリスト
-
-ただし、確認要項がない場合は停止せず、次のPhaseに進んでください。
+## 優先順位
+1. 市場調査部を部署モデルへ追加
+2. 市場調査部パネル・詳細パネルを追加
+3. 市場調査部AI社員・KPI・Mockデータを追加
+4. 開発部・企画部・CEO提案フローMockを追加
+5. 指示先部署プルダウンに市場調査部を追加
+6. 出版部AI編集長にクリーン運営責務を追加
+7. 出版部詳細パネルにクリーン運営チェックを追加
+8. 出版部と市場調査部 / 企画部 / 管理部の連携ラインを追加
+9. アバター吹き出しに市場調査部・出版部承認待ち要約を追加
+10. テスト・README・CLAUDE_RESPONSE.md更新
 
 ## 完了条件
-
-このDirectiveは以下を満たすまで継続してください。
-
-- Phase 3 AI Company SystemのMock実装が完了
-- Phase 4 部署別システムの主要Mockが完了
-- Phase 5 Assistant Avatar UI拡張が完了
-- Phase 6 Desktop Assistant基盤のMock/UIが完了
-- Phase 7 外部連携Readiness UIが完了
-- Phase 8 AI Self Evolution設計UIが完了
+- 市場調査部が部署一覧に追加されている
+- 市場調査部の詳細パネルが表示される
+- AI最新情報・新サービス・技術評価・AI組み合わせ候補がMock表示される
+- 開発部・企画部・CEO提案への連携フローがMock表示される
+- 指示先部署プルダウンに市場調査部が追加されている
+- アバター吹き出しが市場調査部の発見・提案を要約できる
+- 出版部AI編集長にクリーン運営責務が追加されている
+- 出版部詳細にクリーン運営チェックが表示される
+- 出版部の利用ルール確認・著作権・類似作品チェック・出版可否がMock管理される
+- 実API・実Web巡回・実出版・実販売は無効のまま
 - テストが通る
-- 日本語ドキュメントが更新される
+- `CLAUDE_RESPONSE.md` が日本語で更新されている
 
 ## 次のアクション
-
-最新のmainをpullし、前DirectiveのUI再現作業が完了している場合は、本Directiveに従ってPhase 3以降を自律的に進めてください。
-
-確認要項がなければ停止せず、次の優先タスクへ進んでください。
+最新のmainをpullし、このDirectiveを最優先として、市場調査部追加と出版部AI編集長のクリーン運営体制を実装してください。確認要項がなければ停止せず、次の優先タスクへ進んでください。
