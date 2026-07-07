@@ -31,6 +31,7 @@ import { loadWorkLog, saveWorkLog } from "../../lib/workLogStorage";
 import { saveSessionToCallLog } from "../../lib/callLogStorage";
 import { recordMemory } from "../../lib/memoryStorage";
 import { loadGateState, saveGateState } from "../../lib/gateStorage";
+import { takeCallHandoff } from "../../lib/salesListStorage";
 
 // コールトレーニング画面(Directive D-20260705-003)。
 // Learning → Test → AutoCall の三段階。現フェーズは Test Mode を Mock で実装し、
@@ -42,8 +43,13 @@ const adapter = new MockCallAdapter();
 const MODE_ORDER: CallMode[] = ["learning", "test", "autocall"];
 
 export function CallTrainingPage() {
-  const [mode, setMode] = useState<CallMode>(() => loadEmployeeSettings().defaultCallMode);
-  const [contact, setContact] = useState("");
+  // 営業リストの「テストコールへ」から遷移した場合、連絡先を引き継いで
+  // テストモードを開く(handoffは1回で消費される)。
+  const handoff = takeCallHandoff();
+  const [mode, setMode] = useState<CallMode>(() =>
+    handoff !== null ? "test" : loadEmployeeSettings().defaultCallMode,
+  );
+  const [contact, setContact] = useState(handoff ?? "");
   const [session, setSession] = useState<TestCallSession | null>(null);
   const [humanText, setHumanText] = useState("");
   const [fbComment, setFbComment] = useState("");
