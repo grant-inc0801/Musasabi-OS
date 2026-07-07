@@ -25,7 +25,7 @@ export default defineConfig({
       // never runs the CJS->ESM interop on their compiled dist/ output and
       // named imports silently fail ("X is not exported by Y"). Widen the
       // match to also cover workspace packages' dist output.
-      include: [/node_modules/, /packages\/.*\/dist/],
+      include: [/node_modules/, /packages\/.*\/dist/, /plugins\/.*\/dist/],
     },
   },
 });

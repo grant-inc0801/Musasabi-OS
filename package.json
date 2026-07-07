@@ -5,7 +5,8 @@
   "description": "Musasabi OS monorepo - Epic β-001: Sales Department Operational Release",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "plugins/*"
   ],
   "scripts": {
     "build": "npm run build --workspace=@musasabi/shared --workspace=@musasabi/avatar-2d --workspace=@musasabi/ai-core --workspace=@musasabi/integrations --workspace=@musasabi/voice-analysis --workspace=@musasabi/voice-engine --if-present && npm run build --workspaces --if-present",
