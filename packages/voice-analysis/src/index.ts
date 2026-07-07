@@ -4,6 +4,8 @@ export { analyzeSegmentSentiment, buildSentimentTimeline, summarizeOverallSentim
 export { extractKeywords } from "./KeywordExtractor";
 export { calculateTalkRatio } from "./TalkRatioCalculator";
 export { generateCallSummary } from "./CallSummaryGenerator";
+export { generateCallMinutes, toTranscriptSegments } from "./MinutesGenerator";
+export type { CallMinutes, MinutesTurn } from "./MinutesGenerator";
 export { CallAnalysisRepository } from "./CallAnalysisRepository";
 export { DiarizationBridge } from "./DiarizationBridge";
 export type { DiarizedTranscriptChunk } from "./DiarizationBridge";
