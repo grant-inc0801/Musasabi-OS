@@ -1,7 +1,12 @@
 import { useState } from "react";
-import { markRoutineRun } from "@musasabi/automation";
 import type { AutomationRoutine } from "@musasabi/automation";
-import { loadRoutines, routineRecorder, saveRoutine } from "../../lib/automationStorage";
+import {
+  loadRoutines,
+  replayRoutine,
+  routineRecorder,
+  startRecording,
+  stopRecordingAndSave,
+} from "../../lib/automationStorage";
 import { recordMemory } from "../../lib/memoryStorage";
 
 // Automation ページ(Development Bible 第12章)。手動オプトインの操作記録→再実行。
@@ -17,7 +22,7 @@ export function AutomationPage({ onNavigate }: { onNavigate: (page: string) => v
   const [replaying, setReplaying] = useState(false);
 
   function handleStart(): void {
-    routineRecorder.start(Date.now());
+    startRecording(Date.now());
     setRecording(true);
     recordMemory({
       category: "work",
@@ -28,14 +33,14 @@ export function AutomationPage({ onNavigate }: { onNavigate: (page: string) => v
   }
 
   function handleStop(): void {
-    const routine = routineRecorder.stop(name, Date.now());
+    const routine = stopRecordingAndSave(name, Date.now());
     setRecording(false);
     setName("");
     if (routine === null) {
       alert("記録された操作がありません(記録中にサイドバーからページを移動してください)。");
       return;
     }
-    setRoutines(saveRoutine(routine));
+    setRoutines(loadRoutines());
     recordMemory({
       category: "work",
       actor: "user",
@@ -55,13 +60,11 @@ export function AutomationPage({ onNavigate }: { onNavigate: (page: string) => v
       detail: `ルーチン: ${routine.name} / ${routine.steps.length}操作`,
       tags: ["automation", "replay"],
     });
-    setRoutines(saveRoutine(markRoutineRun(routine)));
-    routine.steps.forEach((step, i) => {
-      setTimeout(() => {
-        onNavigate(step.target);
-        if (i === routine.steps.length - 1) setReplaying(false);
-      }, REPLAY_STEP_MS * (i + 1));
-    });
+    replayRoutine(routine, onNavigate, REPLAY_STEP_MS);
+    setTimeout(() => {
+      setRoutines(loadRoutines());
+      setReplaying(false);
+    }, REPLAY_STEP_MS * (routine.steps.length + 1));
   }
 
   return (
