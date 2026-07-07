@@ -17,9 +17,11 @@ import type {
   MediaSearchProvider,
   PlaceSearchResult,
 } from "@musasabi/call-list";
+import { importLeads } from "@musasabi/sales-list";
 import { recordMemory } from "../../lib/memoryStorage";
 import { fetchJsonExternal } from "../../lib/httpClient";
 import { saveBinaryFile } from "../../lib/saveFile";
+import { loadLeads, saveLeads } from "../../lib/salesListStorage";
 
 // 架電リスト制作課(開発部)。Googleマップ由来の飲食店情報を抽出し、
 // 件数集計と Excel(.xlsx)出力を行う。
@@ -132,6 +134,32 @@ export function CallListPage() {
     });
   }
 
+  /** 抽出結果を営業部の営業リストへ取り込む(電話番号で重複排除)。 */
+  function handleImportToSalesList(): void {
+    if (!results || results.length === 0) return;
+    const records = results.flatMap((r) => r.records);
+    const cityLabel = results.map((r) => r.city).join("・");
+    const { leads, added } = importLeads(
+      loadLeads(),
+      records,
+      `架電リスト制作課(${prefecture}${cityLabel})`,
+      Date.now(),
+    );
+    saveLeads(leads);
+    alert(
+      added === 0
+        ? "すべて取り込み済みでした(重複は追加されません)。"
+        : `${added}件を営業リストへ取り込みました(営業部 > 営業リスト)。`,
+    );
+    recordMemory({
+      category: "work",
+      actor: "MUSA-301",
+      action: "営業リストへ取り込み",
+      detail: `${prefecture}${cityLabel} / 追加${added}件(重複除外)`,
+      tags: ["call-list", "sales-list"],
+    });
+  }
+
   async function handleExport(): Promise<void> {
     if (!results || results.length === 0) return;
     const bytes = buildXlsx(callListToRows(results));
@@ -237,6 +265,14 @@ export function CallListPage() {
           disabled={!results || results.length === 0 || mediaProgress !== null}
         >
           Excel出力(.xlsx)
+        </button>{" "}
+        <button
+          type="button"
+          onClick={handleImportToSalesList}
+          disabled={!results || results.length === 0 || mediaProgress !== null}
+          title="抽出した店舗を営業部の営業リストへ追加します(電話番号で重複排除)"
+        >
+          営業リストへ取り込む
         </button>
         {mediaDone && (
           <p style={{ color: "var(--ok)", fontSize: "0.85rem", margin: "0.5rem 0 0" }}>

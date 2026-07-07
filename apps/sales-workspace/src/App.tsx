@@ -7,6 +7,7 @@ import { CompanyPage } from "./components/Company/CompanyPage";
 import { SalesBrainPage } from "./components/SalesBrain/SalesBrainPage";
 import { FirstRunSetup } from "./components/Setup/FirstRunSetup";
 import { SalesKpiPage } from "./components/Sales/SalesKpiPage";
+import { SalesListPage } from "./components/Sales/SalesListPage";
 import { SalesCallTrainingPage } from "./components/Sales/SalesCallTrainingPage";
 import { PublishingPage } from "./components/Publishing/PublishingPage";
 import { DeptDetailPage } from "./components/Department/DeptDetailPage";
@@ -24,6 +25,7 @@ import { loadSetupState } from "./lib/setupStorage";
 // コールトレーニング / Sales Brain)から各詳細ページへ遷移する。
 type Page =
   | "sales_kpi"
+  | "sales_list"
   | "sales_call_training"
   | "sales_brain"
   | "publishing"
@@ -39,6 +41,7 @@ type Page =
 
 const PAGE_TITLE_JA: Record<Page, string> = {
   sales_kpi: "営業部 — KPI",
+  sales_list: "営業部 — 営業リスト",
   sales_call_training: "営業部 — コールトレーニング",
   sales_brain: "営業部 — Sales Brain",
   publishing: "出版部",
@@ -63,6 +66,7 @@ const NAV_TREE: ReadonlyArray<{
     label: "営業部",
     children: [
       { label: "KPI", page: "sales_kpi" },
+      { label: "営業リスト", page: "sales_list" },
       { label: "コールトレーニング", page: "sales_call_training" },
       { label: "Sales Brain", page: "sales_brain" },
     ],
@@ -202,6 +206,8 @@ export function App() {
         <h1 style={{ marginTop: 0 }}>{PAGE_TITLE_JA[page]}</h1>
         {page === "sales_kpi" ? (
           <SalesKpiPage />
+        ) : page === "sales_list" ? (
+          <SalesListPage onNavigateToCallTraining={() => navigate("sales_call_training")} />
         ) : page === "sales_call_training" ? (
           <SalesCallTrainingPage />
         ) : page === "sales_brain" ? (
