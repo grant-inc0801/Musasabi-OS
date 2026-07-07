@@ -19,12 +19,86 @@ const SALES_CALL_MOCK = {
   ],
 };
 
+/** 営業部の実データ(CommandCenterPage で合成)。 */
+export interface SalesLiveProps {
+  callCount: number;
+  completedCallCount: number;
+  appointmentCount: number;
+  wonCount: number;
+  notCalledCount: number;
+}
+
+/**
+ * 営業部のコールシステム表示。実データ(テストコール履歴・営業リスト)があれば
+ * それを表示し、無ければMock値をMockと明示して表示する。
+ */
+function SalesCallSystemBlock({ live }: { live?: SalesLiveProps }) {
+  const hasLive =
+    live !== undefined &&
+    (live.callCount > 0 || live.appointmentCount > 0 || live.wonCount > 0 || live.notCalledCount > 0);
+  const stats = hasLive
+    ? [
+        { label: "架電数(テストコール累計)", value: `${live.callCount}件` },
+        {
+          label: "完了率",
+          value: `${live.callCount > 0 ? Math.round((live.completedCallCount / live.callCount) * 100) : 0}%`,
+        },
+        { label: "アポ獲得数(営業リスト)", value: `${live.appointmentCount}件` },
+        { label: "成約数(営業リスト)", value: `${live.wonCount}件` },
+      ]
+    : [
+        { label: "架電数(本日)", value: `${SALES_CALL_MOCK.callsToday}件` },
+        { label: "接続率", value: `${SALES_CALL_MOCK.connectRate}%` },
+        { label: "アポ獲得数", value: `${SALES_CALL_MOCK.appointments}件` },
+        { label: "成約数", value: `${SALES_CALL_MOCK.deals}件` },
+      ];
+  return (
+    <div className="detail-block">
+      <strong>
+        コールシステム({hasLive ? "実データ・実架電なし" : "Mock・実架電なし"})
+      </strong>
+      <div className="detail-stats">
+        {stats.map((s) => (
+          <div key={s.label}>
+            <span>{s.label}</span>
+            <b>{s.value}</b>
+          </div>
+        ))}
+      </div>
+      {hasLive ? (
+        <p style={{ margin: "0.5rem 0 0", fontSize: "0.78rem", color: "var(--text-muted)" }}>
+          未架電リード: {live.notCalledCount}件(営業部 &gt; 営業リストで管理)
+        </p>
+      ) : (
+        <>
+          <strong style={{ display: "block", marginTop: "0.6rem" }}>
+            コール状況({SALES_CALL_MOCK.inProgress}件 進行中)
+          </strong>
+          <ul style={{ margin: "0.3rem 0 0", paddingLeft: "1rem" }}>
+            {SALES_CALL_MOCK.queue.map((q) => (
+              <li key={q.label} style={{ margin: "0.15rem 0" }}>
+                <span
+                  className="dept-lamp"
+                  style={{ background: q.color, boxShadow: `0 0 6px ${q.color}`, marginRight: 6 }}
+                />
+                {q.label}: {q.count}件
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function DepartmentDetailPanel({
   dept,
+  salesLive,
   onClose,
   onOpenDetail,
 }: {
   dept: CommandDepartment | null;
+  salesLive?: SalesLiveProps;
   onClose: () => void;
   onOpenDetail: (deptId: string) => void;
 }) {
@@ -60,43 +134,7 @@ export function DepartmentDetailPanel({
         </div>
       )}
 
-      {dept.id === "sales" && (
-        <div className="detail-block">
-          <strong>コールシステム(Mock・実架電なし)</strong>
-          <div className="detail-stats">
-            <div>
-              <span>架電数(本日)</span>
-              <b>{SALES_CALL_MOCK.callsToday}件</b>
-            </div>
-            <div>
-              <span>接続率</span>
-              <b>{SALES_CALL_MOCK.connectRate}%</b>
-            </div>
-            <div>
-              <span>アポ獲得数</span>
-              <b>{SALES_CALL_MOCK.appointments}件</b>
-            </div>
-            <div>
-              <span>成約数</span>
-              <b>{SALES_CALL_MOCK.deals}件</b>
-            </div>
-          </div>
-          <strong style={{ display: "block", marginTop: "0.6rem" }}>
-            コール状況({SALES_CALL_MOCK.inProgress}件 進行中)
-          </strong>
-          <ul style={{ margin: "0.3rem 0 0", paddingLeft: "1rem" }}>
-            {SALES_CALL_MOCK.queue.map((q) => (
-              <li key={q.label} style={{ margin: "0.15rem 0" }}>
-                <span
-                  className="dept-lamp"
-                  style={{ background: q.color, boxShadow: `0 0 6px ${q.color}`, marginRight: 6 }}
-                />
-                {q.label}: {q.count}件
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {dept.id === "sales" && <SalesCallSystemBlock live={salesLive} />}
 
       <div className="detail-block">
         <strong>作業内容</strong>

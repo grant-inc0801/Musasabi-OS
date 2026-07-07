@@ -35,6 +35,43 @@ test("summarizeCompany は総員・稼働中(完了/作業中)・稼働率を集
   assert.equal(overview.utilizationPercent, Math.round((21 / 32) * 100));
 });
 
+test("withLiveSalesData は営業部へ実データを反映し、データ無しならMockを維持する", async () => {
+  const { withLiveSalesData } = await import("./commandCenter");
+  // データ無し → 変更なし
+  const noData = withLiveSalesData(COMMAND_DEPARTMENTS, {
+    callCount: 0,
+    appointmentCount: 0,
+    wonCount: 0,
+    notCalledCount: 0,
+    recentLogs: [],
+  });
+  assert.deepEqual(noData, [...COMMAND_DEPARTMENTS]);
+  // 実データあり → ステータス/進捗/ログが更新される(未架電あり=作業中)
+  const live = withLiveSalesData(COMMAND_DEPARTMENTS, {
+    callCount: 3,
+    appointmentCount: 2,
+    wonCount: 1,
+    notCalledCount: 7,
+    recentLogs: ["14:00 テストコール開始", "14:05 議事録を自動作成"],
+  });
+  const sales = live.find((d) => d.id === "sales");
+  assert.equal(sales?.status, "working");
+  assert.equal(sales?.progressPercent, Math.round((3 / 10) * 100));
+  assert.deepEqual(sales?.logs, ["14:00 テストコール開始", "14:05 議事録を自動作成"]);
+  // 他部署・元配列は不変
+  assert.equal(live.find((d) => d.id === "hr")?.status, "waiting_approval");
+  assert.equal(COMMAND_DEPARTMENTS.find((d) => d.id === "sales")?.status, "done");
+  // 未架電0なら完了
+  const done = withLiveSalesData(COMMAND_DEPARTMENTS, {
+    callCount: 1,
+    appointmentCount: 1,
+    wonCount: 1,
+    notCalledCount: 0,
+    recentLogs: [],
+  });
+  assert.equal(done.find((d) => d.id === "sales")?.status, "done");
+});
+
 test("buildAssistantSummaryJa は承認待ち・エラー原因/解決策・全体進行を要約する", () => {
   const text = buildAssistantSummaryJa(COMMAND_DEPARTMENTS);
   assert.ok(text.includes("出版部と人事部で承認待ち"));
