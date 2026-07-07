@@ -17,6 +17,7 @@ use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 pub fn run() {
   tauri::Builder::default()
     .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
+    .plugin(tauri_plugin_http::init())
     .setup(|app| {
       if cfg!(debug_assertions) {
         app.handle().plugin(

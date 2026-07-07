@@ -29,10 +29,10 @@ export interface PlaceSearchResult {
   records: RestaurantRecord[];
 }
 
-/** 店舗情報の取得元プロバイダ。実装は Mock / (承認後) Google Places API。 */
+/** 店舗情報の取得元プロバイダ。実装は Mock / SerpAPI(実データ・ユーザー承認済み)。 */
 export interface MapsPlaceProvider {
   readonly name: string;
-  search(query: PlaceSearchQuery): PlaceSearchResult[];
+  search(query: PlaceSearchQuery): Promise<PlaceSearchResult[]>;
 }
 
 /** Excel 出力の列見出し(ユーザー指定の8項目・この順)。 */
