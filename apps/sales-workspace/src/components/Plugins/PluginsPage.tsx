@@ -3,6 +3,7 @@ import { PluginRegistry, PLUGIN_PERMISSION_LABEL_JA } from "@musasabi/plugin-sdk
 import { accountingWidgetPlugin } from "@musasabi/plugin-accounting-widget";
 import { MOCK_DEPARTMENT_SUMMARIES } from "@musasabi/ai-company";
 import { loadPluginEnabledMap, savePluginEnabled } from "../../lib/pluginSettings";
+import { recordMemory } from "../../lib/memoryStorage";
 
 // プラグイン管理ページ(Phase β-002 優先順位⑤ / docs/PLUGIN_SDK_BIBLE.md)。
 // リポジトリ内のプラグイン(plugins/)を登録・一覧し、有効/無効を切り替える。
@@ -34,6 +35,13 @@ export function PluginsPage() {
   function toggle(id: string, enabled: boolean): void {
     registry.setEnabled(id, enabled);
     savePluginEnabled(id, enabled);
+    recordMemory({
+      category: "company",
+      actor: "user",
+      action: enabled ? "プラグインを有効化" : "プラグインを無効化",
+      detail: `プラグインID: ${id}`,
+      tags: ["plugin"],
+    });
     setVersion((v) => v + 1);
   }
 
