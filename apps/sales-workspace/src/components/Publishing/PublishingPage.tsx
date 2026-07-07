@@ -1,4 +1,11 @@
-import { MOCK_DEPARTMENT_SUMMARIES, formatJpy, DEPARTMENT_STATUS_LABEL_JA } from "@musasabi/ai-company";
+import {
+  CLEAN_CHECK_STATUS_COLOR,
+  DEPARTMENT_STATUS_LABEL_JA,
+  MOCK_DEPARTMENT_SUMMARIES,
+  PUBLISHING_CLEAN_CHECKS,
+  PUBLISHING_STAFF,
+  formatJpy,
+} from "@musasabi/ai-company";
 
 // 出版部ページ(D-20260706-006)。成果物・販売数・売上を中心に表示する。
 // β版はすべて Mock 値(実売上データ連携・実制作パイプラインは後続フェーズ)。
@@ -93,6 +100,38 @@ export function PublishingPage() {
             ))}
           </tbody>
         </table>
+      </section>
+
+      <section aria-label="クリーン運営">
+        <h3 style={{ marginTop: 0 }}>クリーン運営 / 規約チェック(Mock・AI編集長)</h3>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "44rem" }}>
+          Kindle / note 等の利用ルール・著作権・AI生成ルール・類似性を出版前に確認します。
+          高リスク案件はCEO/管理部の承認待ちへ回します(実出版・実投稿は行いません)。
+        </p>
+        <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+          {PUBLISHING_CLEAN_CHECKS.map((c) => (
+            <li key={c.item} style={{ margin: "0.25rem 0", display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                className="dept-lamp"
+                style={{
+                  background: CLEAN_CHECK_STATUS_COLOR[c.status],
+                  boxShadow: `0 0 6px ${CLEAN_CHECK_STATUS_COLOR[c.status]}`,
+                  display: "inline-block",
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                }}
+              />
+              {c.item}: {c.status}
+            </li>
+          ))}
+        </ul>
+        <h4>出版部AI社員(Mock)</h4>
+        <ul>
+          {PUBLISHING_STAFF.map((n) => (
+            <li key={n}>{n}</li>
+          ))}
+        </ul>
       </section>
     </>
   );

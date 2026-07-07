@@ -11,6 +11,8 @@ import { SalesKpiPage } from "./components/Sales/SalesKpiPage";
 import { SalesListPage } from "./components/Sales/SalesListPage";
 import { SalesCallTrainingPage } from "./components/Sales/SalesCallTrainingPage";
 import { PublishingPage } from "./components/Publishing/PublishingPage";
+import { PlanningPage } from "./components/Planning/PlanningPage";
+import { MarketResearchPage } from "./components/MarketResearch/MarketResearchPage";
 import { DeptDetailPage } from "./components/Department/DeptDetailPage";
 import { PluginsPage } from "./components/Plugins/PluginsPage";
 import { CompanyBrainPage } from "./components/Memory/CompanyBrainPage";
@@ -32,6 +34,8 @@ type Page =
   | "sales_call_training"
   | "sales_brain"
   | "publishing"
+  | "planning"
+  | "market_research"
   | "development"
   | "dev_call_list"
   | "support"
@@ -49,6 +53,8 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   sales_call_training: "営業部 — コールトレーニング",
   sales_brain: "営業部 — Sales Brain",
   publishing: "出版部",
+  planning: "企画部",
+  market_research: "市場調査部",
   development: "開発部",
   dev_call_list: "開発部 — 架電リスト制作課",
   support: "サポート部",
@@ -76,6 +82,8 @@ const NAV_TREE: ReadonlyArray<{
     ],
   },
   { label: "出版部", page: "publishing" },
+  { label: "企画部", page: "planning" },
+  { label: "市場調査部", page: "market_research" },
   {
     label: "開発部",
     children: [
@@ -233,6 +241,10 @@ export function App() {
           <SalesBrainPage />
         ) : page === "publishing" ? (
           <PublishingPage />
+        ) : page === "planning" ? (
+          <PlanningPage />
+        ) : page === "market_research" ? (
+          <MarketResearchPage />
         ) : page === "development" ? (
           <DeptDetailPage deptId="dept-development" />
         ) : page === "dev_call_list" ? (
