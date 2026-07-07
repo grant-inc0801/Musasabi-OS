@@ -16,6 +16,7 @@ import { CompanyBrainPage } from "./components/Memory/CompanyBrainPage";
 import { VisionPage } from "./components/Vision/VisionPage";
 import { AutomationPage } from "./components/Automation/AutomationPage";
 import { CallListPage } from "./components/CallList/CallListPage";
+import { CommandCenterPage } from "./components/CommandCenter/CommandCenterPage";
 import { installAutomationRemoteControl, noteNavigation } from "./lib/automationStorage";
 import brandIcon from "./assets/brand-icon.png";
 import { loadSetupState } from "./lib/setupStorage";
@@ -24,6 +25,7 @@ import { loadSetupState } from "./lib/setupStorage";
 // サイドバーは部門名のみを表示し、部門配下のサブ項目(営業部 → KPI /
 // コールトレーニング / Sales Brain)から各詳細ページへ遷移する。
 type Page =
+  | "command_center"
   | "sales_kpi"
   | "sales_list"
   | "sales_call_training"
@@ -40,6 +42,7 @@ type Page =
   | "settings";
 
 const PAGE_TITLE_JA: Record<Page, string> = {
+  command_center: "Musasabi Command Center",
   sales_kpi: "営業部 — KPI",
   sales_list: "営業部 — 営業リスト",
   sales_call_training: "営業部 — コールトレーニング",
@@ -92,7 +95,8 @@ const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
 ];
 
 export function App() {
-  const [page, setPage] = useState<Page>("sales_kpi");
+  // 既定画面は Musasabi Command Center(D-20260706-007)。
+  const [page, setPage] = useState<Page>("command_center");
   // 部署ボタン押下で小分類項目を開閉する(アコーディオン。ユーザーFB第3弾)。
   // 既定では現在ページを含む営業部のみ開いた状態にする。
   const [expandedDepts, setExpandedDepts] = useState<Record<string, boolean>>({ 営業部: true });
@@ -129,12 +133,26 @@ export function App() {
     }
   }
 
+  // Command Center は専用の全画面レイアウト(最小サイドバー+部署パネル)。
+  if (page === "command_center") {
+    return (
+      <CommandCenterPage
+        onOpenSettings={() => navigate("settings")}
+        onOpenPage={(target) => replayNavigate(target)}
+      />
+    );
+  }
+
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="サイドバー">
         <div className="brand">
           <MusasabiMark /> Musasabi OS β
         </div>
+
+        <button type="button" onClick={() => navigate("command_center")}>
+          ⌂ コマンドセンター
+        </button>
 
         <nav style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
           {NAV_TREE.map((dept) => {
