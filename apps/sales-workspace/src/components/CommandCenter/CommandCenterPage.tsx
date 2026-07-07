@@ -34,6 +34,9 @@ const DEPT_PAGE: Record<string, string> = {
   publishing: "publishing",
   planning: "planning",
   market_research: "market_research",
+  marketing: "marketing",
+  accounting: "accounting",
+  hr: "hr",
 };
 
 export function CommandCenterPage({
