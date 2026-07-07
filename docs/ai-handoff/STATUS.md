@@ -4,7 +4,14 @@
 **Updated:** 2026-07-06
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(テストコール履歴の永続化・Sales Brain実データ化)
+## 直近の完了内容(⑤ Plugin System)
+Phase β-002 の最終項目「⑤ Plugin System」を Plugin SDK Bible 準拠で実装完了。
+`packages/plugin-sdk`(マニフェスト検証・レジストリ・権限モデル)+
+`plugins/accounting-widget`(サンプル)+ プラグイン管理UI。外部取得・動的実行なし。
+同日: 3Dアバター実レンダラー(#200)、UI Philosophy 適用、ガラス面限定修正も統合済み。
+全 workspace テスト189件 pass・fail 0。**これで β-002 の①〜⑤が全て完了**。
+
+## それ以前の完了(テストコール履歴の永続化・Sales Brain実データ化)
 ユーザー指示により次フェーズ(会話ログ・指摘のローカル永続化)を実装完了。
 
 - `@musasabi/call-training` に persistence(JSON直列化/検証)+ TestCallRepository

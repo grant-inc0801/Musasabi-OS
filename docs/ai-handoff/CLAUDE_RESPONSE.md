@@ -3,6 +3,35 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-06 — ⑤ Plugin System 実装(Plugin SDK Bible 準拠)
+
+### 実装内容
+Phase β-002 の最後の未着手項目「⑤ Plugin System」を docs/PLUGIN_SDK_BIBLE.md に
+沿って実装した。あわせて直近の完了分(3Dアバター実レンダラー Issue #200、
+UI Philosophy 適用、アバターウィンドウのガラス面限定修正)もmain統合済み。
+
+- **`packages/plugin-sdk`**(新規・公開API): `PluginManifest` / `PluginPermission`
+  (Bible 第2章の拡張範囲に対応する5権限)、`validatePluginManifest`(kebab-case ID・
+  SemVer・権限ホワイトリストの機械チェック=第5章審査の自動化部分)、
+  `PluginRegistry`(登録・一覧・有効/無効・権限外の拡張提供の拒否・
+  ダッシュボードウィジェット集約)。テスト6件
+- **`plugins/accounting-widget`**(サンプル・Bible 第4章構造): 経理部門向け
+  日次サマリーウィジェット(Mock)。plugin-sdk の公開APIのみに依存。テスト2件。
+  workspaces に `plugins/*` を追加
+- **UI**: 全社ナビに「プラグイン」ページを追加。インストール済み一覧
+  (名前/バージョン/対象部署/権限/説明)、有効/無効トグル(localStorage保存)、
+  有効プラグインのウィジェットプレビュー表示
+- **安全設計**: プラグインはリポジトリ内で審査・ビルドされたもののみ
+  (外部取得・動的コード実行なし)。Security Bible 禁止事項に触れる権限は
+  マニフェスト検証で拒否
+
+### テスト結果
+- 全 workspace テスト **189件 pass・fail 0**(plugin-sdk 6 + サンプル 2 を追加)
+- vite build 成功、Playwright でプラグイン一覧・トグル・ウィジェット表示を実画面確認
+
+### 次に実施する内容
+- 運用ルールに従い待機。ChatGPT の新 Directive を待つ
+
 ## 2026-07-06 — テストコール履歴のローカル永続化・Sales Brain実データ化(次フェーズ)
 
 ### 実装内容
