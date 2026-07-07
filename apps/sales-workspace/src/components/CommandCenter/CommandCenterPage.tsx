@@ -13,7 +13,9 @@ import { countByStatus } from "@musasabi/sales-list";
 import { loadCallLog } from "../../lib/callLogStorage";
 import { loadLeads } from "../../lib/salesListStorage";
 import { loadMemoryRecords } from "../../lib/memoryStorage";
+import { VAULT_ITEMS, VAULT_STATUS_COLOR, computeVaultSummary } from "@musasabi/ai-company";
 import { DepartmentCard } from "./DepartmentCard";
+import { VaultDetailPanel } from "./VaultDetailPanel";
 import { DepartmentConnectionLines } from "./DepartmentConnectionLines";
 import { DepartmentDetailPanel } from "./DepartmentDetailPanel";
 import { DepartmentCommandChat } from "./DepartmentCommandChat";
@@ -119,6 +121,10 @@ export function CommandCenterPage({
                 }}
               />
             ))}
+            <VaultCard
+              selected={selectedId === "vault"}
+              onSelect={() => setSelectedId((prev) => (prev === "vault" ? null : "vault"))}
+            />
           </div>
         </div>
         <div className="cc-legend">
@@ -138,14 +144,42 @@ export function CommandCenterPage({
         <DepartmentCommandChat departments={departments} />
       </main>
 
-      <DepartmentDetailPanel
-        dept={selected}
-        salesLive={salesLive}
-        onClose={() => setSelectedId(null)}
-        onOpenDetail={(deptId) => onOpenPage(DEPT_PAGE[deptId] ?? "company")}
-      />
+      {selectedId === "vault" ? (
+        <VaultDetailPanel onClose={() => setSelectedId(null)} />
+      ) : (
+        <DepartmentDetailPanel
+          dept={selected}
+          salesLive={salesLive}
+          onClose={() => setSelectedId(null)}
+          onOpenDetail={(deptId) => onOpenPage(DEPT_PAGE[deptId] ?? "company")}
+        />
+      )}
 
-      <AssistantAvatar departments={departments} />
+      <AssistantAvatar departments={departments} detailOpen={selectedId !== null} />
     </div>
+  );
+}
+
+/** 保管庫パネル(名称・保管件数・使用容量・容量ステータス)。D-20260706-010。 */
+function VaultCard({ selected, onSelect }: { selected: boolean; onSelect: () => void }) {
+  const summary = computeVaultSummary(VAULT_ITEMS);
+  const color = VAULT_STATUS_COLOR[summary.status];
+  return (
+    <button
+      type="button"
+      className={`dept-card${selected ? " selected" : ""}`}
+      style={{ ["--glow" as string]: color }}
+      onClick={onSelect}
+      aria-pressed={selected}
+    >
+      <div className="dept-card-name">🗄 保管庫</div>
+      <div className="dept-card-members">
+        {summary.itemCount}件 / {(summary.totalKb / 1024).toFixed(1)}MB
+      </div>
+      <div className="dept-card-status">
+        <span className="dept-lamp" style={{ background: color, boxShadow: `0 0 8px ${color}` }} />
+        {summary.status}(使用率{summary.usagePercent}%)
+      </div>
+    </button>
   );
 }
