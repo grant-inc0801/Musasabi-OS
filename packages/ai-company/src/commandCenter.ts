@@ -1,5 +1,7 @@
 import { buildResearchAndPublishingSummaryJa } from "./marketResearch";
 import { buildVaultSummaryJa } from "./knowledgeVault";
+import { buildSupportSummaryJa } from "./supportDesk";
+import { buildDevSummaryJa } from "./devProjects";
 
 // Musasabi Command Center のデータモデル(Directive D-20260706-007)。
 // 部署パネル・ステータス色・部署間連携・アシスタント要約(吹き出し)を扱う。
@@ -257,6 +259,9 @@ export function buildAssistantSummaryJa(departments: readonly CommandDepartment[
   lines.push(...buildResearchAndPublishingSummaryJa());
   // 保管庫の要約(D-20260706-010)
   lines.push(...buildVaultSummaryJa());
+  // サポート部(未対応/対応中)と開発部(エラー案件)の要約
+  lines.push(...buildSupportSummaryJa());
+  lines.push(...buildDevSummaryJa());
   const avg = Math.round(
     departments.reduce((sum, d) => sum + d.progressPercent, 0) / Math.max(departments.length, 1),
   );

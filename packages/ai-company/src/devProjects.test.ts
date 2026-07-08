@@ -45,3 +45,14 @@ test("AI社員数は部署一覧(Command Center)の人数と整合する", () =>
   const dev = COMMAND_DEPARTMENTS.find((d) => d.id === "development")!;
   assert.equal(DEV_STAFF.length, dev.memberCount);
 });
+
+test("開発要約はエラー対応案件を伝え、吹き出し要約に含まれる", async () => {
+  const { buildDevSummaryJa } = await import("./devProjects");
+  const { buildAssistantSummaryJa, COMMAND_DEPARTMENTS: depts } = await import("./commandCenter");
+  const lines = buildDevSummaryJa();
+  assert.equal(lines.length, 1);
+  assert.ok(lines[0].includes("P-302"));
+  const summary = buildAssistantSummaryJa(depts);
+  assert.ok(summary.includes("P-302"));
+  assert.ok(summary.includes("未対応の問い合わせ"));
+});

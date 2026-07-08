@@ -105,3 +105,10 @@ export function buildDevKpi(projects: readonly DevProject[]): DevKpi {
     averageProgressPercent: Math.round(avg),
   };
 }
+
+/** アバター吹き出し用の開発要約(エラー対応案件を知らせる)。 */
+export function buildDevSummaryJa(): string[] {
+  return DEV_PROJECTS.filter((p) => p.status === "エラー対応").map(
+    (p) => `開発部の案件「${p.name}」(${p.id})がエラー対応中です。`,
+  );
+}
