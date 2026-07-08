@@ -5,6 +5,7 @@ import { EmployeeSettingsPanel } from "./components/Settings/EmployeeSettingsPan
 import { AvatarStudioPanel } from "./components/Settings/AvatarStudioPanel";
 import { DataManagementPanel } from "./components/Settings/DataManagementPanel";
 import { CompanyPage } from "./components/Company/CompanyPage";
+import { CompanyDashboardPage } from "./components/Company/CompanyDashboardPage";
 import { SalesBrainPage } from "./components/SalesBrain/SalesBrainPage";
 import { FirstRunSetup } from "./components/Setup/FirstRunSetup";
 import { SalesKpiPage } from "./components/Sales/SalesKpiPage";
@@ -47,6 +48,7 @@ type Page =
   | "accounting"
   | "hr"
   | "company"
+  | "company_dashboard"
   | "company_brain"
   | "vision"
   | "automation"
@@ -69,6 +71,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   accounting: "経理部",
   hr: "人事部",
   company: "AI社員管理",
+  company_dashboard: "全社ダッシュボード",
   company_brain: "Company Brain",
   vision: "Vision(画面解析)",
   automation: "Automation(操作記録)",
@@ -108,6 +111,7 @@ const NAV_TREE: ReadonlyArray<{
 ];
 
 const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
+  { label: "全社ダッシュボード", page: "company_dashboard" },
   { label: "AI社員管理", page: "company" },
   { label: "Company Brain", page: "company_brain" },
   { label: "Vision", page: "vision" },
@@ -273,6 +277,8 @@ export function App() {
           <AccountingPage />
         ) : page === "hr" ? (
           <HrPage />
+        ) : page === "company_dashboard" ? (
+          <CompanyDashboardPage onOpenPage={(target) => replayNavigate(target)} />
         ) : page === "company_brain" ? (
           <CompanyBrainPage />
         ) : page === "vision" ? (

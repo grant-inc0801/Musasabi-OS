@@ -3,6 +3,29 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-08 — D-011 Core Departments Completion(全社ダッシュボード新設)
+
+### 実装内容
+運用ルール変更(ChatGPTがCHATGPT_DIRECTIVE.md更新・Claudeは最新を読んでから作業・
+確認事項がなければ停止せず次Directiveへ)を受領。D-011〜D-016 のうち **D-011
+「Core Departments Completion」** を実施した。9部署のページ・エクスポートは整備
+済みのため、総仕上げとして**全部署のKPIを一元表示する全社ダッシュボード**を新設。
+
+- **`packages/ai-company/companyDashboard.ts`**: `buildCompanyDashboard(departments)`
+  — 各部署の既存集計関数(buildSupportKpi/buildDevKpi/buildMarketingKpi/
+  buildAccountingSummary/buildHrKpi/buildMarketResearchKpi/computeVaultSummary)を
+  横断的に束ね、部署ごとの主要指標2〜3件+アイコン+ステータス+人数を返す。
+  営業部は withLiveSalesData 経由で実データ反映可。テスト4件
+- **`CompanyDashboardPage`**: 全社サマリー(全社員/稼働中/稼働率)+部署別KPIカード
+  グリッド(アイコン・ステータスランプ・指標・「詳細を見る」で従来ページへ遷移)。
+  営業部は callLogStats+countByStatus の実データを反映
+- サイドバー「全社ダッシュボード」+ Command Center「📊 全社ダッシュボード」ボタンで到達
+
+### テスト結果
+- 全 workspace テスト **290件 pass・fail 0**(companyDashboard 4件を追加)
+- Playwright E2E: CC/サイドバーからの到達・9部署カード・サポート/経理の指標・
+  詳細を見る→経理部ページ遷移を実画面確認
+
 ## 2026-07-08 — AV-ICON-001: ブランドアイコン正式アセット整備
 
 ### 実装内容

@@ -98,6 +98,13 @@ export function CommandCenterPage({
           </div>
         </div>
 
+        <button
+          type="button"
+          className="cc-settings"
+          onClick={() => onOpenPage("company_dashboard")}
+        >
+          📊 全社ダッシュボード
+        </button>
         <button type="button" className="cc-settings" onClick={onOpenSettings}>
           ⚙ 設定
         </button>
