@@ -4,7 +4,12 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(D-015 AI Self Evolution)
+## 直近の完了内容(D-016 AI Company Operation / D-011〜016 完遂)
+会社運営ビューを新設。承認キュー(部署/ワークフロー/コラボの承認待ちを一元化)+
+運営サマリー+運営メニュー。サイドバーから到達。全 workspace テスト306件 pass。
+**D-011〜D-016 をすべて実装・main統合・Beta Build 完了。**
+
+## それ以前の完了(D-015 AI Self Evolution)
 buildEvolutionInsights(頻出アクション/自動化候補/稼働主体/短期長期内訳)を追加し、
 AI自己進化ページを新設(自動化候補→Automation導線、長期昇格、頻出/主体)。
 サイドバーから到達。全 workspace テスト303件 pass。
