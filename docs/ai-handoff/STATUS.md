@@ -4,7 +4,12 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(人事部・マーケティング部のExcel出力)
+## 直近の完了内容(AV-ICON-001 ブランドアイコン整備)
+D-011未発行のため、承認不要Open Issue AV-ICON-001を実施。既存の黒背景×白ムササビ
+アイコン(デザインは充足)から assets/brand/ に書き出し一式(1024〜32 PNG+SVG+ICO
++master)を生成、brand-guideline.md 作成、README掲載。全 workspace テスト286件 pass。
+
+## それ以前の完了(人事部・マーケティング部のExcel出力)
 人事部(稼働・評価+採用計画)とマーケティング部(キャンペーン+SNS計画)に
 Excel出力を追加し、管理部門3部署のエクスポートを統一。全 workspace テスト
 286件 pass・fail 0。
