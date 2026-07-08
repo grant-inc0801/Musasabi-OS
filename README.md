@@ -124,11 +124,19 @@ npm run build:desktop    # = npm run package:win(tauri build)
 4. β版として配布する場合は、artifact の内容を確認したうえで GitHub Releases に
    手動でアップロードする(自動公開・署名は行わない)
 
-### アプリアイコン
+### アプリアイコン(ブランド)
 
-β版では白黒ムササビの仮アイコンを採用している(`apps/desktop/src-tauri/icons/`)。
-再生成は `node scripts/generate-beta-icon.js`(依存パッケージ不要)。
-正式アイコンへの差し替えは後続フェーズで行う。
+正式アプリアイコンは **黒背景 × 白塗りムササビ・シルエット**(右上へ滑空・文字なし・
+AI表記なし。Issue AV-ICON-001)。ブランドアセット一式は `assets/brand/` に配置する。
+
+![Musasabi アイコン](assets/brand/musasabi-icon-256.png)
+
+- `assets/brand/musasabi-icon-{1024,512,256,128,64,32}.png` / `musasabi-icon.svg` /
+  `musasabi-icon.ico` / `musasabi-icon-master.png`
+- デスクトップアプリ用の書き出しは `apps/desktop/src-tauri/icons/`(同一デザイン)
+- 再生成: `python3 scripts/generate-brand-assets.py`(依存: Pillow)。デスクトップ用は
+  `python3 scripts/generate-icon-from-source.py`
+- 詳細は [docs/brand-guideline.md](docs/brand-guideline.md) を参照
 
 ### 2. ブラウザで起動(Rust 環境が無い場合の代替)
 
