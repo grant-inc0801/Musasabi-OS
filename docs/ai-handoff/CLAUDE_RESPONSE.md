@@ -3,6 +3,25 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-08 — D-018 Notifications & Alerts(通知センター)
+
+### 実装内容
+全社の要注目事項を通知として一元化し、既読管理を追加した(すべてMock・外部送信なし)。
+
+- **`packages/ai-company/notifications.ts`**: `buildNotifications(departments)` —
+  承認キュー(部署/WF/コラボ)・開発エラー案件・保管庫容量注意・未対応サポートを
+  レベル(承認/エラー/注意/情報)つき通知へ集約。`unreadNotifications`・
+  `parseReadIds`。テスト3件
+- **`lib/notificationStorage.ts`**: 既読IDを `musasabi.notificationsRead` へ永続化
+  (バックアップ対象)
+- **`NotificationsPage`**: 未読件数・レベル別色・個別/一括既読・既読表示トグル。
+  サイドバー「通知センター」から到達
+
+### テスト結果
+- 全 workspace テスト **311件 pass・fail 0**(notifications 3件を追加)
+- Playwright E2E: 到達・6件表示(承認/エラー含む)・個別既読で非表示・
+  再起動後の既読維持・すべて既読を実画面確認
+
 ## 2026-07-08 — D-017 Reporting & Analytics(全社レポート)
 
 ### 実装内容

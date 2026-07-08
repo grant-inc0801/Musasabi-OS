@@ -72,3 +72,4 @@ export * from "./collaboration";
 export * from "./workspace";
 export * from "./operations";
 export * from "./report";
+export * from "./notifications";
