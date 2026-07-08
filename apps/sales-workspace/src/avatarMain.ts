@@ -30,6 +30,7 @@ import {
 } from "./lib/automationStorage";
 import { addWorkLogEntry } from "@musasabi/call-training";
 import { loadWorkLog, saveWorkLog } from "./lib/workLogStorage";
+import mascotUrl from "./assets/mascot.png";
 
 // 右下常駐アバターウィンドウ本体(D-20260706-004)。
 // apps/desktop/src-tauri/src/lib.rs が avatar.html として右下に生成する。
@@ -67,6 +68,39 @@ type Avatar3d = {
   setAppearance: (a: { bodyColor: string; bellyColor: string; eyeColor: string }) => void;
 };
 let avatar3d: Avatar3d | null = null;
+
+// ミニパネルのアバターは管理画面(コマンドセンター)と同じ公式マスコット画像に
+// 統一する(ユーザーFB第5弾)。アバター作成でVRMを保存した場合のみ3D表示する。
+let mascotShown = false;
+
+function showMascot(): void {
+  const container = el("avatar");
+  if (!container) return;
+  container.textContent = "";
+  const img = document.createElement("img");
+  img.src = mascotUrl;
+  img.alt = "";
+  img.draggable = false;
+  container.appendChild(img);
+  avatar3d = null;
+  mascotShown = true;
+}
+
+/** アバター表示の初期化: 保存済みVRMがあれば3D、無ければ公式マスコット画像。 */
+async function initAvatar(): Promise<void> {
+  let hasVrm = false;
+  try {
+    hasVrm = (await loadVrmBlob()) !== null;
+  } catch {
+    hasVrm = false;
+  }
+  if (hasVrm) {
+    await initAvatar3d();
+    if (!avatar3d) showMascot(); // WebGL不可でもマスコット画像で統一
+  } else {
+    showMascot();
+  }
+}
 
 async function initAvatar3d(): Promise<void> {
   const container = el("avatar");
@@ -122,8 +156,13 @@ window.addEventListener("storage", (event) => {
   if (event.key === AVATAR_APPEARANCE_KEY) {
     avatar3d?.setAppearance(loadAvatarAppearance());
   } else if (event.key === AVATAR_VRM_UPDATED_KEY) {
-    avatar3d?.setAppearance(loadAvatarAppearance());
-    void loadSavedVrm();
+    if (avatar3d) {
+      avatar3d.setAppearance(loadAvatarAppearance());
+      void loadSavedVrm();
+    } else {
+      // マスコット表示中にVRMが保存されたら3D表示へ切り替える
+      void initAvatar();
+    }
   }
 });
 
@@ -205,6 +244,8 @@ function renderAvatar(state: AvatarState): void {
     avatar3d.manager.setState(state);
     return;
   }
+  // マスコット画像表示中は状態絵文字で上書きしない(画像で統一)
+  if (mascotShown) return;
   const avatar = el("avatar");
   if (avatar) {
     avatar.textContent = AVATAR_STATE_EMOJI[state];
@@ -509,7 +550,7 @@ setupUi();
 setupBizViews();
 applyAvatarSize();
 renderPanel();
-void initAvatar3d();
+void initAvatar();
 
 // メインウィンドウからのアバター状態遷移イベント(Tauri内のみ)。
 async function listenAvatarEvents(): Promise<void> {

@@ -225,6 +225,30 @@
         height: 100% !important;
         display: block;
       }
+      /* 公式マスコット画像(管理画面と統一・ユーザーFB第5弾)。
+         クリックはコンテナ(#avatar)側で受けるため画像は素通しにする。 */
+      #avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        pointer-events: none;
+        animation: mascot-float 3.4s ease-in-out infinite;
+      }
+      @keyframes mascot-float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-4px);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #avatar img {
+          animation: none;
+        }
+      }
       /* 配置換え用のドラッグハンドル(ホバー時のみ表示) */
       #drag-handle {
         font-size: 11px;

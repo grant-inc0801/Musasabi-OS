@@ -174,6 +174,22 @@ export const DEPT_CONNECTIONS: readonly DeptConnection[] = [
   { from: "development", to: "planning" },
 ];
 
+/**
+ * 連携ラインが点灯するか。両端の部署がどちらも稼働中(working)または
+ * エラー対応中(error)のときだけ「連携中」とみなして光を流す。
+ * どちらかが完了/承認待ちで手が止まっている場合は消灯(ユーザーFB第5弾)。
+ */
+export function isConnectionActive(
+  departments: readonly CommandDepartment[],
+  conn: DeptConnection,
+): boolean {
+  const busy = (id: string): boolean => {
+    const dept = departments.find((d) => d.id === id);
+    return dept !== undefined && (dept.status === "working" || dept.status === "error");
+  };
+  return busy(conn.from) && busy(conn.to);
+}
+
 /** 全社サマリー(左サイドバー表示用)。 */
 export interface CompanyOverview {
   totalMembers: number;
