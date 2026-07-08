@@ -1,10 +1,15 @@
 # Status
 
 **State:** waiting_for_chatgpt
-**Updated:** 2026-07-07
+**Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(サポート部ページ充実)
+## 直近の完了内容(開発部ページ充実)
+開発案件ボードMock(5件・状態ランプ・CC開発部エラーと同期)+開発済み自動化
+ツール一覧(Automation保存分の実データ)+Automation/架電リスト制作課への導線+
+AI社員6名。汎用ページ参照ゼロに。全 workspace テスト281件 pass・fail 0。
+
+## それ以前の完了(サポート部ページ充実)
 問い合わせ管理Mock(チケット6件・ステータス4区分・プルダウン変更→KPI即時更新+
 Memory記録)、FAQ 5件、AI社員5名の専用ページを新設。汎用ページから差し替え。
 全 workspace テスト277件 pass・fail 0。
