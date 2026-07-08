@@ -217,3 +217,5 @@ export const MOCK_EXECUTIVES: readonly Executive[] = [
 
 /** 月の経過割合の既定値(Mock。当月の60%経過を想定)。 */
 export const MOCK_MONTH_PROGRESS = 0.6;
+
+export * from "./orgStructure";

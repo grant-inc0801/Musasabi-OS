@@ -8,6 +8,8 @@ import {
   buildAuditReport,
   rankDepartmentRisk,
   shouldRecommendPause,
+  deriveAuditLog,
+  AUDIT_LOG_EVENT_LABEL_JA,
   type AuditPeriod,
   type Severity,
 } from "@musasabi/audit";
@@ -29,6 +31,7 @@ export function AuditPage() {
   const [period, setPeriod] = useState<AuditPeriod>("daily");
   const report = buildAuditReport(period, MOCK_FINDINGS);
   const ranked = rankDepartmentRisk(MOCK_FINDINGS);
+  const auditLog = deriveAuditLog(MOCK_FINDINGS, Date.UTC(2026, 6, 8));
 
   return (
     <>
@@ -84,6 +87,21 @@ export function AuditPage() {
             ))}
           </tbody>
         </table>
+      </section>
+
+      <section aria-label="監査ログ">
+        <h3>監査ログ(追記型・{auditLog.length}件)</h3>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
+          監査・経営の意思決定(エスカレーション・一時停止提案・レビュー要求・是正)を追記型で記録します。
+        </p>
+        <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+          {auditLog.map((e, i) => (
+            <li key={i} style={{ margin: "0.2rem 0", fontSize: "0.88rem" }}>
+              <span className="badge" style={{ marginRight: 6 }}>{AUDIT_LOG_EVENT_LABEL_JA[e.eventType]}</span>
+              <strong>{e.actor}</strong> → {e.target}: {e.detail}
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section aria-label="部門リスクスコア">

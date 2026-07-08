@@ -3,6 +3,32 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-08 — AI組織構造 + 監査ログ(AI_ORGANIZATION_STRUCTURE.md 準拠)
+
+### 実装内容
+指示書 `AI_ORGANIZATION_STRUCTURE.md`(+ 既実装の AI_EXECUTIVE_GOVERNANCE / AI_AUDIT_AND_RISK_GOVERNANCE)
+を基準に、AI役員・AI監査・月次予算KPI・未達リスク予測・監査ログを統合。「既存の組織モデルを
+置換せず拡張」の方針に従い、既存 ai-company の組織モデルに整合させた。決定論・Mock。
+
+- **`packages/governance/orgStructure.ts`(拡張)**: 役員→本部マッピング(`EXECUTIVE_SCOPE`、
+  既存8本部に整合)、`buildOrgChart`(CEO頂点→役員層→管掌本部、AI監査は経営層から独立ノード)、
+  `buildCommandChain`(CEO→役員→本部の指揮系統+独立ライン)、`REQUIRED_DASHBOARDS`。テスト+5件
+- **`packages/audit/auditLog.ts`(拡張・監査ログ)**: 追記型 `AuditLogEntry`、`appendAuditLog`
+  (イミュータブル・最新先頭)、`deriveAuditLog`(所見から一時停止提案・AI CEO/監査への
+  エスカレーション・レビュー要求・是正を導出=「keep audit logs」)。テスト+5件
+- **`OrgStructurePage`(新規)**: AI組織図・指揮系統ビュー・役員KPIサマリー・必要ダッシュボード一覧。
+  GLOBAL_NAV「AI組織構造」から到達
+- **`AuditPage`(拡張)**: 監査ログ(追記型)セクションを追加
+
+### 既実装との対応(ユーザー指示: AI役員/AI監査/月次予算KPI/未達リスク予測/監査ログ)
+- AI役員=governance / AI監査=audit / 月次予算KPI=governance / 未達リスク予測=governance
+  (forecastAttainmentPercent) / 監査ログ=audit/auditLog(本コミットで追加)
+- 未達時: 再優先付け・リソース再配分・是正提案・CEO/監査へのエスカレーション・監査ログ保持 を充足
+
+### テスト結果
+- `@musasabi/governance` 15件 / `@musasabi/audit` 11件 pass
+- Playwright E2E: 組織図(CEO+役員7+独立監査)・指揮系統7・役員KPI8・監査ログ7件(エスカレーション記録)・0エラー
+
 ## 2026-07-08 — AI Audit and Risk Governance(AI監査・リスク)
 
 ### 実装内容
