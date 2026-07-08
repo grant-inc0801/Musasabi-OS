@@ -4,7 +4,12 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(D-017 Reporting & Analytics)
+## 直近の完了内容(D-018 Notifications & Alerts)
+通知センターを新設。承認待ち/開発エラー/容量注意/未対応サポートをレベル別色で
+一元表示し、個別/一括既読+既読永続化(再起動後維持)。サイドバーから到達。
+全 workspace テスト311件 pass。次は D-019 Scheduler & Routines を予定。
+
+## それ以前の完了(D-017 Reporting & Analytics)
 全社レポート(運営・部署KPI・WF・コラボを集約)を生成し、Markdownプレビュー+
 Markdown/JSONエクスポートを提供するレポートページを新設。サイドバーから到達。
 全 workspace テスト308件 pass。
