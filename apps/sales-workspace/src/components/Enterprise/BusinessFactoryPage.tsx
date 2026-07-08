@@ -3,9 +3,11 @@ import {
   BUSINESS_UNITS,
   BUSINESS_UNIT_ROLES,
   BUSINESS_UNIT_STATUS_LABEL_JA,
+  BUSINESS_TEMPLATES,
   GOVERNANCE_NOTES,
   REPORTING_LINE,
   provisionBusinessUnit,
+  provisionFromTemplate,
   summarizeFactory,
   type BusinessUnit,
 } from "@musasabi/business-factory";
@@ -27,6 +29,16 @@ export function BusinessFactoryPage() {
     setUnits((prev) => [...prev, bu]);
     setSelectedId(bu.id);
     setName("");
+  }
+
+  function provisionTemplate(templateId: string) {
+    const bu = provisionFromTemplate(templateId);
+    // 既存の同名ユニットがあれば連番を付与(Mock・決定論の範囲で重複回避)。
+    const finalBu = units.some((u) => u.id === bu.id)
+      ? provisionFromTemplate(templateId, { name: `${bu.name}-${units.length + 1}` })
+      : bu;
+    setUnits((prev) => [...prev, finalBu]);
+    setSelectedId(finalBu.id);
   }
 
   return (
@@ -60,6 +72,34 @@ export function BusinessFactoryPage() {
             style={{ width: "16rem" }}
           />{" "}
           <button type="button" onClick={provision}>新規事業ユニットを立ち上げ(Mock)</button>
+        </div>
+      </section>
+
+      <section aria-label="事業テンプレートカタログ">
+        <h3>事業テンプレートカタログ</h3>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "48rem" }}>
+          業種テンプレートを選択すると、部門・AI社員・KPIダッシュボード・ワークフロー・必要ドキュメント・
+          ダッシュボードカード・リスクチェック・レポートフォーマットを備えた事業ユニットを Mock 生成します。
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(17rem, 1fr))", gap: "0.75rem" }}>
+          {BUSINESS_TEMPLATES.map((t) => (
+            <div key={t.id} className="card" style={{ padding: "0.7rem 0.85rem", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              <strong>{t.name}</strong>
+              <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>{t.summary}</span>
+              <div style={{ fontSize: "0.78rem" }}>
+                <div><span style={{ color: "var(--text-muted)" }}>チーム:</span> {t.teams.length}／<span style={{ color: "var(--text-muted)" }}>AI社員:</span> {t.aiEmployees.length}種</div>
+                <div><span style={{ color: "var(--text-muted)" }}>KPI例:</span> {t.monthlyKpi.map((k) => k.label).join("・")}</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => provisionTemplate(t.id)}
+                aria-label={`テンプレートから生成: ${t.name}`}
+                style={{ marginTop: "auto" }}
+              >
+                このテンプレートで事業ユニット生成(Mock)
+              </button>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -113,6 +153,18 @@ export function BusinessFactoryPage() {
               selected.provisioning.companyBrainWorkspace,
               selected.provisioning.knowledgeRepository,
             ]} />
+            {selected.provisioning.aiEmployees && selected.provisioning.aiEmployees.length > 0 && (
+              <Card title="AI社員(Mock)" items={selected.provisioning.aiEmployees} />
+            )}
+            {selected.provisioning.dashboardCards && selected.provisioning.dashboardCards.length > 0 && (
+              <Card title="ダッシュボードカード" items={selected.provisioning.dashboardCards} />
+            )}
+            {selected.provisioning.requiredDocuments && selected.provisioning.requiredDocuments.length > 0 && (
+              <Card title="必要ドキュメント" items={selected.provisioning.requiredDocuments} />
+            )}
+            {selected.provisioning.reportingFormat && (
+              <Card title="レポートフォーマット" items={[selected.provisioning.reportingFormat]} />
+            )}
           </div>
         </section>
       )}
