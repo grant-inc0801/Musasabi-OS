@@ -67,3 +67,4 @@ export * from "./deptChat";
 export * from "./supportDesk";
 export * from "./devProjects";
 export * from "./companyDashboard";
+export * from "./workflow";

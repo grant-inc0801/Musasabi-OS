@@ -4,7 +4,13 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(D-011 Core Departments Completion: 全社ダッシュボード)
+## 直近の完了内容(D-012 AI Company Workflow: 部署横断ワークフロー)
+4種の部署横断ワークフロー(新サービス商品化/架電キャンペーン/出版/問い合わせ対応)を
+モデル化し、進捗バー・現在ステップ・状態ランプで可視化するワークフローページを新設。
+サイドバーから到達、ステップから従来ページへ遷移。全 workspace テスト294件 pass。
+次は D-013 Company Brain & Collaboration Engine を実施予定。
+
+## それ以前の完了(D-011 Core Departments Completion: 全社ダッシュボード)
 全部署のKPIを一元表示する全社ダッシュボードを新設(buildCompanyDashboard で
 各部署の集計関数を横断。営業部は実データ反映)。サイドバー/Command Centerから到達、
 各カードから従来ページへ遷移。全 workspace テスト290件 pass・fail 0。
