@@ -1,9 +1,9 @@
 import { forwardRef } from "react";
-import { DEPT_STATUS_COLOR, DEPT_STATUS_LABEL_JA } from "@musasabi/ai-company";
+import { DEPT_STATUS_COLOR, DEPT_STATUS_LABEL_JA, deptIcon } from "@musasabi/ai-company";
 import type { CommandDepartment } from "@musasabi/ai-company";
 
-// 部署パネル(D-20260706-007)。表示は部署名・社員数・ステータスのみ。
-// ステータス色でランプと枠を統一し、glow(box-shadow)で発光させる。
+// 部署パネル(D-20260706-007 + ユーザーFB第6弾)。部署ごとの丸アイコン+部署名・
+// 社員数・ステータス。ステータス色でランプ・枠・流れる光を統一する。
 
 export const DepartmentCard = forwardRef<
   HTMLButtonElement,
@@ -19,6 +19,11 @@ export const DepartmentCard = forwardRef<
       onClick={() => onSelect(dept.id)}
       aria-pressed={selected}
     >
+      {/* 流れる光の枠(メタル調・ユーザーFB第6弾) */}
+      <span className="dept-card-sheen" aria-hidden="true" />
+      <span className="dept-card-icon" aria-hidden="true">
+        {deptIcon(dept.id)}
+      </span>
       <div className="dept-card-name">{dept.name}</div>
       <div className="dept-card-members">{dept.memberCount}人</div>
       <div className="dept-card-status">

@@ -48,27 +48,43 @@ export function DepartmentCommandChat({ departments }: { departments: readonly C
 
   return (
     <div className="command-chat" aria-label="部署指定チャット">
-      <div className="command-chat-row main-row">
-        <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", whiteSpace: "nowrap" }}>
-          指示先部署
-          <select value={target} onChange={(e) => setTarget(e.target.value)}>
-            {departments.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <input
-          type="text"
+      <label className="command-chat-target">
+        指示先部署
+        <select value={target} onChange={(e) => setTarget(e.target.value)}>
+          {departments.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.name}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {/* 入力欄(拡大)+テンプレートを右側に縦並び(ユーザーFB第6弾) */}
+      <div className="command-chat-body">
+        <textarea
+          className="command-chat-input"
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") handleSend();
+            // Enterで送信、Shift+Enterで改行
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
           }}
-          placeholder="指示内容を入力してください…"
-          style={{ flex: 1 }}
+          placeholder="指示内容を入力してください…(Shift+Enterで改行)"
         />
+        <div className="command-chat-templates" aria-label="クイックテンプレート">
+          {QUICK_TEMPLATES.map((t) => (
+            <button key={t} type="button" className="quick-template" onClick={() => setText(t)}>
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 添付・音声送信は入力欄の下に配置(ユーザーFB第6弾) */}
+      <div className="command-chat-actions">
         <label className="attach-btn">
           📎 ファイル添付
           <input
@@ -78,24 +94,16 @@ export function DepartmentCommandChat({ departments }: { departments: readonly C
           />
         </label>
         <VoiceInputButton />
+        {fileName && (
+          <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>添付: {fileName}</span>
+        )}
         <button type="button" onClick={handleSend} className="send-btn">
           送信
         </button>
       </div>
-      <div className="command-chat-row" style={{ justifyContent: "space-between" }}>
-        <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
-          {QUICK_TEMPLATES.map((t) => (
-            <button key={t} type="button" className="quick-template" onClick={() => setText(t)}>
-              {t}
-            </button>
-          ))}
-        </div>
-        {fileName && (
-          <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>添付: {fileName}</span>
-        )}
-      </div>
+
       {history.length > 0 && (
-        <div style={{ fontSize: "0.8rem", maxHeight: 96, overflowY: "auto" }}>
+        <div className="command-chat-history">
           {history.slice(0, 3).map((m) => (
             <div key={m.atMs} style={{ margin: "0.15rem 0" }}>
               <div style={{ color: "var(--text-muted)" }}>

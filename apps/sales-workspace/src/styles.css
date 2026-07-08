@@ -490,7 +490,7 @@ main section,
   }
 }
 
-/* 部署パネル(名前・人数・ステータスのみ。ステータス色の発光枠) */
+/* 部署パネル(丸アイコン+名前・人数・ステータス。メタル調+流れる光の枠) */
 .dept-card {
   position: relative;
   z-index: 1;
@@ -498,22 +498,56 @@ main section,
   flex-direction: column;
   align-items: center;
   gap: 0.3rem;
-  padding: 1rem 0.75rem;
+  padding: 0.9rem 0.75rem 1rem;
   border-radius: 16px;
   border: 2px solid var(--glow);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(230, 233, 238, 0.6));
+  /* メタル調(縦グラデ+ハイライト) */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(236, 238, 242, 0.72) 42%, rgba(205, 210, 218, 0.72) 100%);
   -webkit-backdrop-filter: var(--blur);
   backdrop-filter: var(--blur);
+  overflow: hidden;
   box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -2px 6px rgba(120, 128, 140, 0.22),
     0 0 10px color-mix(in srgb, var(--glow) 45%, transparent);
   cursor: pointer;
   transition: box-shadow 120ms ease, transform 120ms ease;
 }
 
+/* 枠に沿って流れる光(メタルの反射感。ユーザーFB第6弾) */
+.dept-card-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.55) 46%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(255, 255, 255, 0.55) 54%,
+    transparent 70%
+  );
+  background-size: 250% 100%;
+  animation: card-sheen 4.5s linear infinite;
+  mix-blend-mode: screen;
+  opacity: 0.7;
+}
+
+@keyframes card-sheen {
+  0% {
+    background-position: 160% 0;
+  }
+  100% {
+    background-position: -60% 0;
+  }
+}
+
 .dept-card:hover {
   box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -2px 6px rgba(120, 128, 140, 0.22),
     0 0 18px color-mix(in srgb, var(--glow) 75%, transparent);
 }
 
@@ -521,21 +555,53 @@ main section,
   transform: scale(1.02);
 }
 
+/* 部署ごとの丸イメージアイコン(ステータス色のリング) */
+.dept-card-icon {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 1;
+  background: radial-gradient(circle at 32% 28%, #ffffff, #e2e6ec 70%, #cfd4dc);
+  border: 2px solid var(--glow);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.95),
+    0 0 8px color-mix(in srgb, var(--glow) 55%, transparent);
+}
+
 .dept-card-name {
+  position: relative;
+  z-index: 1;
   font-weight: bold;
   font-size: 0.98rem;
 }
 
 .dept-card-members {
+  position: relative;
+  z-index: 1;
   color: var(--text-muted);
   font-size: 0.85rem;
 }
 
 .dept-card-status {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 0.4rem;
   font-size: 0.85rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dept-card-sheen {
+    animation: none;
+    opacity: 0.35;
+  }
 }
 
 .dept-lamp {
@@ -647,24 +713,63 @@ main section,
   box-shadow: inset 0 1px 0 var(--glass-highlight), 0 6px 18px rgba(45, 52, 64, 0.14);
 }
 
-.command-chat-row {
+.command-chat-target {
   display: flex;
-  gap: 0.5rem;
   align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+/* 入力欄(大)+テンプレを右に縦並び(ユーザーFB第6弾) */
+.command-chat-body {
+  display: flex;
+  gap: 0.6rem;
+  align-items: stretch;
+}
+
+.command-chat-input {
+  flex: 1;
+  min-height: 96px;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.6rem 0.7rem;
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 1px 2px rgba(45, 52, 64, 0.1);
+}
+
+.command-chat-templates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 12rem;
+  flex-shrink: 0;
+}
+
+.command-chat-templates .quick-template {
+  width: 100%;
+  text-align: left;
+}
+
+.command-chat-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
-.command-chat-row.main-row {
-  flex-wrap: nowrap;
+.command-chat-actions .send-btn {
+  margin-left: auto;
 }
 
-.command-chat-row.main-row input[type="text"] {
-  min-width: 120px;
-}
-
-.command-chat-row.main-row button,
-.command-chat-row.main-row .attach-btn {
-  white-space: nowrap;
+.command-chat-history {
+  font-size: 0.8rem;
+  max-height: 96px;
+  overflow-y: auto;
 }
 
 .command-chat .attach-btn {
@@ -684,8 +789,16 @@ main section,
 }
 
 .command-chat .quick-template {
-  font-size: 0.78rem;
-  padding: 0.25rem 0.6rem;
+  font-size: 0.82rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  background: var(--metal);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.command-chat .quick-template:hover {
+  background: var(--metal-strong);
 }
 
 /* 右下アバター+吹き出し */
