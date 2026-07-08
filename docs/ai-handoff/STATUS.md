@@ -4,7 +4,14 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Phase 4〜7 D-20260708-005〜008)
+## 直近の完了内容(AI Executive Governance)
+指示書 AI_EXECUTIVE_GOVERNANCE.md に基づき `packages/governance` を新設。AI経営陣8役職の
+月次予算・KPI・着地予測・リスク評価・是正アクション(遅延時の再優先/再配分/CEOエスカレーション)・
+ガバナンス承認ゲート(戦略/組織/価格変更は人間承認必須)・経営ダッシュボードを実装。
+GovernancePage を新設しGLOBAL_NAVから到達。governance テスト10件 pass。Playwrightで実画面確認(0エラー)。
+実予算執行・実戦略変更なし。
+
+## それ以前の完了(Phase 4〜7 D-20260708-005〜008)
 指示書 Phase 4〜7 を一括実装。4パッケージ+4UIページを追加(すべてMock・承認ゲート付き)。
 Phase4 ai-pm(改善提案優先順位・実行キュー・経営サマリー)、Phase5 tenancy(プラン/機能ゲート/
 使用量)、Phase6 ops-monitor(SLO/インシデント/ランブック)、Phase7 evolution(改善提案自動生成/

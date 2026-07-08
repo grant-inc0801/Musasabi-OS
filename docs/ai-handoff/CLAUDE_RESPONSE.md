@@ -3,6 +3,31 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-08 — AI Executive Governance(AI経営ガバナンス)
+
+### 実装内容
+指示書 `AI_EXECUTIVE_GOVERNANCE.md` に基づき、AI経営陣による月次予算・KPI・目標管理の
+ガバナンス基盤を実装。すべて決定論・Mock。実予算執行・実戦略変更は行わない。
+
+- **`packages/governance`(新規)**: AI経営陣8役職(CEO/COO/CTO/CFO/CMO/CPO/CHRO/PM)。
+  予算消化率・KPI達成率・月末着地予測(`forecastAttainmentPercent`)、遅延判定
+  (`isBehindTarget`)、予算超過(`isOverBudget`)、リスク評価(`riskLevel`)、是正アクション
+  推奨(`recommendedActions`・大幅遅延の非CEOはCEOエスカレーション)、ガバナンス承認
+  (`requiresGovernanceApproval`・戦略/組織/価格変更は人間承認必須)、経営ダッシュボード
+  (`buildGovernanceDashboard`)。テスト10件
+- **`GovernancePage`**: 月経過・遅延数・高リスク数・全社予算のスタッツ+役員別ダッシュボード
+  (KPI実績/目標・予算消化・着地予測・リスク・推奨アクション)+承認が必要な変更一覧。
+  GLOBAL_NAV「AI経営ガバナンス」から到達
+
+### 完了条件の充足
+- 予算がCEOからカスケード/AI PMが目標をタスク化(Phase4連携)/日次レビュー相当の着地予測/
+  遅延時の自動再優先付け・リソース再配分・是正提案・CEOエスカレーション/戦略変更はガバナンス承認 ✅
+- ダッシュボードで月次目標・現状・予測・予算消化・リスク・推奨アクション・経営サマリーを表示 ✅
+
+### テスト結果
+- `@musasabi/governance` 10件 pass
+- Playwright E2E: 役員8名・CEOエスカレーション表示・承認ゲート・0エラーを実画面確認
+
 ## 2026-07-08 — Phase 4〜7 実装(D-20260708-005〜008)
 
 指示書 Phase 4〜7 を一括実装。各フェーズを純ロジックのパッケージ+UIページとして追加した。

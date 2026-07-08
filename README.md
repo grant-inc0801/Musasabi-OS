@@ -60,6 +60,7 @@ packages/
   tenancy/            Phase 5 マルチテナント/プラン/機能ゲート(Free/Pro/Enterprise、使用量・上限、Mock課金)
   ops-monitor/        Phase 6 運用監視(SLO評価・インシデント・復旧ランブック)
   evolution/          Phase 7 自己進化(改善提案の自動生成・ドラフトIssue・ナレッジ品質スコア)
+  governance/         AI経営ガバナンス(AI経営陣8役職・月次予算/KPI・着地予測・リスク・是正提案・承認ゲート)
   memory/             Brain Memory Engine(未実装、Epic β-001完了後)
   vision/             Vision Engine(未実装、Epic β-001完了後)
   automation/         Automation Engine(未実装、Epic β-001完了後)
