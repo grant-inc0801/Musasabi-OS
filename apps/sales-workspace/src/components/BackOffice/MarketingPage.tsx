@@ -1,15 +1,43 @@
+import { useState } from "react";
 import {
   MARKETING_CAMPAIGNS,
   MARKETING_STAFF,
   SNS_POST_PLANS,
   buildMarketingKpi,
 } from "@musasabi/ai-company";
+import { buildXlsx } from "@musasabi/call-list";
+import { saveBinaryFile } from "../../lib/saveFile";
 
 // マーケティング部ページ(従来画面・コア部署の完成フェーズ)。
 // すべてMock(実広告出稿・実SNS投稿なし)。
 
 export function MarketingPage() {
   const kpi = buildMarketingKpi();
+  const [exportNote, setExportNote] = useState<string | null>(null);
+
+  async function handleExport(): Promise<void> {
+    // キャンペーン効果測定+SNS投稿計画をExcel(.xlsx)で書き出す(経理部と同パターン)。
+    const rows: string[][] = [
+      ["キャンペーン", "チャネル", "状態", "リード", "CVR(%)"],
+      ...MARKETING_CAMPAIGNS.map((c) => [
+        c.name,
+        c.channel,
+        c.status,
+        String(c.leads),
+        String(c.cvrPercent),
+      ]),
+      [],
+      ["SNS投稿計画(日付)", "テーマ", "状態", "", ""],
+      ...SNS_POST_PLANS.map((p) => [p.date, p.theme, p.status, "", ""]),
+    ];
+    const bytes = buildXlsx(rows, "マーケティング");
+    const stamp = new Date().toISOString().slice(0, 10);
+    const result = await saveBinaryFile(`musasabi-marketing-${stamp}.xlsx`, bytes, "Excel", ["xlsx"]);
+    setExportNote(
+      result === "cancelled" ? "書き出しをキャンセルしました。" : "キャンペーン/SNS計画をExcelで書き出しました。",
+    );
+  }
+
   const kpiTiles = [
     { label: "配信中キャンペーン", value: `${kpi.activeCampaigns}件` },
     { label: "リード獲得累計", value: `${kpi.totalLeads}件` },
@@ -34,8 +62,16 @@ export function MarketingPage() {
       </section>
 
       <section aria-label="キャンペーン一覧">
-        <h3 style={{ marginTop: 0 }}>キャンペーン効果測定(Mock)</h3>
-        <table style={{ borderCollapse: "collapse" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+          <h3 style={{ margin: 0 }}>キャンペーン効果測定(Mock)</h3>
+          <button type="button" onClick={() => void handleExport()}>
+            Excel出力(.xlsx)
+          </button>
+          {exportNote && (
+            <span style={{ color: "var(--ok)", fontSize: "0.85rem" }}>{exportNote}</span>
+          )}
+        </div>
+        <table style={{ borderCollapse: "collapse", marginTop: "0.6rem" }}>
           <thead>
             <tr>
               {["キャンペーン", "チャネル", "状態", "リード", "CVR"].map((h) => (
