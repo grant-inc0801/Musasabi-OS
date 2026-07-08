@@ -10,6 +10,7 @@ import {
   callListToRows,
   mediaStoreKey,
   summarizeCallList,
+  SERPAPI_MAX_RESULTS,
 } from "@musasabi/call-list";
 import type {
   CallListSummary,
@@ -76,7 +77,11 @@ export function CallListPage() {
     const source = provider === mockProvider ? "mock" : "serpapi";
     setSearching(true);
     try {
-      const found = await provider.search({ prefecture, cities: filled });
+      const found = await provider.search({
+        prefecture,
+        cities: filled,
+        maxResults: SERPAPI_MAX_RESULTS,
+      });
       setResults(found);
       setDataSource(source);
       setMediaDone(false);
@@ -188,7 +193,8 @@ export function CallListPage() {
         <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "44rem" }}>
           抽出項目: 店舗名・郵便番号・住所・電話番号・ジャンル・営業時間・
           デリバリー有無・デリバリーサービス媒体。SerpAPIキーを入力すると
-          Googleマップの実データを取得します(1市区町村につき1リクエスト・最大約20件)。
+          Googleマップの実データをページング取得します(1市区町村あたり最大
+          {SERPAPI_MAX_RESULTS.toLocaleString()}件・1ページ約20件を自動で追跡)。
           未入力の場合はMockデータで動作します。
         </p>
 

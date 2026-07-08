@@ -3,10 +3,23 @@ import { test } from "node:test";
 
 import {
   SerpApiGoogleMapsProvider,
+  SERPAPI_PAGE_SIZE,
+  SERPAPI_MAX_RESULTS,
   buildSerpApiUrl,
   extractPostalCode,
   parseSerpApiMapsResponse,
 } from "./index";
+
+/** 指定件数の local_results を持つ SerpAPI レスポンスを作る。 */
+function pageOf(count: number): { local_results: unknown[] } {
+  return {
+    local_results: Array.from({ length: count }, (_, i) => ({
+      title: `店舗${i}`,
+      address: "大阪府高槻市芥川町1-2-3",
+      types: ["飲食店"],
+    })),
+  };
+}
 
 // SerpAPI 公開仕様(google_maps エンジン)の local_results 形状に沿ったフィクスチャ。
 // APIキー・実レスポンスは含めない。
@@ -90,4 +103,42 @@ test("SerpApiGoogleMapsProvider は市区町村ごとに1リクエストし、AP
     () => failing.search({ prefecture: "大阪府", cities: ["高槻市"] }),
     /SerpAPIエラー.*Invalid API key/,
   );
+});
+
+test("buildSerpApiUrl は start>0 のときだけ start パラメータを付与する", () => {
+  assert.equal(new URL(buildSerpApiUrl("k", "大阪府", "高槻市")).searchParams.has("start"), false);
+  assert.equal(new URL(buildSerpApiUrl("k", "大阪府", "高槻市", 40)).searchParams.get("start"), "40");
+});
+
+test("SerpApiGoogleMapsProvider はページングで満杯ページを追い、短いページで打ち切る", async () => {
+  const starts: string[] = [];
+  // 2ページ満杯(各20件)+3ページ目に5件 → 合計45件、3リクエストで停止。
+  const pages = [pageOf(SERPAPI_PAGE_SIZE), pageOf(SERPAPI_PAGE_SIZE), pageOf(5)];
+  const provider = new SerpApiGoogleMapsProvider("dummy-key", async (url) => {
+    starts.push(new URL(url).searchParams.get("start") ?? "0");
+    return pages.shift() ?? pageOf(0);
+  });
+  const results = await provider.search({ prefecture: "大阪府", cities: ["高槻市"] });
+  assert.deepEqual(starts, ["0", "20", "40"]);
+  assert.equal(results[0].records.length, 45);
+});
+
+test("SerpApiGoogleMapsProvider は maxResults で取得件数を制限する", async () => {
+  let calls = 0;
+  const provider = new SerpApiGoogleMapsProvider("dummy-key", async () => {
+    calls += 1;
+    return pageOf(SERPAPI_PAGE_SIZE); // 常に満杯ページを返す(無限に続く想定)
+  });
+  const results = await provider.search({
+    prefecture: "大阪府",
+    cities: ["高槻市"],
+    maxResults: 50,
+  });
+  // 50件上限 → 0,20,40 の3ページで停止し、50件へ切り詰め。
+  assert.equal(calls, 3);
+  assert.equal(results[0].records.length, 50);
+});
+
+test("SERPAPI_MAX_RESULTS の既定は5000件", () => {
+  assert.equal(SERPAPI_MAX_RESULTS, 5000);
 });
