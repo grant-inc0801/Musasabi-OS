@@ -61,6 +61,9 @@ pub fn run() {
         let y = size.height as i32 - (avatar_h * scale) as i32 - taskbar_margin;
         let _ = avatar_window.set_position(tauri::PhysicalPosition::new(x, y));
       }
+      // 起動直後はメイン管理画面が表示されているため、ミニパネル/ミニアバターは
+      // 隠しておく。メイン画面を最小化/閉じたときにだけ表示する(ユーザーFB第7弾)。
+      let _ = avatar_window.hide();
 
       // システムトレイ常駐(Development Bible 第8章: 常駐アバター)。
       let open_item = MenuItem::with_id(app, "open", "開く", true, None::<&str>)?;
@@ -77,6 +80,10 @@ pub fn run() {
             if let Some(window) = app.get_webview_window("main") {
               let _ = window.show();
               let _ = window.set_focus();
+            }
+            // メイン画面を開いたらミニアバターは隠す(ユーザーFB第7弾)。
+            if let Some(avatar) = app.get_webview_window("avatar") {
+              let _ = avatar.hide();
             }
           }
           "quit" => {
@@ -96,6 +103,9 @@ pub fn run() {
               let _ = window.show();
               let _ = window.set_focus();
             }
+            if let Some(avatar) = app.get_webview_window("avatar") {
+              let _ = avatar.hide();
+            }
           }
         })
         .build(app)?;
@@ -108,15 +118,23 @@ pub fn run() {
       // ミニパネルの「メイン画面を開く」から行う。トレイの「終了」は app.exit() で
       // 直接プロセスを終了するため、このハンドラを経由しない。
       if window.label() == "main" {
+        // メイン画面を隠したら、ミニアバター/ミニパネルを表示する(ユーザーFB第7弾)。
+        let show_avatar = || {
+          if let Some(avatar) = window.app_handle().get_webview_window("avatar") {
+            let _ = avatar.show();
+          }
+        };
         match event {
           WindowEvent::CloseRequested { api, .. } => {
             api.prevent_close();
             let _ = window.hide();
+            show_avatar();
           }
           WindowEvent::Resized(_) => {
             if window.is_minimized().unwrap_or(false) {
               let _ = window.unminimize();
               let _ = window.hide();
+              show_avatar();
             }
           }
           _ => {}

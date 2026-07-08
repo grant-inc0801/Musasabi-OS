@@ -511,6 +511,9 @@ async function openMainWindow(): Promise<void> {
       await main.show();
       await main.setFocus();
     }
+    // メイン画面を開いたら、このミニアバター/ミニパネルは隠す(ユーザーFB第7弾)。
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    await getCurrentWindow().hide();
   } catch {
     // ブラウザ単体(vite dev)ではTauri APIが無い。UI開発時は無視してよい。
   }

@@ -21,10 +21,13 @@ export const DepartmentCard = forwardRef<
     >
       {/* 流れる光の枠(メタル調・ユーザーFB第6弾) */}
       <span className="dept-card-sheen" aria-hidden="true" />
-      <span className="dept-card-icon" aria-hidden="true">
-        {deptIcon(dept.id)}
-      </span>
-      <div className="dept-card-name">{dept.name}</div>
+      {/* アイコンは部署名の左に配置し、パネルが縦に伸びないようにする(第7弾) */}
+      <div className="dept-card-head">
+        <span className="dept-card-icon" aria-hidden="true">
+          {deptIcon(dept.id)}
+        </span>
+        <div className="dept-card-name">{dept.name}</div>
+      </div>
       <div className="dept-card-members">{dept.memberCount}人</div>
       <div className="dept-card-status">
         <span className="dept-lamp" style={{ background: color, boxShadow: `0 0 8px ${color}` }} />

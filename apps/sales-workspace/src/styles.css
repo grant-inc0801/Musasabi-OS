@@ -26,6 +26,9 @@
   /* メタリック面(ボタン等): 上端が明るく下端がわずかに沈むグラデーション */
   --metal: linear-gradient(180deg, #f6f7f9, #dadde3);
   --metal-strong: linear-gradient(180deg, #eceef1, #c9cdd4);
+  /* アクセントもメタリックに(近未来感の統一・ユーザーFB第7弾): 青メタル */
+  --accent-metal: linear-gradient(180deg, #5b8cf5 0%, #2f6feb 52%, #1e51c0 100%);
+  --accent-metal-hover: linear-gradient(180deg, #6f9bf7 0%, #2f6feb 52%, #1a49ad 100%);
 }
 
 html,
@@ -107,13 +110,15 @@ select:focus-visible {
   outline-offset: 1px;
 }
 
-/* ナビゲーション上の選択中タブ(disabled で表す既存実装)を強調表示にする */
+/* ナビゲーション上の選択中タブ(disabled で表す既存実装)を強調表示にする。
+   アクセントもメタリック(近未来感の統一・第7弾)。 */
 nav button:disabled,
 button.active {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--accent-metal);
+  border-color: var(--accent-hover);
   color: #fff;
   opacity: 1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 1px 3px rgba(30, 81, 192, 0.35);
 }
 
 input,
@@ -496,9 +501,9 @@ main section,
   z-index: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.9rem 0.75rem 1rem;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 0.7rem 0.8rem;
   border-radius: 16px;
   border: 2px solid var(--glow);
   /* メタル調(縦グラデ+ハイライト) */
@@ -555,19 +560,27 @@ main section,
   transform: scale(1.02);
 }
 
-/* 部署ごとの丸イメージアイコン(ステータス色のリング) */
-.dept-card-icon {
+/* アイコン+部署名を横並びにして、パネルが縦に伸びないようにする(第7弾) */
+.dept-card-head {
   position: relative;
   z-index: 1;
   display: flex;
   align-items: center;
+  gap: 0.5rem;
+}
+
+/* 部署ごとの丸イメージアイコン(ステータス色のリング・メタル球) */
+.dept-card-icon {
+  display: flex;
+  align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
   border-radius: 50%;
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1;
-  background: radial-gradient(circle at 32% 28%, #ffffff, #e2e6ec 70%, #cfd4dc);
+  background: radial-gradient(circle at 32% 26%, #ffffff, #dfe3ea 62%, #c4c9d2);
   border: 2px solid var(--glow);
   box-shadow:
     inset 0 1px 2px rgba(255, 255, 255, 0.95),
@@ -575,8 +588,6 @@ main section,
 }
 
 .dept-card-name {
-  position: relative;
-  z-index: 1;
   font-weight: bold;
   font-size: 0.98rem;
 }
@@ -783,9 +794,46 @@ main section,
 }
 
 .command-chat .send-btn {
-  background: var(--accent);
+  background: var(--accent-metal);
   color: #fff;
-  border-color: var(--accent);
+  border-color: var(--accent-hover);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 1px 3px rgba(30, 81, 192, 0.35);
+}
+
+.command-chat .send-btn:hover:not(:disabled) {
+  background: var(--accent-metal-hover);
+}
+
+/* 市場調査部の統一フォーマット(■新サービス/▽技術評価/・組み合わせ) */
+.mr-service {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  margin: 0 0 0.6rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(232, 235, 240, 0.7));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.mr-service-name {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.mr-service-sub {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 0.15rem 0;
+}
+
+.mr-eval {
+  font-size: 0.88rem;
+  margin: 0.2rem 0;
+}
+
+.mr-combo {
+  font-size: 0.88rem;
+  margin: 0.15rem 0 0.15rem 0.4rem;
 }
 
 .command-chat .quick-template {
