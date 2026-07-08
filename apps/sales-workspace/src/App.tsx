@@ -16,6 +16,7 @@ import { MarketResearchPage } from "./components/MarketResearch/MarketResearchPa
 import { MarketingPage } from "./components/BackOffice/MarketingPage";
 import { AccountingPage } from "./components/BackOffice/AccountingPage";
 import { HrPage } from "./components/BackOffice/HrPage";
+import { SupportPage } from "./components/Support/SupportPage";
 import { DeptDetailPage } from "./components/Department/DeptDetailPage";
 import { PluginsPage } from "./components/Plugins/PluginsPage";
 import { CompanyBrainPage } from "./components/Memory/CompanyBrainPage";
@@ -262,7 +263,7 @@ export function App() {
         ) : page === "dev_call_list" ? (
           <CallListPage />
         ) : page === "support" ? (
-          <DeptDetailPage deptId="dept-support" />
+          <SupportPage />
         ) : page === "marketing" ? (
           <MarketingPage />
         ) : page === "accounting" ? (
