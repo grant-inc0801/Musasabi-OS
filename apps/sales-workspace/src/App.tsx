@@ -9,6 +9,10 @@ import { CompanyDashboardPage } from "./components/Company/CompanyDashboardPage"
 import { DepartmentDashboardPage } from "./components/Department/DepartmentDashboardPage";
 import { AvatarMotionPage } from "./components/Avatar/AvatarMotionPage";
 import { ConnectorsPage } from "./components/Connectors/ConnectorsPage";
+import { AiPmPage } from "./components/Enterprise/AiPmPage";
+import { ProductPage } from "./components/Enterprise/ProductPage";
+import { OpsMonitorPage } from "./components/Enterprise/OpsMonitorPage";
+import { ImprovementPage } from "./components/Enterprise/ImprovementPage";
 import { WorkflowPage } from "./components/Workflow/WorkflowPage";
 import { CollaborationPage } from "./components/Collaboration/CollaborationPage";
 import { WorkspacePage } from "./components/Workspace/WorkspacePage";
@@ -70,6 +74,10 @@ type Page =
   | "department_dashboard"
   | "avatar_motion"
   | "connectors"
+  | "ai_pm"
+  | "product"
+  | "ops_monitor"
+  | "improvement"
   | "workflow"
   | "company_brain"
   | "collaboration"
@@ -105,6 +113,10 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   department_dashboard: "部門ダッシュボード",
   avatar_motion: "アバターモーション",
   connectors: "外部連携コネクタ",
+  ai_pm: "AI PM / 自律経営",
+  product: "プロダクト / テナント",
+  ops_monitor: "運用モニタリング",
+  improvement: "AI改善提案 / 自己進化",
   workflow: "ワークフロー",
   company_brain: "Company Brain",
   collaboration: "コラボレーション",
@@ -157,6 +169,10 @@ const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
   { label: "部門ダッシュボード", page: "department_dashboard" },
   { label: "アバターモーション", page: "avatar_motion" },
   { label: "外部連携コネクタ", page: "connectors" },
+  { label: "AI PM / 自律経営", page: "ai_pm" },
+  { label: "プロダクト / テナント", page: "product" },
+  { label: "運用モニタリング", page: "ops_monitor" },
+  { label: "AI改善提案 / 自己進化", page: "improvement" },
   { label: "ワークフロー", page: "workflow" },
   { label: "AI社員管理", page: "company" },
   { label: "Company Brain", page: "company_brain" },
@@ -348,6 +364,14 @@ export function App() {
           <AvatarMotionPage />
         ) : page === "connectors" ? (
           <ConnectorsPage />
+        ) : page === "ai_pm" ? (
+          <AiPmPage />
+        ) : page === "product" ? (
+          <ProductPage />
+        ) : page === "ops_monitor" ? (
+          <OpsMonitorPage />
+        ) : page === "improvement" ? (
+          <ImprovementPage />
         ) : page === "workflow" ? (
           <WorkflowPage onOpenPage={(target) => replayNavigate(target)} />
         ) : page === "company_brain" ? (

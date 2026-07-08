@@ -4,7 +4,14 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Phase 3 コネクタ基盤 D-20260708-004)
+## 直近の完了内容(Phase 4〜7 D-20260708-005〜008)
+指示書 Phase 4〜7 を一括実装。4パッケージ+4UIページを追加(すべてMock・承認ゲート付き)。
+Phase4 ai-pm(改善提案優先順位・実行キュー・経営サマリー)、Phase5 tenancy(プラン/機能ゲート/
+使用量)、Phase6 ops-monitor(SLO/インシデント/ランブック)、Phase7 evolution(改善提案自動生成/
+ドラフトIssue/ナレッジ品質)。4パッケージ計27件 pass。Playwrightで4ページを実画面確認(0エラー)。
+実接続・実Issue作成・実課金・secrets保存なし。
+
+## それ以前の完了(Phase 3 コネクタ基盤 D-20260708-004)
 Directive D-20260708-004(外部業務システム連携)に基づき `packages/connectors` を新設。
 6コネクタ(GitHub/Excel/カレンダー/Zoom Phone/FileMaker/会計)を Mock・本番未承認で定義し、
 承認ゲート(mock=simulated、production=承認必須、本番write=承認者/理由必須)+ Mock アダプタ
