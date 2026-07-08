@@ -3,6 +3,11 @@ import { generateDailyPlan, recommendActions } from "@musasabi/ai-core";
 import type { Lead } from "@musasabi/ai-core";
 import { callLogStats } from "@musasabi/call-training";
 import { countByStatus } from "@musasabi/sales-list";
+import {
+  SALES_ACTIVITY,
+  SALES_MATERIAL_STATUS_COLOR,
+  appointmentAchievementPct,
+} from "@musasabi/ai-company";
 import { loadCallLog } from "../../lib/callLogStorage";
 import { loadLeads } from "../../lib/salesListStorage";
 import { MOCK_LEADS } from "../../mockData";
@@ -76,8 +81,71 @@ export function SalesKpiPage() {
   const totals = totalCallResults();
   const totalRates = callRates(totals);
 
+  const activity = SALES_ACTIVITY;
+  const achievementPct = appointmentAchievementPct(activity);
+
   return (
     <>
+      <section aria-label="本日の営業活動">
+        <h3>本日の営業活動(Mock)</h3>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+          Zoom Phone / FileMaker 連携は後続フェーズ扱いです。現フェーズでは実接続しません。
+        </p>
+        <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+          <StatTile label="本日の架電予定" value={`${activity.plannedCalls}件`} />
+          <StatTile label="本日のアポ目標" value={`${activity.appointmentGoal}件`} />
+          <StatTile label="獲得アポ数" value={`${activity.appointmentsWon}件`} />
+          <StatTile label="目標達成率" value={`${achievementPct}%`} />
+        </div>
+        <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap" }}>
+          <div>
+            <h4 style={{ marginBottom: "0.3rem" }}>改善対象トーク</h4>
+            <ul style={{ margin: 0, paddingLeft: "1.1rem" }}>
+              {activity.improvementTargets.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
+          </div>
+          <div style={{ flex: "1 1 20rem" }}>
+            <h4 style={{ marginBottom: "0.3rem" }}>よくある反論と推奨切り返し</h4>
+            <ul style={{ margin: 0, paddingLeft: "1.1rem" }}>
+              {activity.rebuttals.map((r) => (
+                <li key={r.objection} style={{ marginBottom: "0.25rem" }}>
+                  <strong>「{r.objection}」</strong>
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
+                    → {r.response}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <h4 style={{ marginBottom: "0.3rem" }}>営業資料作成依頼</h4>
+        <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+          {activity.materialRequests.map((m) => (
+            <li key={m.id} style={{ display: "flex", alignItems: "center", gap: 8, margin: "0.2rem 0" }}>
+              <span
+                style={{
+                  display: "inline-block",
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                  background: SALES_MATERIAL_STATUS_COLOR[m.status],
+                  boxShadow: `0 0 6px ${SALES_MATERIAL_STATUS_COLOR[m.status]}`,
+                }}
+              />
+              {m.title}(依頼元: {m.requestedBy})— {m.status}
+            </li>
+          ))}
+        </ul>
+        <h4 style={{ marginBottom: "0.3rem" }}>次の営業アクション</h4>
+        <ol>
+          {activity.nextActions.map((a) => (
+            <li key={a}>{a}</li>
+          ))}
+        </ol>
+      </section>
+
       {live ? (
         <section aria-label="実データKPI">
           <h3>実データKPI(テストコール履歴+営業リスト・実架電なし)</h3>

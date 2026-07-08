@@ -4,6 +4,13 @@ import {
   MOCK_DEPARTMENT_SUMMARIES,
   PUBLISHING_CLEAN_CHECKS,
   PUBLISHING_STAFF,
+  PUBLISHING_WORKS,
+  PUBLISHING_STAGE_LABEL_JA,
+  PUBLISHING_CHANNEL_LABEL_JA,
+  EDITOR_NOTES,
+  EDITOR_NOTE_CATEGORY_LABEL_JA,
+  EDITOR_IN_CHIEF_ROLES,
+  buildPublishingSummary,
   formatJpy,
 } from "@musasabi/ai-company";
 
@@ -34,9 +41,20 @@ const MOCK_WORKS: readonly PublishedWork[] = [
 
 const publishingSummary = MOCK_DEPARTMENT_SUMMARIES.find((d) => d.id === "dept-publishing");
 
+// 作品パイプラインで表示するステージの並び(企画 → note販売準備)。
+const PIPELINE_STAGES = [
+  "planning",
+  "writing",
+  "proofreading",
+  "similarity_check",
+  "kindle_prep",
+  "note_prep",
+] as const;
+
 export function PublishingPage() {
   const totalUnits = MOCK_WORKS.reduce((sum, w) => sum + w.unitsSold, 0);
   const totalRevenue = MOCK_WORKS.reduce((sum, w) => sum + w.revenueJpy, 0);
+  const pubSummary = buildPublishingSummary();
 
   return (
     <>
@@ -100,6 +118,98 @@ export function PublishingPage() {
             ))}
           </tbody>
         </table>
+      </section>
+
+      <section aria-label="作品パイプライン">
+        <h3>作品パイプライン(Mock)</h3>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "44rem" }}>
+          企画から Kindle / note 販売準備までの各ステージにある作品を表示します。
+          外部出版サービスへの実ログイン・実投稿・実販売設定は行いません。
+        </p>
+        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+          {PIPELINE_STAGES.map((stage) => {
+            const works = PUBLISHING_WORKS.filter((w) => w.stage === stage);
+            return (
+              <div
+                key={stage}
+                style={{
+                  border: "1px solid var(--border)",
+                  borderRadius: 8,
+                  padding: "0.6rem 0.8rem",
+                  minWidth: "12rem",
+                  flex: "1 1 12rem",
+                }}
+              >
+                <div style={{ fontWeight: "bold", marginBottom: "0.35rem" }}>
+                  {PUBLISHING_STAGE_LABEL_JA[stage]}
+                  <span style={{ color: "var(--text-muted)", fontWeight: "normal" }}>
+                    {" "}
+                    ({works.length})
+                  </span>
+                </div>
+                {works.length === 0 ? (
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>—</div>
+                ) : (
+                  <ul style={{ margin: 0, paddingLeft: "1.1rem", fontSize: "0.9rem" }}>
+                    {works.map((w) => (
+                      <li key={w.id}>
+                        {w.title}
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
+                          {w.genre}・{PUBLISHING_CHANNEL_LABEL_JA[w.channel]}・{w.progressPercent}%・
+                          {w.owner}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section aria-label="敏腕編集長AI">
+        <h3>敏腕編集長AIからの指摘(Mock)</h3>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "44rem" }}>
+          原稿の改善点・物語構成・キャラクター一貫性・既存作品との酷似回避・読者ターゲット・
+          販売導線を確認し、各担当AIへ指摘します。
+        </p>
+        <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+          {EDITOR_NOTES.map((n) => {
+            const work = PUBLISHING_WORKS.find((w) => w.id === n.workId);
+            return (
+              <li
+                key={n.id}
+                style={{
+                  borderLeft: "3px solid var(--accent, #A855F7)",
+                  padding: "0.35rem 0.6rem",
+                  margin: "0.5rem 0",
+                  background: "var(--surface-2, rgba(168,85,247,0.06))",
+                }}
+              >
+                <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                  {work ? work.title : n.workId}・{EDITOR_NOTE_CATEGORY_LABEL_JA[n.category]}
+                </div>
+                <div>敏腕編集長AI：{n.message}</div>
+              </li>
+            );
+          })}
+        </ul>
+        <h4>敏腕編集長AIの役割</h4>
+        <ul>
+          {EDITOR_IN_CHIEF_ROLES.map((r) => (
+            <li key={r}>{r}</li>
+          ))}
+        </ul>
+      </section>
+
+      <section aria-label="次の出版アクション">
+        <h3>次の出版アクション(Mock)</h3>
+        <ol>
+          {pubSummary.nextActions.map((a) => (
+            <li key={a}>{a}</li>
+          ))}
+        </ol>
       </section>
 
       <section aria-label="クリーン運営">
