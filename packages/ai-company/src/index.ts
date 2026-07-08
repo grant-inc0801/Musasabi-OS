@@ -77,3 +77,4 @@ export * from "./scheduler";
 export * from "./help";
 export * from "./publishing";
 export * from "./salesActivity";
+export * from "./departmentProfiles";
