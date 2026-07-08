@@ -145,3 +145,5 @@ export const MOCK_FINDINGS: readonly AuditFinding[] = [
   { id: "f-04", category: "policy_violation", severity: "low", department: "営業部門", description: "架電スクリプトのテスト記録に軽微な記入漏れ。", status: "corrected", recommendedAction: "記録テンプレートの必須項目化。" },
   { id: "f-05", category: "operational_risk", severity: "medium", department: "カスタマーサポート部門", description: "未対応チケットの滞留が増加傾向。", status: "open", recommendedAction: "一次対応の自動化候補を評価し、リソースを再配分する。" },
 ];
+
+export * from "./auditLog";

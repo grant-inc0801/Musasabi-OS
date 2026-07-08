@@ -4,7 +4,14 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(AI Audit and Risk Governance)
+## 直近の完了内容(AI組織構造 + 監査ログ)
+指示書 AI_ORGANIZATION_STRUCTURE.md 準拠。既存組織モデルを拡張し、governance に orgStructure
+(役員→本部・組織図・指揮系統・独立監査)、audit に auditLog(追記型・所見からエスカレーション/
+一時停止提案/レビュー/是正を導出)を追加。OrgStructurePage 新設+AuditPageに監査ログ追加。
+AI役員/AI監査/月次予算KPI/未達リスク予測/監査ログを統合。governance 15件・audit 11件 pass。
+Playwrightで組織図・指揮系統・監査ログを実画面確認(0エラー)。
+
+## それ以前の完了(AI Audit and Risk Governance)
 指示書 AI_AUDIT_AND_RISK_GOVERNANCE.md に基づき `packages/audit` を新設。独立監査機能が
 異常/ポリシー違反/KPI整合性/承認遵守/運用リスクを検知し、部門リスクスコア・ポリシー遵守率・
 日次/週次/月次監査レポート・是正推奨・高リスクの一時停止提案(人間承認前提・直接変更なし)を提供。
