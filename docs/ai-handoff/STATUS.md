@@ -4,7 +4,14 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(アバター刷新 + 架電リスト最大5000件)
+## 直近の完了内容(Issue #272 AV-MOTION-001 感情別モーション制御)
+アバターに14ステートの感情別自動モーション制御を実装。emotionMotionMap+
+EmotionStateManager(duration経過→fallback自動復帰、ループ継続、テスト可能な
+Scheduler注入)を avatar-2d に追加。デバッグUI(AvatarMotionPage・14ボタン+
+CSSモーション)を新設しGLOBAL_NAVから到達。制御層と描画層を分離し将来3D差し替え可。
+avatar-2d テスト22件 pass。Playwrightで自動復帰・14ボタンを確認(0エラー)。
+
+## それ以前の完了(アバター刷新 + 架電リスト最大5000件)
 ユーザー添付のムササビ・マスコット画像を右下常駐アバター(mascot.png)へ差し替え
 (背景除去→透過PNG)。架電リスト検索(SerpAPI)をページング対応にし、1市区町村
 あたり最大5000件まで取得可能に(SERPAPI_MAX_RESULTS=5000)。call-list テスト21件 pass。

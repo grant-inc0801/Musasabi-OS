@@ -7,6 +7,7 @@ import { DataManagementPanel } from "./components/Settings/DataManagementPanel";
 import { CompanyPage } from "./components/Company/CompanyPage";
 import { CompanyDashboardPage } from "./components/Company/CompanyDashboardPage";
 import { DepartmentDashboardPage } from "./components/Department/DepartmentDashboardPage";
+import { AvatarMotionPage } from "./components/Avatar/AvatarMotionPage";
 import { WorkflowPage } from "./components/Workflow/WorkflowPage";
 import { CollaborationPage } from "./components/Collaboration/CollaborationPage";
 import { WorkspacePage } from "./components/Workspace/WorkspacePage";
@@ -66,6 +67,7 @@ type Page =
   | "help"
   | "company_dashboard"
   | "department_dashboard"
+  | "avatar_motion"
   | "workflow"
   | "company_brain"
   | "collaboration"
@@ -99,6 +101,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   help: "ヘルプ",
   company_dashboard: "全社ダッシュボード",
   department_dashboard: "部門ダッシュボード",
+  avatar_motion: "アバターモーション",
   workflow: "ワークフロー",
   company_brain: "Company Brain",
   collaboration: "コラボレーション",
@@ -149,6 +152,7 @@ const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
   { label: "ヘルプ", page: "help" },
   { label: "全社ダッシュボード", page: "company_dashboard" },
   { label: "部門ダッシュボード", page: "department_dashboard" },
+  { label: "アバターモーション", page: "avatar_motion" },
   { label: "ワークフロー", page: "workflow" },
   { label: "AI社員管理", page: "company" },
   { label: "Company Brain", page: "company_brain" },
@@ -336,6 +340,8 @@ export function App() {
           <CompanyDashboardPage onOpenPage={(target) => replayNavigate(target)} />
         ) : page === "department_dashboard" ? (
           <DepartmentDashboardPage />
+        ) : page === "avatar_motion" ? (
+          <AvatarMotionPage />
         ) : page === "workflow" ? (
           <WorkflowPage onOpenPage={(target) => replayNavigate(target)} />
         ) : page === "company_brain" ? (
