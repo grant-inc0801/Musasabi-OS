@@ -4,7 +4,13 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(D-019 Scheduler & Routines)
+## 直近の完了内容(D-020 Onboarding & Help / D-017〜020 完遂)
+アプリ内ヘルプ(機能ガイド10・用語集7・FAQ3・初回セットアップ再表示)を新設。
+サイドバー「ヘルプ」から到達。全 workspace テスト316件 pass。
+**D-017〜D-020(延長解釈: レポート/通知/スケジューラ/ヘルプ)を完遂・main統合・
+Beta Build。** ※本文未提供のため延長解釈で実装。次の指令待ち。
+
+## それ以前の完了(D-019 Scheduler & Routines)
 スケジューラ/定例業務ページを新設。定例業務7件(頻度・次回予定・自動化フラグ)+
 頻度絞り込み+保存済み自動化ルーチン(実データ)。サイドバーから到達。
 全 workspace テスト314件 pass。次は D-020 Onboarding & Help(延長解釈の最終)。

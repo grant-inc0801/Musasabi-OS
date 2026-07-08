@@ -74,3 +74,4 @@ export * from "./operations";
 export * from "./report";
 export * from "./notifications";
 export * from "./scheduler";
+export * from "./help";
