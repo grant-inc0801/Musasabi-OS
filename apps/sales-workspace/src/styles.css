@@ -1080,3 +1080,31 @@ main section,
   .dept-cyl-fill { transition: none; }
   .dept-cyl:hover { transform: none; }
 }
+
+/* ===== Layer A: AI CEO 経営ダッシュボード(D-20260709-003) ===== */
+.ceo-dash {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.9rem;
+  margin: 1rem 0;
+}
+.ceo-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+  background: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(0,0,0,0.15));
+}
+.ceo-card h3 { margin: 0 0 0.5rem; font-size: 0.95rem; }
+.ceo-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.83rem; }
+.ceo-list > li { line-height: 1.35; }
+.ceo-badge {
+  display: inline-block; color: #fff; font-size: 0.72rem; font-weight: 700;
+  padding: 1px 7px; border-radius: 999px;
+}
+.ceo-meter-row { display: flex; flex-direction: column; gap: 0.4rem; }
+.ceo-gauge { display: grid; grid-template-columns: 5rem 1fr 3rem; align-items: center; gap: 0.5rem; }
+.ceo-gauge-label { font-size: 0.8rem; color: var(--text-muted); }
+.ceo-gauge-track { height: 10px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.ceo-gauge-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #6c8cff, #22c55e); transition: width 0.8s ease; }
+.ceo-gauge-value { font-size: 0.82rem; font-weight: 700; text-align: right; }
+.ceo-rank { margin: 0; padding-left: 1.2rem; font-size: 0.83rem; display: flex; flex-direction: column; gap: 0.25rem; }

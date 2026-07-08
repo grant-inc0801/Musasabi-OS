@@ -4,7 +4,14 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(部署パネル 円柱型進捗メーターUI)
+## 直近の完了内容(CEO Dashboard 二層UI D-20260709-003)
+指示書 CEO_DASHBOARD_TWO_LAYER_UI_DIRECTIVE.md に基づき二層UIを実装。Layer A(経営ダッシュボード)
+に ceo-dashboard パッケージの経営メーター・アラート優先度・タイムライン・CEO提案ボックス
+(承認→Issue Mock)・AI社員ランキングを追加。Layer B(部門クリック)に担当AI社員・ブロック項目・
+承認待ち・監査メモ・提案→Issueを追加。アバター吹き出しにダッシュボード状態要約を追加。
+ceo-dashboard テスト7件 pass。Playwrightで両層を実画面確認(0エラー)。
+
+## それ以前の完了(部署パネル 円柱型進捗メーターUI)
 部署パネルUI仕様書に基づき、Command Center の部署パネルを円柱型進捗メーターへ変更。
 DepartmentCylinder(下から上へ充填・ステータス色連動・上部アイコン/部署名/状態・下部%・
 100/50/0目盛り・ホバー拡大・クリックで詳細)を新設し DepartmentCard を差し替え。

@@ -66,6 +66,7 @@ packages/
   ecosystem/          Phase 8 AIエコシステム(部門/AI社員/ワークフローのテンプレート・内部マーケットプレイス・安定拡張API)
   agi/                Phase 11 Musasabi AGI(自己最適化/ワークフロー/部門・AI社員新設提案・Company Brain進化・戦略立案。承認/監査/憲章下)
   next-core-modules/  Musasabiコアモジュール12種(AI Constitution/Mission Control/Situation Room/Digital Twin/Relationship Graph/Memory/Customer Brain/QA/Security/Cost/Competitor/Innovation。Mock)
+  ceo-dashboard/      CEO二層ダッシュボード(経営メーター・アラート優先度・タイムライン・CEO提案ボックス・AI社員ランキング。Layer B補助データ)
   memory/             Brain Memory Engine(未実装、Epic β-001完了後)
   vision/             Vision Engine(未実装、Epic β-001完了後)
   automation/         Automation Engine(未実装、Epic β-001完了後)

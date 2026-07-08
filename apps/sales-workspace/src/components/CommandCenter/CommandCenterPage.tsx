@@ -20,6 +20,7 @@ import { DepartmentConnectionLines } from "./DepartmentConnectionLines";
 import { DepartmentDetailPanel } from "./DepartmentDetailPanel";
 import { DepartmentCommandChat } from "./DepartmentCommandChat";
 import { AssistantAvatar } from "./AssistantAvatar";
+import { CeoDashboardPanel } from "./CeoDashboardPanel";
 import brandIcon from "../../assets/brand-icon.png";
 
 // Musasabi Command Center(Directive D-20260706-007)。
@@ -154,6 +155,7 @@ export function CommandCenterPage({
             <span className="legend-line" /> 部門間連携中
           </span>
         </div>
+        <CeoDashboardPanel departments={departments} />
         <DepartmentCommandChat departments={departments} />
       </main>
 

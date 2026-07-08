@@ -10,6 +10,7 @@ import {
 } from "@musasabi/ai-company";
 import type { CommandDepartment } from "@musasabi/ai-company";
 import { recentEntriesFor } from "@musasabi/ai-company";
+import { deptAssignedEmployees, deptBlockedItems, deptAuditNotes } from "@musasabi/ceo-dashboard";
 import { MarketResearchDetail } from "./MarketResearchDetail";
 import { recordMemory } from "../../lib/memoryStorage";
 import { loadDeptChatHistory } from "../../lib/deptChatStorage";
@@ -263,12 +264,77 @@ export function DepartmentDetailPanel({
         </ul>
       </div>
 
+      <LayerBBlocks dept={dept} />
+
       <RecentInstructionsBlock deptId={dept.id} />
 
       <button type="button" onClick={() => onOpenDetail(dept.id)}>
         詳細を見る
       </button>
     </aside>
+  );
+}
+
+/**
+ * Layer B(部門インタラクション)の必須要素: 担当AI社員・ブロック項目・承認待ち・
+ * 監査メモ・提案からIssue作成(Mock)。CEO_DASHBOARD_TWO_LAYER_UI_DIRECTIVE。
+ */
+function LayerBBlocks({ dept }: { dept: CommandDepartment }) {
+  const employees = deptAssignedEmployees(dept.id);
+  const blocked = deptBlockedItems(dept.id);
+  const auditNotes = deptAuditNotes(dept.id);
+  const waitingApproval = dept.status === "waiting_approval";
+  const [issued, setIssued] = useState(false);
+
+  return (
+    <>
+      <div className="detail-block">
+        <strong>担当AI社員</strong>
+        <ul style={{ margin: "0.3rem 0 0", paddingLeft: "1.1rem", fontSize: "0.82rem" }}>
+          {employees.map((e) => <li key={e}>{e}</li>)}
+        </ul>
+      </div>
+
+      <div className="detail-block">
+        <strong>ブロック項目</strong>
+        {blocked.length === 0 ? (
+          <p style={{ margin: "0.3rem 0 0", fontSize: "0.82rem", color: "var(--text-muted)" }}>なし</p>
+        ) : (
+          <ul style={{ margin: "0.3rem 0 0", paddingLeft: "1.1rem", fontSize: "0.82rem" }}>
+            {blocked.map((b) => <li key={b}>{b}</li>)}
+          </ul>
+        )}
+      </div>
+
+      <div className="detail-block">
+        <strong>承認待ち</strong>
+        <p style={{ margin: "0.3rem 0 0", fontSize: "0.82rem", color: waitingApproval ? "var(--warn)" : "var(--text-muted)" }}>
+          {waitingApproval ? "この部門に承認待ちの案件があります(CEO/管理部の承認へ)。" : "承認待ちはありません。"}
+        </p>
+      </div>
+
+      <div className="detail-block">
+        <strong>監査メモ(AI監査)</strong>
+        <ul style={{ margin: "0.3rem 0 0", paddingLeft: "1.1rem", fontSize: "0.82rem" }}>
+          {auditNotes.map((n) => <li key={n}>{n}</li>)}
+        </ul>
+      </div>
+
+      <div className="detail-block">
+        <strong>提案 → Issue(Mock)</strong>
+        <p style={{ margin: "0.3rem 0", fontSize: "0.8rem", color: "var(--text-muted)" }}>
+          この部門の改善提案をドラフトIssue化します(実際のIssueは作成しません)。
+        </p>
+        <button type="button" onClick={() => setIssued(true)} disabled={issued}>
+          {issued ? "ドラフトIssue作成済み(Mock)" : "提案をIssueドラフト化"}
+        </button>
+        {issued && (
+          <p style={{ color: "var(--ok)", fontSize: "0.8rem", margin: "0.35rem 0 0" }}>
+            「[提案] {dept.name}の改善」ドラフトを作成しました(Mock)。
+          </p>
+        )}
+      </div>
+    </>
   );
 }
 

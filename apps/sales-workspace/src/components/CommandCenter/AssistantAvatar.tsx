@@ -3,6 +3,7 @@ import { buildAssistantSummaryJa } from "@musasabi/ai-company";
 import type { CommandDepartment } from "@musasabi/ai-company";
 import { deriveEmotionFromSignals, emotionMotionMap } from "@musasabi/avatar-2d";
 import { buildNextModulesSummaryJa } from "@musasabi/next-core-modules";
+import { buildExecutiveCompanyMeter, buildDashboardSummaryJa } from "@musasabi/ceo-dashboard";
 import mascot from "../../assets/mascot.png";
 
 // 右下アバター+吹き出し(D-20260706-007)。可愛い3D風ムササビ(公式イメージの
@@ -24,8 +25,13 @@ export function AssistantAvatar({
       setOpen(false);
     }
   }, [detailOpen]);
-  // 部署要約 + コアモジュールの主要状態(D-20260709-002: アバターが要約)
-  const summary = [buildAssistantSummaryJa(departments), ...buildNextModulesSummaryJa()].join("\n");
+  // 部署要約 + 経営ダッシュボード状態(D-20260709-003)+ コアモジュール状態(D-20260709-002)
+  const companyMeter = buildExecutiveCompanyMeter(departments.map((d) => d.progressPercent));
+  const summary = [
+    buildAssistantSummaryJa(departments),
+    ...buildDashboardSummaryJa(companyMeter),
+    ...buildNextModulesSummaryJa(),
+  ].join("\n");
 
   // 部署状態 → 感情モーション(エラー>承認待ち>作業中>全完了>待機)。
   const motion = useMemo(() => {
