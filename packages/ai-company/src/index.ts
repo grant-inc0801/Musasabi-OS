@@ -65,3 +65,4 @@ export * from "./knowledgeVault";
 export * from "./backOffice";
 export * from "./deptChat";
 export * from "./supportDesk";
+export * from "./devProjects";

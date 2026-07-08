@@ -17,7 +17,7 @@ import { MarketingPage } from "./components/BackOffice/MarketingPage";
 import { AccountingPage } from "./components/BackOffice/AccountingPage";
 import { HrPage } from "./components/BackOffice/HrPage";
 import { SupportPage } from "./components/Support/SupportPage";
-import { DeptDetailPage } from "./components/Department/DeptDetailPage";
+import { DevelopmentPage } from "./components/Development/DevelopmentPage";
 import { PluginsPage } from "./components/Plugins/PluginsPage";
 import { CompanyBrainPage } from "./components/Memory/CompanyBrainPage";
 import { VisionPage } from "./components/Vision/VisionPage";
@@ -259,7 +259,10 @@ export function App() {
         ) : page === "market_research" ? (
           <MarketResearchPage />
         ) : page === "development" ? (
-          <DeptDetailPage deptId="dept-development" />
+          <DevelopmentPage
+            onNavigateToCallList={() => navigate("dev_call_list")}
+            onNavigateToAutomation={() => navigate("automation")}
+          />
         ) : page === "dev_call_list" ? (
           <CallListPage />
         ) : page === "support" ? (
