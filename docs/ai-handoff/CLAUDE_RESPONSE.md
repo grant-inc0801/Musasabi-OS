@@ -3,6 +3,24 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-08 — D-017 Reporting & Analytics(全社レポート)
+
+### 実装内容
+D-017〜D-020 は本文未提供のため、D-016 までの延長として解釈を明示のうえ実施
+(停止条件=実API/認証/セキュリティ法務/本番データ/大規模アーキ変更 のいずれにも
+非該当・すべてMock)。D-017 は全社レポートの生成・エクスポート。
+
+- **`packages/ai-company/report.ts`**: `buildCompanyReport(departments)` —
+  運営サマリー・部署別KPI・ワークフロー・コラボレーションを1つの構造化レポートに
+  集約。`renderReportMarkdown` で日本語Markdownへ整形。テスト2件
+- **`ReportsPage`**: Markdownプレビュー+Markdown(.md)/JSON(.json)エクスポート
+  (saveBinaryFile)。営業部は実データ反映。サイドバー「レポート」から到達
+
+### テスト結果
+- 全 workspace テスト **308件 pass・fail 0**(report 2件を追加)
+- Playwright E2E: 到達・プレビュー・Markdown/JSONエクスポート(JSON妥当性)を
+  実画面確認
+
 ## 2026-07-08 — D-016 AI Company Operation(会社運営ビュー)
 
 ### 実装内容
