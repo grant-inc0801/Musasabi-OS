@@ -14,7 +14,7 @@ import { loadCallLog } from "../../lib/callLogStorage";
 import { loadLeads } from "../../lib/salesListStorage";
 import { loadMemoryRecords } from "../../lib/memoryStorage";
 import { VAULT_ITEMS, VAULT_STATUS_COLOR, computeVaultSummary } from "@musasabi/ai-company";
-import { DepartmentCard } from "./DepartmentCard";
+import { DepartmentCylinder } from "./DepartmentCylinder";
 import { VaultDetailPanel } from "./VaultDetailPanel";
 import { DepartmentConnectionLines } from "./DepartmentConnectionLines";
 import { DepartmentDetailPanel } from "./DepartmentDetailPanel";
@@ -123,7 +123,7 @@ export function CommandCenterPage({
           />
           <div className="cc-grid">
             {departments.map((dept) => (
-              <DepartmentCard
+              <DepartmentCylinder
                 key={dept.id}
                 dept={dept}
                 selected={dept.id === selectedId}
