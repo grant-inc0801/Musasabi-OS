@@ -179,10 +179,12 @@ function VaultCard({ selected, onSelect }: { selected: boolean; onSelect: () => 
       aria-pressed={selected}
     >
       <span className="dept-card-sheen" aria-hidden="true" />
-      <span className="dept-card-icon" aria-hidden="true">
-        🗄
-      </span>
-      <div className="dept-card-name">保管庫</div>
+      <div className="dept-card-head">
+        <span className="dept-card-icon" aria-hidden="true">
+          🗄
+        </span>
+        <div className="dept-card-name">保管庫</div>
+      </div>
       <div className="dept-card-members">
         {summary.itemCount}件 / {(summary.totalKb / 1024).toFixed(1)}MB
       </div>

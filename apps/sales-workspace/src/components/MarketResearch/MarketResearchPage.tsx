@@ -63,51 +63,31 @@ export function MarketResearchPage() {
       </section>
 
       <section aria-label="新サービスと技術評価">
-        <h3 style={{ marginTop: 0 }}>新サービス一覧と技術評価(Mock)</h3>
-        <ul>
+        <h3 style={{ marginTop: 0 }}>新サービス一覧・技術評価・組み合わせ(Mock)</h3>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", margin: "0 0 0.6rem" }}>
+          ■新サービス名 / ▽技術評価内容 / ・組み合わせ内容 のフォーマットで統一表示します。
+        </p>
+        <div className="mr-service">
           {AI_SERVICE_ITEMS.map((s) => (
-            <li key={s.name}>
-              <strong>{s.name}</strong>({s.provider})— {s.summary} → {s.relatedDept}
-            </li>
+            <div key={s.name} style={{ margin: "0 0 0.5rem" }}>
+              <div className="mr-service-name">■ {s.name}</div>
+              <div className="mr-service-sub">
+                {s.provider} — {s.summary} → {s.relatedDept}
+              </div>
+            </div>
           ))}
-        </ul>
-        <table style={{ borderCollapse: "collapse", marginTop: "0.5rem" }}>
-          <thead>
-            <tr>
-              {["対象", "精度", "コスト", "日本語", "商用利用", "ライセンス", "推奨度"].map((h) => (
-                <th key={h} style={cellStyle}>
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {AI_SERVICE_EVALUATIONS.map((e) => (
-              <tr key={e.name}>
-                <td style={cellStyle}>{e.name}</td>
-                <td style={cellStyle}>{e.accuracy}</td>
-                <td style={cellStyle}>{e.cost}</td>
-                <td style={cellStyle}>{e.japanese}</td>
-                <td style={cellStyle}>{e.commercialUse}</td>
-                <td style={cellStyle}>{e.license}</td>
-                <td style={cellStyle}>
-                  <strong>{e.recommendation}</strong>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-
-      <section aria-label="AI組み合わせ研究">
-        <h3 style={{ marginTop: 0 }}>AI組み合わせ研究(Mock)</h3>
-        <ul>
+          {AI_SERVICE_EVALUATIONS.map((e) => (
+            <div key={e.name} className="mr-eval">
+              ▽ {e.name}: 精度{e.accuracy} / コスト{e.cost} / 日本語{e.japanese} / 商用利用
+              {e.commercialUse} / ライセンス{e.license} / 推奨度<strong>{e.recommendation}</strong>
+            </div>
+          ))}
           {AI_COMBINATION_CANDIDATES.map((c) => (
-            <li key={c.combo}>
-              {c.combo} → <strong>{c.outcome}</strong>
-            </li>
+            <div key={c.combo} className="mr-combo">
+              ・ {c.combo} → <strong>{c.outcome}</strong>
+            </div>
           ))}
-        </ul>
+        </div>
       </section>
 
       <section aria-label="連携と提案">
