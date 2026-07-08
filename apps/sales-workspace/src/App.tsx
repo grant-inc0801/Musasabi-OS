@@ -7,6 +7,7 @@ import { DataManagementPanel } from "./components/Settings/DataManagementPanel";
 import { CompanyPage } from "./components/Company/CompanyPage";
 import { CompanyDashboardPage } from "./components/Company/CompanyDashboardPage";
 import { WorkflowPage } from "./components/Workflow/WorkflowPage";
+import { CollaborationPage } from "./components/Collaboration/CollaborationPage";
 import { SalesBrainPage } from "./components/SalesBrain/SalesBrainPage";
 import { FirstRunSetup } from "./components/Setup/FirstRunSetup";
 import { SalesKpiPage } from "./components/Sales/SalesKpiPage";
@@ -52,6 +53,7 @@ type Page =
   | "company_dashboard"
   | "workflow"
   | "company_brain"
+  | "collaboration"
   | "vision"
   | "automation"
   | "plugins"
@@ -76,6 +78,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   company_dashboard: "全社ダッシュボード",
   workflow: "ワークフロー",
   company_brain: "Company Brain",
+  collaboration: "コラボレーション",
   vision: "Vision(画面解析)",
   automation: "Automation(操作記録)",
   plugins: "プラグイン",
@@ -118,6 +121,7 @@ const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
   { label: "ワークフロー", page: "workflow" },
   { label: "AI社員管理", page: "company" },
   { label: "Company Brain", page: "company_brain" },
+  { label: "コラボレーション", page: "collaboration" },
   { label: "Vision", page: "vision" },
   { label: "Automation", page: "automation" },
   { label: "プラグイン", page: "plugins" },
@@ -287,6 +291,8 @@ export function App() {
           <WorkflowPage onOpenPage={(target) => replayNavigate(target)} />
         ) : page === "company_brain" ? (
           <CompanyBrainPage />
+        ) : page === "collaboration" ? (
+          <CollaborationPage />
         ) : page === "vision" ? (
           <VisionPage />
         ) : page === "automation" ? (
