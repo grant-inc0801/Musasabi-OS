@@ -4,7 +4,13 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(D-012 AI Company Workflow: 部署横断ワークフロー)
+## 直近の完了内容(D-013 Company Brain & Collaboration Engine)
+部署間の引き継ぎ・提案・承認依頼(6件)と全社共有ナレッジ(5件)を可視化する
+コラボレーションページを新設(概要タイル・種別絞り込み・採用部署表示)。
+サイドバーから到達。全 workspace テスト297件 pass。
+次は D-014 Desktop Assistant & Workspace を実施予定。
+
+## それ以前の完了(D-012 AI Company Workflow: 部署横断ワークフロー)
 4種の部署横断ワークフロー(新サービス商品化/架電キャンペーン/出版/問い合わせ対応)を
 モデル化し、進捗バー・現在ステップ・状態ランプで可視化するワークフローページを新設。
 サイドバーから到達、ステップから従来ページへ遷移。全 workspace テスト294件 pass。
