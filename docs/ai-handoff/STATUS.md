@@ -4,7 +4,11 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Company Brain 期間フィルタ+JSONエクスポート)
+## 直近の完了内容(経理部の仕訳・収支Excel出力)
+経理部ページに「Excel出力(.xlsx)」を追加(buildXlsx 再利用・仕訳一覧+収支
+サマリー・ローカル保存)。全 workspace テスト286件 pass・fail 0。
+
+## それ以前の完了(Company Brain 期間フィルタ+JSONエクスポート)
 Memory履歴に期間フィルタ(全期間/今日/直近7日)と、絞り込み反映のJSONエクスポート
 (ローカル保存)を追加。全 workspace テスト286件 pass・fail 0。
 
