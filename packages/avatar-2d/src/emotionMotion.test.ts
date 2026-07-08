@@ -7,6 +7,7 @@ import {
   isAvatarEmotion,
   resolveFallback,
   EmotionStateManager,
+  deriveEmotionFromSignals,
   type Scheduler,
   type AvatarEmotion,
 } from "./emotionMotion";
@@ -127,6 +128,14 @@ test("reset は idle へ戻す", () => {
   mgr.setEmotion("happy");
   mgr.reset();
   assert.equal(mgr.getCurrent(), "idle");
+});
+
+test("deriveEmotionFromSignals は優先度に従って感情を選ぶ", () => {
+  assert.equal(deriveEmotionFromSignals({ hasError: true, hasApproval: true }), "alert");
+  assert.equal(deriveEmotionFromSignals({ hasApproval: true, hasWorking: true }), "approval_wait");
+  assert.equal(deriveEmotionFromSignals({ hasWorking: true }), "working");
+  assert.equal(deriveEmotionFromSignals({ allDone: true }), "happy");
+  assert.equal(deriveEmotionFromSignals({}), "idle");
 });
 
 test("onChange は状態変化を通知し、解除できる", () => {

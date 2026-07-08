@@ -4,7 +4,14 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Issue #272 AV-MOTION-001 感情別モーション制御)
+## 直近の完了内容(AV-MOTION-001 常駐アバターへの適用)
+新規Directive/Issueが無いため(CHATGPT_DIRECTIVE.mdはD-20260708-001のまま、AV-ICON #227/#228は
+実装済み)、非停止ルールに従い #272 の感情モーションを右下常駐アバターへ適用。
+`deriveEmotionFromSignals`(部署状態→感情)を追加し、AssistantAvatarが error/承認待ち/作業中/
+完了を検知してモーション(attention_pop/wait_pose/typing/jump/idle)を切替。
+avatar-2d テスト23件 pass。Playwrightで実画面確認(0エラー)。
+
+## それ以前の完了(Issue #272 AV-MOTION-001 感情別モーション制御)
 アバターに14ステートの感情別自動モーション制御を実装。emotionMotionMap+
 EmotionStateManager(duration経過→fallback自動復帰、ループ継続、テスト可能な
 Scheduler注入)を avatar-2d に追加。デバッグUI(AvatarMotionPage・14ボタン+

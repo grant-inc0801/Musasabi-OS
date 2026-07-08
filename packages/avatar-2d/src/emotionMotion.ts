@@ -98,6 +98,30 @@ export const EMOTION_LABEL_JA: Record<AvatarEmotion, string> = {
   approval_wait: "承認待ち",
 };
 
+/**
+ * 会社状態のシグナルから常駐アバターの感情ステートを導出する(純関数)。
+ * 描画側(ai-company の部署ステータス等)に依存しないよう、真偽シグナルで受け取る。
+ * 優先度: エラー > 承認待ち > 作業中 > 全完了 > 待機。
+ */
+export interface AvatarStateSignals {
+  /** エラー中の部署/案件がある。 */
+  hasError?: boolean;
+  /** 承認待ちがある。 */
+  hasApproval?: boolean;
+  /** 作業中の部署がある。 */
+  hasWorking?: boolean;
+  /** すべて完了している。 */
+  allDone?: boolean;
+}
+
+export function deriveEmotionFromSignals(signals: AvatarStateSignals): AvatarEmotion {
+  if (signals.hasError) return "alert";
+  if (signals.hasApproval) return "approval_wait";
+  if (signals.hasWorking) return "working";
+  if (signals.allDone) return "happy";
+  return "idle";
+}
+
 /** 状態変化の通知内容。 */
 export interface EmotionSnapshot {
   emotion: AvatarEmotion;
