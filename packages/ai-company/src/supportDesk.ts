@@ -172,3 +172,16 @@ export function setTicketStatus(
 ): SupportTicket[] {
   return tickets.map((t) => (t.id === id ? { ...t, status } : t));
 }
+
+/** アバター吹き出し用のサポート要約(未対応があれば先頭で知らせる)。 */
+export function buildSupportSummaryJa(): string[] {
+  const kpi = buildSupportKpi(SUPPORT_TICKETS);
+  const lines: string[] = [];
+  if (kpi.openCount > 0) {
+    lines.push(`サポート部で未対応の問い合わせが${kpi.openCount}件あります。`);
+  }
+  if (kpi.inProgressCount > 0) {
+    lines.push(`サポート部は${kpi.inProgressCount}件の問い合わせに対応中です。`);
+  }
+  return lines;
+}

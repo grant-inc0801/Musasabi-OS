@@ -39,3 +39,10 @@ test("AI社員数は部署一覧(Command Center)の人数と整合する", () =>
   const support = COMMAND_DEPARTMENTS.find((d) => d.id === "support")!;
   assert.equal(SUPPORT_STAFF.length, support.memberCount);
 });
+
+test("サポート要約は未対応と対応中の件数を伝える", async () => {
+  const { buildSupportSummaryJa } = await import("./supportDesk");
+  const lines = buildSupportSummaryJa();
+  assert.ok(lines.some((l) => l.includes("未対応の問い合わせが1件")));
+  assert.ok(lines.some((l) => l.includes("2件の問い合わせに対応中")));
+});
