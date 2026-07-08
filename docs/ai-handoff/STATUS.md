@@ -4,7 +4,14 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(D-016 AI Company Operation / D-011〜016 完遂)
+## 直近の完了内容(D-017 Reporting & Analytics)
+全社レポート(運営・部署KPI・WF・コラボを集約)を生成し、Markdownプレビュー+
+Markdown/JSONエクスポートを提供するレポートページを新設。サイドバーから到達。
+全 workspace テスト308件 pass。
+※D-017〜020 は本文未提供のため延長解釈で実装(D-017=レポート、D-018=通知、
+D-019=スケジューラ、D-020=ヘルプ を予定)。次は D-018 Notifications & Alerts。
+
+## それ以前の完了(D-016 AI Company Operation / D-011〜016 完遂)
 会社運営ビューを新設。承認キュー(部署/ワークフロー/コラボの承認待ちを一元化)+
 運営サマリー+運営メニュー。サイドバーから到達。全 workspace テスト306件 pass。
 **D-011〜D-016 をすべて実装・main統合・Beta Build 完了。**
