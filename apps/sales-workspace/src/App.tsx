@@ -13,6 +13,7 @@ import { SelfEvolutionPage } from "./components/SelfEvolution/SelfEvolutionPage"
 import { OperationsPage } from "./components/Operations/OperationsPage";
 import { ReportsPage } from "./components/Reports/ReportsPage";
 import { NotificationsPage } from "./components/Notifications/NotificationsPage";
+import { SchedulerPage } from "./components/Scheduler/SchedulerPage";
 import { SalesBrainPage } from "./components/SalesBrain/SalesBrainPage";
 import { FirstRunSetup } from "./components/Setup/FirstRunSetup";
 import { SalesKpiPage } from "./components/Sales/SalesKpiPage";
@@ -59,6 +60,7 @@ type Page =
   | "operations"
   | "reports"
   | "notifications"
+  | "scheduler"
   | "company_dashboard"
   | "workflow"
   | "company_brain"
@@ -89,6 +91,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   operations: "オペレーション",
   reports: "レポート",
   notifications: "通知センター",
+  scheduler: "スケジューラ",
   company_dashboard: "全社ダッシュボード",
   workflow: "ワークフロー",
   company_brain: "Company Brain",
@@ -136,6 +139,7 @@ const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
   { label: "オペレーション", page: "operations" },
   { label: "レポート", page: "reports" },
   { label: "通知センター", page: "notifications" },
+  { label: "スケジューラ", page: "scheduler" },
   { label: "全社ダッシュボード", page: "company_dashboard" },
   { label: "ワークフロー", page: "workflow" },
   { label: "AI社員管理", page: "company" },
@@ -313,6 +317,8 @@ export function App() {
           <ReportsPage />
         ) : page === "notifications" ? (
           <NotificationsPage />
+        ) : page === "scheduler" ? (
+          <SchedulerPage onOpenAutomation={() => navigate("automation")} />
         ) : page === "company_dashboard" ? (
           <CompanyDashboardPage onOpenPage={(target) => replayNavigate(target)} />
         ) : page === "workflow" ? (
