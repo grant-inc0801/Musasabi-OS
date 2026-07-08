@@ -2,6 +2,8 @@ import { buildResearchAndPublishingSummaryJa } from "./marketResearch";
 import { buildVaultSummaryJa } from "./knowledgeVault";
 import { buildSupportSummaryJa } from "./supportDesk";
 import { buildDevSummaryJa } from "./devProjects";
+import { buildSalesActivitySummaryJa } from "./salesActivity";
+import { buildPublishingSummaryJa } from "./publishing";
 
 // Musasabi Command Center のデータモデル(Directive D-20260706-007)。
 // 部署パネル・ステータス色・部署間連携・アシスタント要約(吹き出し)を扱う。
@@ -289,6 +291,10 @@ export function buildAssistantSummaryJa(departments: readonly CommandDepartment[
     if (d.errorCause) lines.push(`原因は${d.errorCause}。`);
     if (d.errorFix) lines.push(`${d.errorFix}。`);
   }
+  // 営業部門の日次活動(架電予定・アポ状況・資料レビュー) D-20260708-001
+  lines.push(...buildSalesActivitySummaryJa());
+  // 出版部門の作品パイプライン・敏腕編集長AIの指摘 D-20260708-001
+  lines.push(...buildPublishingSummaryJa());
   // 市場調査部・出版部クリーン運営の要約(D-20260706-009)
   lines.push(...buildResearchAndPublishingSummaryJa());
   // 保管庫の要約(D-20260706-010)
