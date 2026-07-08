@@ -4,7 +4,12 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(D-018 Notifications & Alerts)
+## 直近の完了内容(D-019 Scheduler & Routines)
+スケジューラ/定例業務ページを新設。定例業務7件(頻度・次回予定・自動化フラグ)+
+頻度絞り込み+保存済み自動化ルーチン(実データ)。サイドバーから到達。
+全 workspace テスト314件 pass。次は D-020 Onboarding & Help(延長解釈の最終)。
+
+## それ以前の完了(D-018 Notifications & Alerts)
 通知センターを新設。承認待ち/開発エラー/容量注意/未対応サポートをレベル別色で
 一元表示し、個別/一括既読+既読永続化(再起動後維持)。サイドバーから到達。
 全 workspace テスト311件 pass。次は D-019 Scheduler & Routines を予定。
