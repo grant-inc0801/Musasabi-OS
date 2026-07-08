@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import type { DeptConnection } from "@musasabi/ai-company";
+import { isConnectionActive } from "@musasabi/ai-company";
+import type { CommandDepartment, DeptConnection } from "@musasabi/ai-company";
 
-// 部署間連携ライン(D-20260706-007)。パネル中心同士を白い半透明の発光ラインで
-// 結び、ライン上に小さな白いノード点を置く。連携中は流れるアニメーション
-// (CSSの stroke-dashoffset。reduced-motion では停止)。
+// 部署間連携ライン(D-20260706-007+ユーザーFB第5弾)。パネル中心同士を結び、
+// 連携中(両端が稼働中/エラー対応中)のラインだけ光が流れるアニメーションで
+// 点灯し、非連携時は消灯(非表示)する。reduced-motion では流れを止める。
 
 interface Line {
   x1: number;
@@ -16,19 +17,22 @@ export function DepartmentConnectionLines({
   container,
   cards,
   connections,
+  departments,
 }: {
   container: HTMLElement | null;
   cards: ReadonlyMap<string, HTMLElement>;
   connections: readonly DeptConnection[];
+  departments: readonly CommandDepartment[];
 }) {
   const [lines, setLines] = useState<Line[]>([]);
+  const activeConnections = connections.filter((c) => isConnectionActive(departments, c));
 
   useEffect(() => {
     function measure(): void {
       if (!container) return;
       const base = container.getBoundingClientRect();
       const next: Line[] = [];
-      for (const conn of connections) {
+      for (const conn of activeConnections) {
         const from = cards.get(conn.from)?.getBoundingClientRect();
         const to = cards.get(conn.to)?.getBoundingClientRect();
         if (!from || !to) continue;
@@ -49,7 +53,9 @@ export function DepartmentConnectionLines({
       window.removeEventListener("resize", measure);
       clearTimeout(timer);
     };
-  }, [container, cards, connections]);
+    // activeConnections は connections+departments から導出される
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [container, cards, connections, departments]);
 
   return (
     <svg className="dept-lines" aria-hidden="true">

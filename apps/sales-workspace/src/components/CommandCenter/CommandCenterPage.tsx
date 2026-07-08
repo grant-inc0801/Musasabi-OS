@@ -112,6 +112,7 @@ export function CommandCenterPage({
             container={gridEl}
             cards={cardRefs.current}
             connections={DEPT_CONNECTIONS}
+            departments={departments}
           />
           <div className="cc-grid">
             {departments.map((dept) => (

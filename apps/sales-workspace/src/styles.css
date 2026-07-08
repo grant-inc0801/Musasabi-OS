@@ -462,17 +462,21 @@ main section,
 
 .dept-line-glow {
   stroke: #ffffff;
-  stroke-width: 7;
+  stroke-width: 6;
   filter: blur(4px);
-  opacity: 0.95;
+  opacity: 0.45;
 }
 
+/* 連携中のみ描画され、短い光の粒がラインに沿って流れる(ユーザーFB第5弾)。
+   非連携時はライン自体を描画しない(消灯)。 */
 .dept-line-flow {
   stroke: #ffffff;
   stroke-width: 2.5;
-  stroke-dasharray: 10 14;
-  animation: line-flow 3s linear infinite;
-  opacity: 0.95;
+  stroke-linecap: round;
+  stroke-dasharray: 16 140;
+  animation: line-flow 2.2s linear infinite;
+  opacity: 1;
+  filter: drop-shadow(0 0 6px #fff);
 }
 
 .dept-line-node {
@@ -482,7 +486,7 @@ main section,
 
 @keyframes line-flow {
   to {
-    stroke-dashoffset: -48;
+    stroke-dashoffset: -156;
   }
 }
 
