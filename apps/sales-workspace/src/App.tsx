@@ -9,6 +9,7 @@ import { CompanyDashboardPage } from "./components/Company/CompanyDashboardPage"
 import { WorkflowPage } from "./components/Workflow/WorkflowPage";
 import { CollaborationPage } from "./components/Collaboration/CollaborationPage";
 import { WorkspacePage } from "./components/Workspace/WorkspacePage";
+import { SelfEvolutionPage } from "./components/SelfEvolution/SelfEvolutionPage";
 import { SalesBrainPage } from "./components/SalesBrain/SalesBrainPage";
 import { FirstRunSetup } from "./components/Setup/FirstRunSetup";
 import { SalesKpiPage } from "./components/Sales/SalesKpiPage";
@@ -56,6 +57,7 @@ type Page =
   | "workflow"
   | "company_brain"
   | "collaboration"
+  | "self_evolution"
   | "vision"
   | "automation"
   | "plugins"
@@ -82,6 +84,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   workflow: "ワークフロー",
   company_brain: "Company Brain",
   collaboration: "コラボレーション",
+  self_evolution: "AI自己進化",
   vision: "Vision(画面解析)",
   automation: "Automation(操作記録)",
   plugins: "プラグイン",
@@ -126,6 +129,7 @@ const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
   { label: "AI社員管理", page: "company" },
   { label: "Company Brain", page: "company_brain" },
   { label: "コラボレーション", page: "collaboration" },
+  { label: "AI自己進化", page: "self_evolution" },
   { label: "Vision", page: "vision" },
   { label: "Automation", page: "automation" },
   { label: "プラグイン", page: "plugins" },
@@ -299,6 +303,8 @@ export function App() {
           <CompanyBrainPage />
         ) : page === "collaboration" ? (
           <CollaborationPage />
+        ) : page === "self_evolution" ? (
+          <SelfEvolutionPage onOpenAutomation={() => navigate("automation")} />
         ) : page === "vision" ? (
           <VisionPage />
         ) : page === "automation" ? (

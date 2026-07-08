@@ -4,3 +4,5 @@
 
 export { PROMOTION_THRESHOLD, promoteRepeatedShortTerm } from "./promoteMemories";
 export type { PromotionResult } from "./promoteMemories";
+export { buildEvolutionInsights } from "./insights";
+export type { EvolutionInsights, CountItem } from "./insights";
