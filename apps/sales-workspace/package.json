@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "npm --prefix ../../packages/shared run build && npm --prefix ../../packages/ai-core run build && npm --prefix ../../packages/avatar-2d run build && npm --prefix ../../packages/integrations run build && npm --prefix ../../packages/voice-analysis run build && npm --prefix ../../packages/voice-engine run build && npm --prefix ../../packages/call-training run build && npm --prefix ../../packages/ai-company run build && npm --prefix ../../packages/avatar-3d run build && npm --prefix ../../packages/memory run build && npm --prefix ../../packages/vision run build && npm --prefix ../../packages/automation run build && npm --prefix ../../packages/self-improvement run build && npm --prefix ../../packages/call-list run build && npm --prefix ../../packages/sales-list run build && npm --prefix ../../plugins/accounting-widget run build && vite build",
+    "build": "npm --prefix ../../packages/shared run build && npm --prefix ../../packages/ai-core run build && npm --prefix ../../packages/avatar-2d run build && npm --prefix ../../packages/integrations run build && npm --prefix ../../packages/voice-analysis run build && npm --prefix ../../packages/voice-engine run build && npm --prefix ../../packages/call-training run build && npm --prefix ../../packages/ai-company run build && npm --prefix ../../packages/avatar-3d run build && npm --prefix ../../packages/memory run build && npm --prefix ../../packages/vision run build && npm --prefix ../../packages/automation run build && npm --prefix ../../packages/self-improvement run build && npm --prefix ../../packages/call-list run build && npm --prefix ../../packages/sales-list run build && npm --prefix ../../packages/connectors run build && npm --prefix ../../plugins/accounting-widget run build && vite build",
     "dev": "vite"
   },
   "dependencies": {
@@ -31,7 +31,8 @@
     "@musasabi/plugin-accounting-widget": "*",
     "@tauri-apps/plugin-dialog": "^2.4.0",
     "@tauri-apps/plugin-fs": "^2.4.0",
-    "@musasabi/sales-list": "*"
+    "@musasabi/sales-list": "*",
+    "@musasabi/connectors": "*"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",

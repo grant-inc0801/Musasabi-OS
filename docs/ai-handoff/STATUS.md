@@ -4,7 +4,15 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(AV-MOTION-001 常駐アバターへの適用)
+## 直近の完了内容(Phase 3 コネクタ基盤 D-20260708-004)
+Directive D-20260708-004(外部業務システム連携)に基づき `packages/connectors` を新設。
+6コネクタ(GitHub/Excel/カレンダー/Zoom Phone/FileMaker/会計)を Mock・本番未承認で定義し、
+承認ゲート(mock=simulated、production=承認必須、本番write=承認者/理由必須)+ Mock アダプタ
++ 監査ログを実装。ConnectorsPage(一覧・Mock操作デモ・監査ログ)を新設しGLOBAL_NAVから到達。
+connectors テスト13件 pass。Playwrightで実画面確認(0エラー)。README/CLAUDE_RESPONSE更新済み。
+実接続・実書き込み・secrets保存なし。
+
+## それ以前の完了(AV-MOTION-001 常駐アバターへの適用)
 新規Directive/Issueが無いため(CHATGPT_DIRECTIVE.mdはD-20260708-001のまま、AV-ICON #227/#228は
 実装済み)、非停止ルールに従い #272 の感情モーションを右下常駐アバターへ適用。
 `deriveEmotionFromSignals`(部署状態→感情)を追加し、AssistantAvatarが error/承認待ち/作業中/
