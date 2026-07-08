@@ -3,6 +3,37 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-09 — Business Template Catalog(BUSINESS_TEMPLATE_CATALOG_DIRECTIVE)
+
+### 実装内容
+指示書 `BUSINESS_TEMPLATE_CATALOG_DIRECTIVE.md`(AI_BUSINESS_FACTORY_DIRECTIVE の拡張)に基づき、
+選択式の業種テンプレートから事業ユニットを生成する「事業テンプレートカタログ」を実装。
+すべて Mock・決定論、外部本番接続・secrets なし。
+
+- **`packages/business-factory` 拡張**:
+  - `BusinessTemplate` 型(事業名/AI事業部長/必要チーム/AI社員/月間KPI例/ワークフロー例/
+    必要ドキュメント/ナレッジワークスペース/ダッシュボードカード/リスクチェック/レポートフォーマット)
+  - `BUSINESS_TEMPLATES`(8種): MEISHI-TUBE / SaaS を先頭に、営業代行 / 出版 / コールセンター /
+    EC / 飲食店 / コンサルティング
+  - `getTemplate(id)` / `provisionFromTemplate(templateId, options)`: テンプレートから部門構造・
+    AI社員・KPIダッシュボード・ワークフロー・必要ドキュメント・ダッシュボードカード・リスク監視・
+    レポートフォーマットを備えた事業ユニットを決定論生成(監査リエゾン込み、COO→CEO レポート)
+  - `BusinessUnitProvisioning` にテンプレート由来フィールド(aiEmployees/requiredDocuments/
+    dashboardCards/reportingFormat/templateId)を追加。テスト計11件 pass
+- **`BusinessFactoryPage` 拡張**: 事業テンプレートカタログ節(8種カード=概要・チーム/AI社員数・
+  KPI例・「このテンプレートで事業ユニット生成」ボタン)を追加。生成ユニット詳細に AI社員・
+  ダッシュボードカード・必要ドキュメント・レポートフォーマットのカードを追加表示
+
+### 完了条件の充足
+- 選択式テンプレートカタログ(8種)✅ / 各テンプレートに必須項目11種を定義 ✅ /
+  テンプレート選択で部門・AI社員・KPI・ワークフロー・レポート・監査監視を Mock 生成 ✅ /
+  MEISHI-TUBE と SaaS を先行実装 ✅ / test・README・CLAUDE_RESPONSE 更新 ✅
+
+### テスト結果
+- `@musasabi/business-factory` 11件 pass(テンプレ5件追加)
+- Playwright E2E: カタログ8カード・生成ボタン8個・SaaS-UNIT生成(MRR/AI社員/ダッシュボードカード/
+  必要ドキュメント SLA/レポートフォーマット)・飲食店(原価率FL)生成・0エラーを実画面確認
+
 ## 2026-07-09 — AI Business Factory(AI_BUSINESS_FACTORY_DIRECTIVE)
 
 ### 実装内容

@@ -67,7 +67,7 @@ packages/
   agi/                Phase 11 Musasabi AGI(自己最適化/ワークフロー/部門・AI社員新設提案・Company Brain進化・戦略立案。承認/監査/憲章下)
   next-core-modules/  Musasabiコアモジュール12種(AI Constitution/Mission Control/Situation Room/Digital Twin/Relationship Graph/Memory/Customer Brain/QA/Security/Cost/Competitor/Innovation。Mock)
   ceo-dashboard/      CEO二層ダッシュボード(経営メーター・アラート優先度・タイムライン・CEO提案ボックス・AI社員ランキング。Layer B補助データ)
-  business-factory/   AI事業ファクトリー(標準テンプレートで新規事業ユニット立ち上げ・自動プロビジョニング。初期ターゲット MEISHI-TUBE。Mock)
+  business-factory/   AI事業ファクトリー(標準テンプレート/業種テンプレートカタログ8種で新規事業ユニット立ち上げ・自動プロビジョニング。MEISHI-TUBE/SaaS/営業代行/出版/コールセンター/EC/飲食店/コンサル。Mock)
   memory/             Brain Memory Engine(未実装、Epic β-001完了後)
   vision/             Vision Engine(未実装、Epic β-001完了後)
   automation/         Automation Engine(未実装、Epic β-001完了後)

@@ -3,10 +3,13 @@ import assert from "node:assert/strict";
 import {
   BUSINESS_UNIT_ROLES,
   BUSINESS_UNITS,
+  BUSINESS_TEMPLATES,
   MEISHI_TUBE,
   REPORTING_LINE,
   GOVERNANCE_NOTES,
+  getTemplate,
   provisionBusinessUnit,
+  provisionFromTemplate,
   summarizeFactory,
 } from "./index";
 
@@ -56,4 +59,60 @@ test("summarizeFactory は集計を返す", () => {
   assert.equal(s.totalUnits, BUSINESS_UNITS.length);
   assert.equal(s.operating, 1);
   assert.equal(s.rolesPerUnit, 8);
+});
+
+test("テンプレートカタログは8種を含み MEISHI-TUBE と SaaS が先頭", () => {
+  assert.equal(BUSINESS_TEMPLATES.length, 8);
+  assert.equal(BUSINESS_TEMPLATES[0].id, "tmpl-meishi-tube");
+  assert.equal(BUSINESS_TEMPLATES[1].id, "tmpl-saas");
+  const ids = BUSINESS_TEMPLATES.map((t) => t.id);
+  for (const id of ["tmpl-sales-agency", "tmpl-publishing", "tmpl-callcenter", "tmpl-ec", "tmpl-restaurant", "tmpl-consulting"]) {
+    assert.ok(ids.includes(id), `missing ${id}`);
+  }
+});
+
+test("各テンプレートは必須項目を全て定義する", () => {
+  for (const t of BUSINESS_TEMPLATES) {
+    assert.ok(t.name.length > 0, `${t.id} name`);
+    assert.ok(t.director.includes("AI事業部長"), `${t.id} director`);
+    assert.ok(t.teams.length >= 1, `${t.id} teams`);
+    assert.ok(t.aiEmployees.length >= 1, `${t.id} aiEmployees`);
+    assert.ok(t.monthlyKpi.length >= 1, `${t.id} kpi`);
+    assert.ok(t.workflows.length >= 1, `${t.id} workflows`);
+    assert.ok(t.requiredDocuments.length >= 1, `${t.id} docs`);
+    assert.ok(t.knowledgeWorkspace.length > 0, `${t.id} knowledge`);
+    assert.ok(t.dashboardCards.length >= 1, `${t.id} cards`);
+    assert.ok(t.riskChecks.length >= 1, `${t.id} risk`);
+    assert.ok(t.reportingFormat.length > 0, `${t.id} reporting`);
+  }
+});
+
+test("provisionFromTemplate は部門・AI社員・KPI・監査監視を生成する", () => {
+  const bu = provisionFromTemplate("tmpl-saas");
+  assert.equal(bu.name, "SaaS-UNIT");
+  assert.equal(bu.status, "provisioning");
+  assert.equal(bu.reportsTo, REPORTING_LINE);
+  assert.ok(bu.roles.includes("AI監査リエゾン"));
+  const p = bu.provisioning;
+  assert.equal(p.templateId, "tmpl-saas");
+  assert.ok(p.departmentStructure.some((d) => d.includes("SaaS-UNIT")));
+  assert.ok((p.aiEmployees ?? []).length >= 1);
+  assert.ok(p.kpiDashboard.some((k) => k.label === "MRR"));
+  assert.ok((p.dashboardCards ?? []).length >= 1);
+  assert.ok((p.requiredDocuments ?? []).length >= 1);
+  assert.ok(p.riskMonitoring.length >= 1);
+  assert.ok((p.reportingFormat ?? "").length > 0);
+  assert.equal(p.executiveDashboardIntegrated, true);
+});
+
+test("provisionFromTemplate は名前上書きに対応し、未知IDで例外", () => {
+  const bu = provisionFromTemplate("tmpl-restaurant", { name: "SAKURA-DINING" });
+  assert.equal(bu.name, "SAKURA-DINING");
+  assert.ok(bu.provisioning.departmentStructure.some((d) => d.startsWith("SAKURA-DINING")));
+  assert.throws(() => provisionFromTemplate("tmpl-unknown"));
+});
+
+test("getTemplate はIDで取得する", () => {
+  assert.equal(getTemplate("tmpl-ec")?.name, "EC 事業");
+  assert.equal(getTemplate("nope"), undefined);
 });

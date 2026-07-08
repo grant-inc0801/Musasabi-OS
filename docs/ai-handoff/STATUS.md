@@ -4,7 +4,16 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(AI Business Factory)
+## 直近の完了内容(Business Template Catalog)
+指示書 BUSINESS_TEMPLATE_CATALOG_DIRECTIVE.md(AI_BUSINESS_FACTORY の拡張)に基づき、選択式の業種
+テンプレートカタログを実装。`packages/business-factory` に `BUSINESS_TEMPLATES`(8種: MEISHI-TUBE/
+SaaS/営業代行/出版/コールセンター/EC/飲食店/コンサル)と `provisionFromTemplate` を追加。テンプレート
+選択で部門・AI社員・KPIダッシュボード・ワークフロー・必要ドキュメント・ダッシュボードカード・
+リスク監視・レポートフォーマットを備えた事業ユニットを Mock 生成(監査リエゾン込み・COO→CEO)。
+BusinessFactoryPage にカタログ節+生成ユニットの追加カード表示。business-factory テスト11件 pass。
+Playwrightでカタログ8カード・SaaS/飲食店生成を確認(0エラー)。外部本番接続・secretsなし。
+
+## それ以前の完了内容(AI Business Factory)
 指示書 AI_BUSINESS_FACTORY_DIRECTIVE.md に基づき `packages/business-factory` を新設。標準テンプレート
 (AI事業部長+営業/マーケ/開発/運用/CSチーム+財務サポート+AI監査リエゾンの8ロール)で新規事業
 ユニットを立ち上げ、部門構造・KPI・ワークフロー・Company Brain・ナレッジ・レポート・リスク監視・
