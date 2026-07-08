@@ -190,6 +190,24 @@ export function isConnectionActive(
   return busy(conn.from) && busy(conn.to);
 }
 
+/** 部署ごとの丸アイコン(絵文字。外部アセット不要・決定的。ユーザーFB第6弾)。 */
+export const DEPT_ICON: Record<string, string> = {
+  sales: "📞",
+  support: "🎧",
+  marketing: "📣",
+  development: "💻",
+  publishing: "📚",
+  planning: "📝",
+  accounting: "🧮",
+  hr: "👥",
+  market_research: "🔬",
+};
+
+/** 部署アイコンを取得(未知IDは汎用アイコン)。 */
+export function deptIcon(id: string): string {
+  return DEPT_ICON[id] ?? "🏢";
+}
+
 /** 全社サマリー(左サイドバー表示用)。 */
 export interface CompanyOverview {
   totalMembers: number;
