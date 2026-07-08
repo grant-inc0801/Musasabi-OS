@@ -4,7 +4,13 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(AI Executive Governance)
+## 直近の完了内容(AI Audit and Risk Governance)
+指示書 AI_AUDIT_AND_RISK_GOVERNANCE.md に基づき `packages/audit` を新設。独立監査機能が
+異常/ポリシー違反/KPI整合性/承認遵守/運用リスクを検知し、部門リスクスコア・ポリシー遵守率・
+日次/週次/月次監査レポート・是正推奨・高リスクの一時停止提案(人間承認前提・直接変更なし)を提供。
+AuditPage を新設しGLOBAL_NAVから到達。audit テスト6件 pass。Playwrightで実画面確認(0エラー)。
+
+## それ以前の完了(AI Executive Governance)
 指示書 AI_EXECUTIVE_GOVERNANCE.md に基づき `packages/governance` を新設。AI経営陣8役職の
 月次予算・KPI・着地予測・リスク評価・是正アクション(遅延時の再優先/再配分/CEOエスカレーション)・
 ガバナンス承認ゲート(戦略/組織/価格変更は人間承認必須)・経営ダッシュボードを実装。

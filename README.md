@@ -61,6 +61,7 @@ packages/
   ops-monitor/        Phase 6 運用監視(SLO評価・インシデント・復旧ランブック)
   evolution/          Phase 7 自己進化(改善提案の自動生成・ドラフトIssue・ナレッジ品質スコア)
   governance/         AI経営ガバナンス(AI経営陣8役職・月次予算/KPI・着地予測・リスク・是正提案・承認ゲート)
+  audit/              AI監査・リスクガバナンス(独立監査・異常/ポリシー違反/KPI整合性/承認遵守検知・部門リスクスコア・一時停止提案)
   memory/             Brain Memory Engine(未実装、Epic β-001完了後)
   vision/             Vision Engine(未実装、Epic β-001完了後)
   automation/         Automation Engine(未実装、Epic β-001完了後)

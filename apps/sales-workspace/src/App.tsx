@@ -14,6 +14,7 @@ import { ProductPage } from "./components/Enterprise/ProductPage";
 import { OpsMonitorPage } from "./components/Enterprise/OpsMonitorPage";
 import { ImprovementPage } from "./components/Enterprise/ImprovementPage";
 import { GovernancePage } from "./components/Enterprise/GovernancePage";
+import { AuditPage } from "./components/Enterprise/AuditPage";
 import { WorkflowPage } from "./components/Workflow/WorkflowPage";
 import { CollaborationPage } from "./components/Collaboration/CollaborationPage";
 import { WorkspacePage } from "./components/Workspace/WorkspacePage";
@@ -80,6 +81,7 @@ type Page =
   | "ops_monitor"
   | "improvement"
   | "governance"
+  | "audit"
   | "workflow"
   | "company_brain"
   | "collaboration"
@@ -120,6 +122,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   ops_monitor: "運用モニタリング",
   improvement: "AI改善提案 / 自己進化",
   governance: "AI経営ガバナンス",
+  audit: "AI監査・リスク",
   workflow: "ワークフロー",
   company_brain: "Company Brain",
   collaboration: "コラボレーション",
@@ -177,6 +180,7 @@ const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
   { label: "運用モニタリング", page: "ops_monitor" },
   { label: "AI改善提案 / 自己進化", page: "improvement" },
   { label: "AI経営ガバナンス", page: "governance" },
+  { label: "AI監査・リスク", page: "audit" },
   { label: "ワークフロー", page: "workflow" },
   { label: "AI社員管理", page: "company" },
   { label: "Company Brain", page: "company_brain" },
@@ -378,6 +382,8 @@ export function App() {
           <ImprovementPage />
         ) : page === "governance" ? (
           <GovernancePage />
+        ) : page === "audit" ? (
+          <AuditPage />
         ) : page === "workflow" ? (
           <WorkflowPage onOpenPage={(target) => replayNavigate(target)} />
         ) : page === "company_brain" ? (
