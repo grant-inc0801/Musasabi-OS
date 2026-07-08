@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { buildAssistantSummaryJa } from "@musasabi/ai-company";
 import type { CommandDepartment } from "@musasabi/ai-company";
 import { deriveEmotionFromSignals, emotionMotionMap } from "@musasabi/avatar-2d";
+import { buildNextModulesSummaryJa } from "@musasabi/next-core-modules";
 import mascot from "../../assets/mascot.png";
 
 // 右下アバター+吹き出し(D-20260706-007)。可愛い3D風ムササビ(公式イメージの
@@ -23,7 +24,8 @@ export function AssistantAvatar({
       setOpen(false);
     }
   }, [detailOpen]);
-  const summary = buildAssistantSummaryJa(departments);
+  // 部署要約 + コアモジュールの主要状態(D-20260709-002: アバターが要約)
+  const summary = [buildAssistantSummaryJa(departments), ...buildNextModulesSummaryJa()].join("\n");
 
   // 部署状態 → 感情モーション(エラー>承認待ち>作業中>全完了>待機)。
   const motion = useMemo(() => {

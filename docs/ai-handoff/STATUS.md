@@ -4,7 +4,15 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Phase 8 エコシステム + Phase 11 AGI)
+## 直近の完了内容(Musasabi Next Core Modules D-20260709-002)
+指示書 MUSASABI_NEXT_CORE_MODULES.md に基づき `packages/next-core-modules` を新設。コアモジュール
+12種(AI Constitution/Mission Control/Situation Room/Digital Twin/Relationship Graph/Memory/
+Customer Brain/QA/Security Center/Cost Optimizer/Competitor/Innovation Lab)を Mock パネル/
+サービスとして実装。NextCoreModulesPage 新設。右下アバター吹き出しに主要モジュール状態要約を追加
+(完了条件のアバター要約を充足)。next-core-modules テスト6件 pass。Playwrightで確認(0エラー)。
+外部本番接続・secretsなし。
+
+## それ以前の完了(Phase 8 エコシステム + Phase 11 AGI)
 指示書 PHASE8_AI_ECOSYSTEM.md と PHASE11_MUSASABI_AGI.md を実装。Phase8 ecosystem(部門/AI社員/
 ワークフローのテンプレート・内部マーケットプレイス・安定拡張API)、Phase11 agi(AGI提案・
 承認ゲート・Musasabi憲章・憲章チェック・AI CEO戦略立案)。EcosystemPage/AgiPage を新設。
