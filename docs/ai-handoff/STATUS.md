@@ -4,7 +4,13 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Musasabi Next Core Modules D-20260709-002)
+## 直近の完了内容(部署パネル 円柱型進捗メーターUI)
+部署パネルUI仕様書に基づき、Command Center の部署パネルを円柱型進捗メーターへ変更。
+DepartmentCylinder(下から上へ充填・ステータス色連動・上部アイコン/部署名/状態・下部%・
+100/50/0目盛り・ホバー拡大・クリックで詳細)を新設し DepartmentCard を差し替え。
+グリッドは自動2段折返し(1段最大7)。Playwrightで円柱9本・充填・クリック詳細を確認(0エラー)。
+
+## それ以前の完了(Musasabi Next Core Modules D-20260709-002)
 指示書 MUSASABI_NEXT_CORE_MODULES.md に基づき `packages/next-core-modules` を新設。コアモジュール
 12種(AI Constitution/Mission Control/Situation Room/Digital Twin/Relationship Graph/Memory/
 Customer Brain/QA/Security Center/Cost Optimizer/Competitor/Innovation Lab)を Mock パネル/
