@@ -69,3 +69,4 @@ export * from "./devProjects";
 export * from "./companyDashboard";
 export * from "./workflow";
 export * from "./collaboration";
+export * from "./workspace";

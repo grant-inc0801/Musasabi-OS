@@ -8,6 +8,7 @@ import { CompanyPage } from "./components/Company/CompanyPage";
 import { CompanyDashboardPage } from "./components/Company/CompanyDashboardPage";
 import { WorkflowPage } from "./components/Workflow/WorkflowPage";
 import { CollaborationPage } from "./components/Collaboration/CollaborationPage";
+import { WorkspacePage } from "./components/Workspace/WorkspacePage";
 import { SalesBrainPage } from "./components/SalesBrain/SalesBrainPage";
 import { FirstRunSetup } from "./components/Setup/FirstRunSetup";
 import { SalesKpiPage } from "./components/Sales/SalesKpiPage";
@@ -50,6 +51,7 @@ type Page =
   | "accounting"
   | "hr"
   | "company"
+  | "workspace"
   | "company_dashboard"
   | "workflow"
   | "company_brain"
@@ -75,6 +77,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   accounting: "経理部",
   hr: "人事部",
   company: "AI社員管理",
+  workspace: "ワークスペース",
   company_dashboard: "全社ダッシュボード",
   workflow: "ワークフロー",
   company_brain: "Company Brain",
@@ -117,6 +120,7 @@ const NAV_TREE: ReadonlyArray<{
 ];
 
 const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
+  { label: "ワークスペース", page: "workspace" },
   { label: "全社ダッシュボード", page: "company_dashboard" },
   { label: "ワークフロー", page: "workflow" },
   { label: "AI社員管理", page: "company" },
@@ -285,6 +289,8 @@ export function App() {
           <AccountingPage />
         ) : page === "hr" ? (
           <HrPage />
+        ) : page === "workspace" ? (
+          <WorkspacePage onOpenPage={(target) => replayNavigate(target)} />
         ) : page === "company_dashboard" ? (
           <CompanyDashboardPage onOpenPage={(target) => replayNavigate(target)} />
         ) : page === "workflow" ? (
