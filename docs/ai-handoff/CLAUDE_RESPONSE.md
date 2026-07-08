@@ -3,6 +3,39 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-09 — CEO Dashboard 二層UI(D-20260709-003)
+
+### 実装内容
+指示書 `CEO_DASHBOARD_TWO_LAYER_UI_DIRECTIVE.md` に基づき、Musasabi OS を二層の運用体験へ再設計。
+Layer A = AI CEO 経営ダッシュボード(メイン画面)、Layer B = 部門AI社員インタラクション画面。
+すべて Mock・決定論、外部本番接続・secrets なし。
+
+- **`packages/ceo-dashboard`(新規)**: 
+  - 経営メーター `buildExecutiveCompanyMeter`(全社進捗・月次KPI・生産性・健全性)
+  - アラート優先度(重大/高/中/低・色・`sortAlertsByPriority`)
+  - タイムライン `MOCK_TIMELINE`(部門・時刻・要約)
+  - CEO提案ボックス(`approveProposal` 承認 Mock → `proposalToIssueDraft` Issueドラフト Mock)
+  - AI社員ランキング(`compositeScore`・`rankEmployees`、貢献/速度/品質/提案数/稼働率)
+  - Layer B 補助: `deptAssignedEmployees`/`deptBlockedItems`/`deptAuditNotes`
+  - アバター要約 `buildDashboardSummaryJa`。テスト7件
+- **Layer A `CeoDashboardPanel`**: 経営メーター・アラート優先度・タイムライン・CEO提案ボックス
+  (承認→Issue作成 Mock)・AI社員ランキングを Command Center に追加
+- **Layer B `DepartmentDetailPanel` 拡張**: 担当AI社員・ブロック項目・承認待ち・監査メモ・
+  提案→Issueドラフト(Mock)を追加(既存の要約/タスク/KPI進捗/ログに加え)
+- **アバター**: `buildDashboardSummaryJa`(全社進捗・健全性・優先アラート・承認待ち提案)を
+  吹き出しへ追加=完了条件「Avatar can summarize dashboard state」を充足
+- 部署メーターは前コミットの円柱型(ステータス色連動・自動2段・段数/件数テキスト非表示)を踏襲
+
+### 完了条件の充足
+- メイン画面が Layer A ✅ / 部門クリックで Layer B ✅ / 円柱メーター2段対応 ✅ /
+  タイムライン・提案ボックス・アラート優先度・経営メーター・AI社員ランキング可視 ✅ /
+  アバターがダッシュボード状態を要約 ✅ / test・README・CLAUDE_RESPONSE 更新 ✅
+
+### テスト結果
+- `@musasabi/ceo-dashboard` 7件 pass
+- Playwright E2E: Layer A 5モジュール・提案承認→Issue作成・アバター全社進捗要約、
+  Layer B 担当社員/ブロック/承認待ち/監査メモ/提案→Issue・0エラーを実画面確認
+
 ## 2026-07-09 — 部署パネル 円柱型進捗メーターUI(仕様書対応)
 
 ### 実装内容
