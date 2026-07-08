@@ -55,6 +55,7 @@ packages/
   ai-company/         AI Company System(組織階層・AI社員モデル・Genome・承認フロー)
   call-training/      コール三段階運用(Learning/Test/AutoCall、Mock架電、共通ナレッジ)
   integrations/       外部サービス連携(FileMaker、Zoom Phone)
+  connectors/         Phase 3 コネクタ・フレームワーク(GitHub/Excel/カレンダー/Zoom Phone/FileMaker/会計。Mock・本番未承認・承認ゲート)
   memory/             Brain Memory Engine(未実装、Epic β-001完了後)
   vision/             Vision Engine(未実装、Epic β-001完了後)
   automation/         Automation Engine(未実装、Epic β-001完了後)
@@ -74,6 +75,19 @@ scripts/              ビルド・リリース・開発補助スクリプト
 config/               環境別設定
 plugins/              Plugin SDK 準拠のプラグイン
 ```
+
+## 外部連携コネクタ(Phase 3・D-20260708-004)
+
+外部業務システム連携の「コネクタ・フレームワーク」を `packages/connectors` に用意しています。
+ビジネスロジックと連携実装を分離し、**まず Mock アダプタで動作**します。
+
+- 対象: GitHub / Microsoft Office・Excel / カレンダー / Zoom Phone / FileMaker / 会計ソフト
+- **すべて Mock モード**。本番接続は**明示承認まで無効**(`productionApproved=false`)
+- **読み取りを書き込みより先に実装**。本番書き込みは**承認ゲート(承認者・理由)必須**
+- 全操作を**監査ログ**へ記録。**secrets はリポジトリに保存しない**(実接続時に実行環境から注入)
+- UI: 管理画面サイドバー「外部連携コネクタ」で一覧・Mock 操作デモ・監査ログを確認可能
+
+実接続(本番アダプタ)は、承認・権限・ログ整備が完了し、ユーザーが明示的に有効化するまで行いません。
 
 ## セットアップ
 

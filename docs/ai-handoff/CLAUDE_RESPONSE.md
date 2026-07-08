@@ -3,6 +3,35 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-08 — Phase 3 Real-World Integration(D-20260708-004)コネクタ基盤
+
+### 実装内容
+Directive **D-20260708-004**(Phase 3: 外部業務システムとの制御された連携)に基づき、
+コネクタ・フレームワークと Mock アダプタ・承認ゲート・監査ログを実装した。実接続・
+実書き込みは行わず、本番は明示承認まで無効。secrets はリポジトリに保存しない。
+
+- **`packages/connectors`(新規パッケージ)**: 
+  - `ConnectorDescriptor` と初期6コネクタ(GitHub / Office・Excel / カレンダー /
+    Zoom Phone / FileMaker / 会計)。全て `mode="mock"` かつ `productionApproved=false`
+  - **承認ゲート** `evaluateOperation`: mock は read/write 許可(effect=simulated・実無影響)、
+    production は承認必須、本番 write はさらに承認者・理由が必須。未対応操作は blocked
+  - **`MockConnectorAdapter`**(read/write・決定論 Mock データ)、`mockRead`(カテゴリ別)
+  - **監査ログ** `toAuditEntry` / `appendAudit`(最新先頭・イミュータブル)
+  - `summarizeConnectors`。テスト13件
+- **`ConnectorsPage`**: コネクタ一覧(モード/本番承認/対応操作)+ Mock 操作デモ
+  (read/write→監査ログ)+概要スタッツ。GLOBAL_NAV「外部連携コネクタ」から到達。
+  読み取り専用(Zoom Phone)は write ボタン無効
+- **README**: 「外部連携コネクタ(Phase 3)」節+リポジトリ構成に `connectors/` を追記
+
+### 完了条件の充足
+- コネクタ・フレームワーク存在 ✅ / Mock 連携が動作 ✅ / 承認ワークフローが本番操作を保護 ✅ /
+  外部サービスは明示承認まで無効 ✅ / テスト・README・CLAUDE_RESPONSE 更新 ✅
+
+### テスト結果
+- `@musasabi/connectors` 13件 pass
+- Playwright E2E: コネクタ6件・Zoom Phone読み取り専用・Mock読み取り→監査ログ(simulated)・
+  読み取り専用の書き込みボタン無効・0エラーを実画面確認
+
 ## 2026-07-08 — AV-MOTION-001 常駐アバターへの適用(#272 拡張)
 
 ### 背景
