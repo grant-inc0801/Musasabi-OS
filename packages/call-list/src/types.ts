@@ -21,6 +21,11 @@ export interface PlaceSearchQuery {
   prefecture: string;
   /** 空文字は無視される。全て空なら都道府県全域で検索する。 */
   cities: string[];
+  /**
+   * 1市区町村あたりの最大取得件数(SerpAPIはページング取得する)。
+   * 省略時は SERPAPI_MAX_RESULTS(5000)。
+   */
+  maxResults?: number;
 }
 
 /** 市区町村未指定(都道府県全域)検索時の表示ラベル。 */

@@ -16,6 +16,9 @@ import { PREFECTURE_WIDE_LABEL } from "./types";
 /** 1リクエストで取得する最大件数(SerpAPI google_maps は1ページ約20件)。 */
 export const SERPAPI_PAGE_SIZE = 20;
 
+/** 1市区町村あたりの取得上限(ページングで最大この件数まで取得する)。 */
+export const SERPAPI_MAX_RESULTS = 5000;
+
 export type FetchJson = (url: string) => Promise<unknown>;
 
 /** SerpAPI google_maps の local_results 1件(利用するフィールドのみ)。 */
@@ -81,8 +84,16 @@ export function parseSerpApiMapsResponse(payload: unknown, city: string): PlaceS
   return { city, records };
 }
 
-/** SerpAPI 検索URLを組み立てる(engine=google_maps・日本語)。 */
-export function buildSerpApiUrl(apiKey: string, prefecture: string, city: string): string {
+/**
+ * SerpAPI 検索URLを組み立てる(engine=google_maps・日本語)。
+ * start はページング用オフセット(0起点・20刻み)。0のときは省略する。
+ */
+export function buildSerpApiUrl(
+  apiKey: string,
+  prefecture: string,
+  city: string,
+  start = 0,
+): string {
   const params = new URLSearchParams({
     engine: "google_maps",
     type: "search",
@@ -90,6 +101,7 @@ export function buildSerpApiUrl(apiKey: string, prefecture: string, city: string
     q: `飲食店 ${prefecture}${city}`,
     api_key: apiKey,
   });
+  if (start > 0) params.set("start", String(start));
   return `https://serpapi.com/search.json?${params.toString()}`;
 }
 
@@ -101,19 +113,36 @@ export class SerpApiGoogleMapsProvider implements MapsPlaceProvider {
     private readonly fetchJson: FetchJson,
   ) {}
 
-  /** 市区町村ごとに1リクエスト(1ページ・最大約20件)。未入力なら都道府県全域で1リクエスト。 */
+  /**
+   * 市区町村ごとに検索し、SerpAPI をページング取得して最大 maxResults 件(既定
+   * 5000件)まで集約する。未入力なら都道府県全域で検索する。
+   * 1ページ(約20件)未満が返った時点でその市区町村の取得を打ち切る。
+   */
   async search(query: PlaceSearchQuery): Promise<PlaceSearchResult[]> {
     const cities = query.cities.map((c) => c.trim()).filter((c) => c !== "");
     const targets = cities.length > 0 ? cities : [""];
+    const cap = Math.max(1, query.maxResults ?? SERPAPI_MAX_RESULTS);
     const out: PlaceSearchResult[] = [];
     for (const city of targets) {
       const label = city === "" ? PREFECTURE_WIDE_LABEL : city;
-      const payload = await this.fetchJson(buildSerpApiUrl(this.apiKey, query.prefecture, city));
-      const error = (payload as { error?: unknown } | null)?.error;
-      if (typeof error === "string") {
-        throw new Error(`SerpAPIエラー(${label}): ${error}`);
+      const records: RestaurantRecord[] = [];
+      for (let start = 0; start < cap; start += SERPAPI_PAGE_SIZE) {
+        const payload = await this.fetchJson(
+          buildSerpApiUrl(this.apiKey, query.prefecture, city, start),
+        );
+        const error = (payload as { error?: unknown } | null)?.error;
+        if (typeof error === "string") {
+          // 2ページ目以降のエラー(例: これ以上の結果なし)は打ち切りとして扱い、
+          // 取得済みの分だけ返す。1ページ目のエラーは従来どおり投げる。
+          if (start === 0) throw new Error(`SerpAPIエラー(${label}): ${error}`);
+          break;
+        }
+        const page = parseSerpApiMapsResponse(payload, label).records;
+        records.push(...page);
+        // 1ページ未満しか返らなければ、これ以上のページは存在しない。
+        if (page.length < SERPAPI_PAGE_SIZE) break;
       }
-      out.push(parseSerpApiMapsResponse(payload, label));
+      out.push({ city: label, records: records.slice(0, cap) });
     }
     return out;
   }

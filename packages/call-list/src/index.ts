@@ -6,6 +6,7 @@ export * from "./types";
 export { MockGoogleMapsProvider } from "./MockGoogleMapsProvider";
 export {
   SERPAPI_PAGE_SIZE,
+  SERPAPI_MAX_RESULTS,
   SerpApiGoogleMapsProvider,
   buildSerpApiUrl,
   extractPostalCode,
