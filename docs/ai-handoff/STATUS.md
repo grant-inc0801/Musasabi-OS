@@ -4,7 +4,12 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(経理部の仕訳・収支Excel出力)
+## 直近の完了内容(人事部・マーケティング部のExcel出力)
+人事部(稼働・評価+採用計画)とマーケティング部(キャンペーン+SNS計画)に
+Excel出力を追加し、管理部門3部署のエクスポートを統一。全 workspace テスト
+286件 pass・fail 0。
+
+## それ以前の完了(経理部の仕訳・収支Excel出力)
 経理部ページに「Excel出力(.xlsx)」を追加(buildXlsx 再利用・仕訳一覧+収支
 サマリー・ローカル保存)。全 workspace テスト286件 pass・fail 0。
 

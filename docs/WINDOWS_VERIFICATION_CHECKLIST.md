@@ -507,6 +507,14 @@
 - [ ] 保存された .xlsx が Excel で開ける(架電リストと同じ依存フリーのXLSX生成)
 - [ ] 実会計データ連携はなし(すべてMock)
 
+## 41. 人事部・マーケティング部のExcel出力
+
+- [ ] 人事部ページの「Excel出力(.xlsx)」でAI社員の稼働・評価+採用計画が
+  Excelで保存できる(musasabi-hr-YYYY-MM-DD.xlsx)
+- [ ] マーケティング部ページの「Excel出力(.xlsx)」でキャンペーン効果測定+
+  SNS投稿計画がExcelで保存できる(musasabi-marketing-YYYY-MM-DD.xlsx)
+- [ ] いずれも Excel で開ける(経理部と同じ依存フリーのXLSX生成)。すべてMock
+
 ## 検証結果の記録
 
 検証を実施したら、結果(OK/NG、発生した問題、スクリーンショット等)を

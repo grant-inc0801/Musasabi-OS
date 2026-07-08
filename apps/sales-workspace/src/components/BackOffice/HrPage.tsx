@@ -1,15 +1,43 @@
+import { useState } from "react";
 import {
   HIRING_PLANS,
   HR_MEMBER_RECORDS,
   HR_STAFF,
   buildHrKpi,
 } from "@musasabi/ai-company";
+import { buildXlsx } from "@musasabi/call-list";
+import { saveBinaryFile } from "../../lib/saveFile";
 
 // 人事部ページ(従来画面・コア部署の完成フェーズ)。
 // すべてMock(実採用活動・実人事データ連携なし)。
 
 export function HrPage() {
   const kpi = buildHrKpi();
+  const [exportNote, setExportNote] = useState<string | null>(null);
+
+  async function handleExport(): Promise<void> {
+    // AI社員の稼働・評価+採用計画をExcel(.xlsx)で書き出す(経理部と同パターン)。
+    const rows: string[][] = [
+      ["AI社員", "部署", "稼働率(%)", "評価", "メモ"],
+      ...HR_MEMBER_RECORDS.map((r) => [
+        r.name,
+        r.dept,
+        String(r.utilizationPercent),
+        r.evaluation,
+        r.note,
+      ]),
+      [],
+      ["採用計画", "部署", "人数", "状態", ""],
+      ...HIRING_PLANS.map((p) => [p.role, p.dept, String(p.headcount), p.status, ""]),
+    ];
+    const bytes = buildXlsx(rows, "人事");
+    const stamp = new Date().toISOString().slice(0, 10);
+    const result = await saveBinaryFile(`musasabi-hr-${stamp}.xlsx`, bytes, "Excel", ["xlsx"]);
+    setExportNote(
+      result === "cancelled" ? "書き出しをキャンセルしました。" : "稼働・評価/採用計画をExcelで書き出しました。",
+    );
+  }
+
   const tiles = [
     { label: "平均稼働率", value: `${kpi.averageUtilizationPercent}%` },
     { label: "S/A評価", value: `${kpi.topEvaluations}人` },
@@ -34,8 +62,16 @@ export function HrPage() {
       </section>
 
       <section aria-label="AI社員の稼働と評価">
-        <h3 style={{ marginTop: 0 }}>AI社員の稼働・評価(Mock)</h3>
-        <table style={{ borderCollapse: "collapse" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+          <h3 style={{ margin: 0 }}>AI社員の稼働・評価(Mock)</h3>
+          <button type="button" onClick={() => void handleExport()}>
+            Excel出力(.xlsx)
+          </button>
+          {exportNote && (
+            <span style={{ color: "var(--ok)", fontSize: "0.85rem" }}>{exportNote}</span>
+          )}
+        </div>
+        <table style={{ borderCollapse: "collapse", marginTop: "0.6rem" }}>
           <thead>
             <tr>
               {["AI社員", "部署", "稼働率", "評価", "メモ"].map((h) => (
