@@ -3,6 +3,27 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-08 — AV-MOTION-001 常駐アバターへの適用(#272 拡張)
+
+### 背景
+最新の指示書を確認したところ、`CHATGPT_DIRECTIVE.md` は D-20260708-001 のまま更新なし、
+未クローズの新規Issueも無し(AV-ICON-001 #227/#228 は task #61/PR #259 で実装済み)。
+新規Directiveが無いため、非停止ルールに従い D-20260708-001 §8(アバターが状態を要約)と
+Issue #272 の「今後の拡張ポイント」に沿って、感情モーションを常駐アバターへ適用した。
+
+### 実装内容
+- **`packages/avatar-2d/emotionMotion.ts`**: `deriveEmotionFromSignals`(会社状態シグナル
+  hasError/hasApproval/hasWorking/allDone → 感情。優先度: エラー>承認待ち>作業中>全完了>待機)。
+  描画側へ依存しない純関数。テスト+1件
+- **`AssistantAvatar`(右下常駐)**: 部署ステータス(error/waiting_approval/working/done)から
+  感情を導出し、マスコットへ `data-motion` / コンテナへ `data-emotion` を付与
+- **styles.css**: `.assistant-mascot[data-motion=…]` で常駐アバターのモーション上書き
+  (idle_float/typing_or_processing/wait_pose/attention_pop/jump_light)+ reduced-motion対応
+
+### テスト結果
+- `@musasabi/avatar-2d` 23件 pass、Playwright で「初期部署にエラー有り→常駐アバターが
+  alert/attention_pop/serious」を実画面確認(0エラー)
+
 ## 2026-07-08 — Issue #272 AV-MOTION-001 感情別自動モーション制御
 
 ### 実装内容

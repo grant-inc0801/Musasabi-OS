@@ -968,3 +968,14 @@ main section,
 @media (prefers-reduced-motion: reduce) {
   .avatar-motion-mascot { animation: none !important; }
 }
+
+/* 常駐アバター(右下)を感情モーションで動かす(AV-MOTION-001 #272)。
+   .assistant-mascot は既定で mascot-float。data-motion 指定時はそれを上書き。 */
+.assistant-mascot[data-motion="idle_float"] { animation: av-idle-float 3s ease-in-out infinite; }
+.assistant-mascot[data-motion="typing_or_processing"] { animation: av-typing 0.5s ease-in-out infinite; }
+.assistant-mascot[data-motion="wait_pose"] { animation: av-wait 2.6s ease-in-out infinite; }
+.assistant-mascot[data-motion="attention_pop"] { animation: av-attention 0.9s ease-out infinite; }
+.assistant-mascot[data-motion="jump_light"] { animation: av-jump 1.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .assistant-mascot[data-motion] { animation: none !important; }
+}
