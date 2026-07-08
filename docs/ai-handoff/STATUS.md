@@ -4,7 +4,16 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(CEO Dashboard 二層UI D-20260709-003)
+## 直近の完了内容(AI Business Factory)
+指示書 AI_BUSINESS_FACTORY_DIRECTIVE.md に基づき `packages/business-factory` を新設。標準テンプレート
+(AI事業部長+営業/マーケ/開発/運用/CSチーム+財務サポート+AI監査リエゾンの8ロール)で新規事業
+ユニットを立ち上げ、部門構造・KPI・ワークフロー・Company Brain・ナレッジ・レポート・リスク監視・
+Mock運用データを決定論で自動プロビジョニング。初期ターゲット MEISHI-TUBE(稼働中・売上¥800,000/月)。
+BusinessFactoryPage を新設(概要/テンプレ/新規立ち上げ/ユニット一覧/プロビジョニング結果/ガバナンス)。
+レポートラインは AI COO→AI CEO・憲章遵守。business-factory テスト6件 pass。Playwrightで確認(0エラー)。
+外部本番接続・secretsなし。
+
+## それ以前の完了(CEO Dashboard 二層UI D-20260709-003)
 指示書 CEO_DASHBOARD_TWO_LAYER_UI_DIRECTIVE.md に基づき二層UIを実装。Layer A(経営ダッシュボード)
 に ceo-dashboard パッケージの経営メーター・アラート優先度・タイムライン・CEO提案ボックス
 (承認→Issue Mock)・AI社員ランキングを追加。Layer B(部門クリック)に担当AI社員・ブロック項目・

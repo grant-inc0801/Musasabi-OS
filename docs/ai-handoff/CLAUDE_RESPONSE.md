@@ -3,6 +3,38 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-09 — AI Business Factory(AI_BUSINESS_FACTORY_DIRECTIVE)
+
+### 実装内容
+指示書 `AI_BUSINESS_FACTORY_DIRECTIVE.md` に基づき、標準テンプレートで新規事業ユニットを
+立ち上げ・運営する「AI事業ファクトリー」を実装。すべて Mock・決定論、外部本番接続・secrets なし。
+
+- **`packages/business-factory`(新規)**:
+  - 標準ロール構成 `BUSINESS_UNIT_ROLES`(8ロール = AI事業部長 + 営業/マーケティング/開発/
+    運用/カスタマーサクセスチーム + 財務サポート + AI監査リエゾン)
+  - `provisionBusinessUnit(name, options)`: 部門構造・KPIダッシュボード・経営ダッシュボード統合・
+    ワークフローテンプレート・Company Brain ワークスペース・ナレッジリポジトリ・レポート
+    テンプレート・リスク監視・Mock運用データを決定論で自動プロビジョニング
+  - 初期ターゲット `MEISHI_TUBE`(第1号事業ユニット・稼働中・売上¥800,000/月・リード42件/
+    稼働率76%/解約率3%)、`BUSINESS_UNITS`
+  - ガバナンス: `REPORTING_LINE`(AI COO → AI CEO)・`GOVERNANCE_NOTES`(憲章遵守・監査)
+  - `summarizeFactory`。テスト6件 pass
+- **`BusinessFactoryPage`(新規)**: 概要スタッツ・標準テンプレート(8ロール)・新規事業名入力→
+  ワンクリック立ち上げ(Mock)・事業ユニット一覧バッジ・選択ユニットの自動プロビジョニング結果
+  (部門構造/ワークフロー/レポート/リスク監視/KPI/運用データ/連携)・ガバナンスを表示
+- App.tsx の GLOBAL_NAV に「AI事業ファクトリー」を追加(business_factory ページ)
+
+### 完了条件の充足
+- 標準テンプレート(AI事業部長+各チーム+AI監査リエゾン)✅ / 部門構造・KPI・ワークフロー・
+  Company Brain・ナレッジ・レポート・リスク監視・運用データの自動プロビジョニング ✅ /
+  COO→CEO レポートライン・憲章遵守 ✅ / 初期ターゲット MEISHI-TUBE 稼働 ✅ /
+  test・README・CLAUDE_RESPONSE 更新 ✅
+
+### テスト結果
+- `@musasabi/business-factory` 6件 pass
+- Playwright E2E: 標準8ロール・MEISHI-TUBE(¥800,000)・部門構造カード・COO→CEO・
+  新規ユニット CARD-LINK 立ち上げ→プロビジョニング表示・0エラーを実画面確認
+
 ## 2026-07-09 — CEO Dashboard 二層UI(D-20260709-003)
 
 ### 実装内容
