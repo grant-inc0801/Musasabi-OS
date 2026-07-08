@@ -4,7 +4,13 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(D-013 Company Brain & Collaboration Engine)
+## 直近の完了内容(D-014 Desktop Assistant & Workspace)
+デスクトップアシスタントのワークスペースを新設。本日のダイジェスト(承認待ち/
+進行中WF/未対応サポート/開発エラー/連携中の横断集約)+件数タイル+クイック
+アクション+最近の業務ログ。サイドバー先頭から到達。全 workspace テスト300件 pass。
+次は D-015 AI Self Evolution を実施予定。
+
+## それ以前の完了(D-013 Company Brain & Collaboration Engine)
 部署間の引き継ぎ・提案・承認依頼(6件)と全社共有ナレッジ(5件)を可視化する
 コラボレーションページを新設(概要タイル・種別絞り込み・採用部署表示)。
 サイドバーから到達。全 workspace テスト297件 pass。

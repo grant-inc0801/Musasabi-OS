@@ -3,6 +3,25 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-08 — D-014 Desktop Assistant & Workspace(ワークスペース)
+
+### 実装内容
+デスクトップアシスタントの拠点となるワークスペース画面を新設した(すべてMock)。
+
+- **`packages/ai-company/workspace.ts`**: `buildDailyDigest(departments)` —
+  承認待ち部署・進行中ワークフロー・未対応サポート・開発エラー・連携中を横断集計し、
+  件数(WorkspaceCounts)と日本語の箇条書きを返す。営業部は withLiveSalesData で
+  実データ反映可。`buildDailyDigestJa` も提供。テスト3件
+- **`WorkspacePage`**: 「本日のダイジェスト」(要注目事項の箇条書き)+件数タイル+
+  クイックアクション(全社ダッシュボード/ワークフロー/コラボレーション/
+  Company Brain/コマンドセンターへ遷移)+最近の業務ログ(Company Brain)。
+  サイドバー先頭「ワークスペース」から到達
+
+### テスト結果
+- 全 workspace テスト **300件 pass・fail 0**(workspace 3件を追加)
+- Playwright E2E: 到達・ダイジェスト(承認待ち/未対応問合せ)・クイックアクション・
+  ワークフローへの遷移を実画面確認
+
 ## 2026-07-08 — D-013 Company Brain & Collaboration Engine(部署間コラボ可視化)
 
 ### 実装内容
