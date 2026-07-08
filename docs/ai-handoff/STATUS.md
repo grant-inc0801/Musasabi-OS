@@ -4,7 +4,14 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(AI組織構造 + 監査ログ)
+## 直近の完了内容(Advanced Modules Roadmap)
+指示書 ADVANCED_MODULES_ROADMAP.md に基づき `packages/advanced-modules` を新設。次世代12モジュール
+(Musasabi DNA/Company Brain 2.0/COO指令室/ナレッジ品質/意思決定支援/営業コーチング/出版スタジオ/
+開発レビュー/役員秘書/戦略室/事業シミュレータ/学習ラボ)を Mock パネル+サービススタブとして実装。
+AdvancedModulesPage を新設しGLOBAL_NAVから到達。advanced-modules テスト7件 pass。Playwrightで
+12パネル・スタブ実行を確認(0エラー)。外部本番接続・secretsなし。
+
+## それ以前の完了(AI組織構造 + 監査ログ)
 指示書 AI_ORGANIZATION_STRUCTURE.md 準拠。既存組織モデルを拡張し、governance に orgStructure
 (役員→本部・組織図・指揮系統・独立監査)、audit に auditLog(追記型・所見からエスカレーション/
 一時停止提案/レビュー/是正を導出)を追加。OrgStructurePage 新設+AuditPageに監査ログ追加。
