@@ -21,6 +21,7 @@ import { EcosystemPage } from "./components/Enterprise/EcosystemPage";
 import { AgiPage } from "./components/Enterprise/AgiPage";
 import { NextCoreModulesPage } from "./components/Enterprise/NextCoreModulesPage";
 import { BusinessFactoryPage } from "./components/Enterprise/BusinessFactoryPage";
+import { EvolutionModulesPage } from "./components/Enterprise/EvolutionModulesPage";
 import { WorkflowPage } from "./components/Workflow/WorkflowPage";
 import { CollaborationPage } from "./components/Collaboration/CollaborationPage";
 import { WorkspacePage } from "./components/Workspace/WorkspacePage";
@@ -94,6 +95,7 @@ type Page =
   | "agi"
   | "next_core_modules"
   | "business_factory"
+  | "evolution_modules"
   | "workflow"
   | "company_brain"
   | "collaboration"
@@ -141,6 +143,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   agi: "Musasabi AGI",
   next_core_modules: "コアモジュール",
   business_factory: "AI事業ファクトリー",
+  evolution_modules: "進化モジュール",
   workflow: "ワークフロー",
   company_brain: "Company Brain",
   collaboration: "コラボレーション",
@@ -205,6 +208,7 @@ const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
   { label: "Musasabi AGI", page: "agi" },
   { label: "コアモジュール", page: "next_core_modules" },
   { label: "AI事業ファクトリー", page: "business_factory" },
+  { label: "進化モジュール", page: "evolution_modules" },
   { label: "ワークフロー", page: "workflow" },
   { label: "AI社員管理", page: "company" },
   { label: "Company Brain", page: "company_brain" },
@@ -420,6 +424,8 @@ export function App() {
           <NextCoreModulesPage />
         ) : page === "business_factory" ? (
           <BusinessFactoryPage />
+        ) : page === "evolution_modules" ? (
+          <EvolutionModulesPage />
         ) : page === "workflow" ? (
           <WorkflowPage onOpenPage={(target) => replayNavigate(target)} />
         ) : page === "company_brain" ? (

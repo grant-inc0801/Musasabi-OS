@@ -3,6 +3,7 @@ import { buildAssistantSummaryJa } from "@musasabi/ai-company";
 import type { CommandDepartment } from "@musasabi/ai-company";
 import { deriveEmotionFromSignals, emotionMotionMap } from "@musasabi/avatar-2d";
 import { buildNextModulesSummaryJa } from "@musasabi/next-core-modules";
+import { buildEvolutionSummaryJa } from "@musasabi/evolution-modules";
 import { buildExecutiveCompanyMeter, buildDashboardSummaryJa } from "@musasabi/ceo-dashboard";
 import mascot from "../../assets/mascot.png";
 
@@ -31,6 +32,7 @@ export function AssistantAvatar({
     buildAssistantSummaryJa(departments),
     ...buildDashboardSummaryJa(companyMeter),
     ...buildNextModulesSummaryJa(),
+    ...buildEvolutionSummaryJa(),
   ].join("\n");
 
   // 部署状態 → 感情モーション(エラー>承認待ち>作業中>全完了>待機)。
