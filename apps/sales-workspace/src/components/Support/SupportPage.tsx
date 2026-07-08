@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   FAQ_ITEMS,
   SUPPORT_STAFF,
-  SUPPORT_TICKETS,
   TICKET_STATUSES,
   TICKET_STATUS_COLOR,
   buildSupportKpi,
@@ -11,12 +10,13 @@ import {
   type TicketStatus,
 } from "@musasabi/ai-company";
 import { recordMemory } from "../../lib/memoryStorage";
+import { loadSupportTickets, saveTicketStatus } from "../../lib/supportStorage";
 
 // カスタマーサポート部ページ(従来画面・サポート部充実フェーズ)。
 // すべてMock(実問い合わせ受信・実メール/チャット接続・外部送信なし)。
 
 export function SupportPage() {
-  const [tickets, setTickets] = useState<readonly SupportTicket[]>(SUPPORT_TICKETS);
+  const [tickets, setTickets] = useState<readonly SupportTicket[]>(() => loadSupportTickets());
   const kpi = buildSupportKpi(tickets);
   const tiles = [
     { label: "未対応", value: kpi.openCount, color: TICKET_STATUS_COLOR["未対応"] },
@@ -29,6 +29,7 @@ export function SupportPage() {
   function handleStatusChange(ticket: SupportTicket, status: TicketStatus): void {
     if (status === ticket.status) return;
     setTickets((prev) => setTicketStatus(prev, ticket.id, status));
+    saveTicketStatus(ticket.id, status);
     recordMemory({
       category: "work",
       actor: ticket.assignee,

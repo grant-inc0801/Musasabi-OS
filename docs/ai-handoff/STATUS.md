@@ -4,7 +4,11 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(アバター吹き出しサマリー拡張)
+## 直近の完了内容(サポートチケット永続化)
+問い合わせステータス変更を musasabi.supportTickets へ永続化(再起動後も維持・
+KPI反映・バックアップ対象)。全 workspace テスト284件 pass・fail 0。
+
+## それ以前の完了(アバター吹き出しサマリー拡張)
 吹き出しにサポート部(未対応/対応中件数)と開発部(エラー対応案件)の要約を追加。
 全 workspace テスト283件 pass・fail 0。
 
