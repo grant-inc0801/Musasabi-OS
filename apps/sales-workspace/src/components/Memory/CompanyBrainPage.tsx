@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { MEMORY_CATEGORIES, MEMORY_CATEGORY_LABEL_JA, MemoryEngine } from "@musasabi/memory";
 import type { MemoryCategory } from "@musasabi/memory";
 import { loadMemoryRecords, promoteMemoriesNow } from "../../lib/memoryStorage";
+import { saveBinaryFile } from "../../lib/saveFile";
 
 // Company Brain ページ(Development Bible 第9章 Brain Memory Engine)。
 // アプリ内の行動記録(Memory)を6分類の件数タイルと履歴一覧で可視化する。
@@ -9,12 +10,33 @@ import { loadMemoryRecords, promoteMemoriesNow } from "../../lib/memoryStorage";
 
 const HISTORY_LIMIT = 30;
 
+/** 期間フィルタ。 */
+type Period = "all" | "today" | "7d";
+const PERIOD_LABEL_JA: Record<Period, string> = {
+  all: "全期間",
+  today: "今日",
+  "7d": "直近7日",
+};
+
+/** 期間の下限(epoch ms)。all は undefined。 */
+function periodSinceMs(period: Period, nowMs: number): number | undefined {
+  if (period === "today") {
+    const d = new Date(nowMs);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  }
+  if (period === "7d") return nowMs - 7 * 24 * 60 * 60 * 1000;
+  return undefined;
+}
+
 export function CompanyBrainPage() {
   const [reloadKey, setReloadKey] = useState(0);
   const engine = useMemo(() => new MemoryEngine(loadMemoryRecords()), [reloadKey]);
   const [category, setCategory] = useState<MemoryCategory | "all">("all");
   const [text, setText] = useState("");
+  const [period, setPeriod] = useState<Period>("all");
   const [promotedNote, setPromotedNote] = useState<string | null>(null);
+  const [exportNote, setExportNote] = useState<string | null>(null);
 
   function handlePromote(): void {
     const count = promoteMemoriesNow();
@@ -27,11 +49,35 @@ export function CompanyBrainPage() {
   }
 
   const counts = engine.countByCategory();
-  const records = engine.query({
+  const queryBase = {
     category: category === "all" ? undefined : category,
     text: text.trim() === "" ? undefined : text.trim(),
-    limit: HISTORY_LIMIT,
-  });
+    sinceMs: periodSinceMs(period, Date.now()),
+  };
+  const records = engine.query({ ...queryBase, limit: HISTORY_LIMIT });
+
+  async function handleExport(): Promise<void> {
+    // 現在の絞り込み(分類・検索・期間)を反映した全件をJSONで書き出す。
+    const all = engine.query(queryBase);
+    const json = JSON.stringify(
+      { exportedAtMs: Date.now(), filter: { category, text: text.trim(), period }, records: all },
+      null,
+      2,
+    );
+    const bytes = new TextEncoder().encode(json);
+    const stamp = new Date().toISOString().slice(0, 10);
+    const result = await saveBinaryFile(
+      `musasabi-memory-${stamp}.json`,
+      bytes,
+      "JSON",
+      ["json"],
+    );
+    setExportNote(
+      result === "cancelled"
+        ? "書き出しをキャンセルしました。"
+        : `${all.length}件をJSONで書き出しました。`,
+    );
+  }
 
   return (
     <>
@@ -88,7 +134,24 @@ export function CompanyBrainPage() {
             placeholder="行動・詳細・タグを検索"
             style={{ width: "18rem" }}
           />
+          <select
+            value={period}
+            onChange={(e) => setPeriod(e.target.value as Period)}
+            aria-label="期間で絞り込み"
+          >
+            {(Object.keys(PERIOD_LABEL_JA) as Period[]).map((p) => (
+              <option key={p} value={p}>
+                {PERIOD_LABEL_JA[p]}
+              </option>
+            ))}
+          </select>
+          <button type="button" onClick={() => void handleExport()}>
+            JSONエクスポート
+          </button>
         </div>
+        {exportNote && (
+          <p style={{ color: "var(--ok)", fontSize: "0.85rem", margin: "0 0 0.5rem" }}>{exportNote}</p>
+        )}
         {records.length === 0 ? (
           <p style={{ color: "var(--text-muted)" }}>
             記録がまだありません。テストコールや設定変更などの操作が自動で記録されます。
