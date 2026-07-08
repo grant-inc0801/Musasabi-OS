@@ -903,3 +903,68 @@ main section,
     animation: none !important;
   }
 }
+
+/* ===== AV-MOTION-001: アバター感情モーション(Issue #272) ===== */
+.avatar-motion-stage {
+  width: 240px;
+  height: 300px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: radial-gradient(circle at 50% 30%, rgba(120, 140, 200, 0.08), transparent 70%);
+  overflow: hidden;
+}
+.avatar-motion-mascot {
+  width: 180px;
+  height: auto;
+  transform-origin: 50% 100%;
+  will-change: transform, filter;
+}
+.avatar-motion-detail dt { font-size: 0.85rem; }
+.avatar-motion-btn {
+  min-width: 6.5rem;
+  padding: 0.4rem 0.6rem;
+  text-align: center;
+  cursor: pointer;
+}
+.avatar-motion-btn.is-active {
+  outline: 2px solid var(--accent, #6c8cff);
+  font-weight: 700;
+}
+
+/* 各モーション: data-motion 属性で切り替え。将来3Dへ差し替え可能。 */
+.avatar-motion-mascot[data-motion="idle_float"] { animation: av-idle-float 3s ease-in-out infinite; }
+.avatar-motion-mascot[data-motion="lean_forward"] { animation: av-lean 2.4s ease-in-out infinite; }
+.avatar-motion-mascot[data-motion="head_tilt"] { animation: av-tilt 1.2s ease-in-out infinite; }
+.avatar-motion-mascot[data-motion="gesture_talk"] { animation: av-talk 0.7s ease-in-out infinite; }
+.avatar-motion-mascot[data-motion="jump_light"] { animation: av-jump 0.6s ease-in-out infinite; }
+.avatar-motion-mascot[data-motion="quick_pop"] { animation: av-pop 0.4s ease-out infinite; }
+.avatar-motion-mascot[data-motion="shrink"] { animation: av-shrink 2s ease-in-out infinite; }
+.avatar-motion-mascot[data-motion="chest_up"] { animation: av-chest 1.8s ease-in-out infinite; }
+.avatar-motion-mascot[data-motion="typing_or_processing"] { animation: av-typing 0.5s ease-in-out infinite; }
+.avatar-motion-mascot[data-motion="sway_slow"] { animation: av-sway 4s ease-in-out infinite; filter: saturate(0.8) brightness(0.95); }
+.avatar-motion-mascot[data-motion="shake_small"] { animation: av-shake 0.15s linear infinite; }
+.avatar-motion-mascot[data-motion="small_spin_or_banzai"] { animation: av-spin 1.1s ease-in-out infinite; }
+.avatar-motion-mascot[data-motion="attention_pop"] { animation: av-attention 0.6s ease-out infinite; }
+.avatar-motion-mascot[data-motion="wait_pose"] { animation: av-wait 2.6s ease-in-out infinite; }
+
+@keyframes av-idle-float { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-8px) rotate(-1deg); } }
+@keyframes av-lean { 0%,100% { transform: rotate(0) translateY(0); } 50% { transform: rotate(4deg) translateY(-3px); } }
+@keyframes av-tilt { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+@keyframes av-talk { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-2px) scale(1.02); } }
+@keyframes av-jump { 0%,100% { transform: translateY(0) scaleY(1); } 30% { transform: translateY(-24px) scaleY(1.05); } 60% { transform: translateY(0) scaleY(0.96); } }
+@keyframes av-pop { 0% { transform: scale(1); } 40% { transform: scale(1.18) translateY(-6px); } 100% { transform: scale(1); } }
+@keyframes av-shrink { 0%,100% { transform: scale(1); } 50% { transform: scale(0.86) translateY(6px); } }
+@keyframes av-chest { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-6px) rotate(-2deg) scaleY(1.04); } }
+@keyframes av-typing { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-2px) rotate(1deg); } }
+@keyframes av-sway { 0%,100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+@keyframes av-shake { 0%,100% { transform: translateX(-3px); } 50% { transform: translateX(3px); } }
+@keyframes av-spin { 0% { transform: rotate(0) translateY(0); } 50% { transform: rotate(180deg) translateY(-14px); } 100% { transform: rotate(360deg); } }
+@keyframes av-attention { 0%,100% { transform: translateY(0) scale(1); } 25% { transform: translateY(-10px) scale(1.06); } }
+@keyframes av-wait { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar-motion-mascot { animation: none !important; }
+}

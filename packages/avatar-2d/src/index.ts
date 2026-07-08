@@ -49,3 +49,4 @@ export class AvatarStateMachine {
   }
 }
 export * from "./displaySettings";
+export * from "./emotionMotion";

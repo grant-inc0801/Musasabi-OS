@@ -3,6 +3,34 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-08 — Issue #272 AV-MOTION-001 感情別自動モーション制御
+
+### 実装内容
+アバターに感情・状態別の自動モーション制御を実装(初期版)。制御ロジックは描画層から
+分離し、将来 Three.js / VRM / GLB / Live2D へ差し替え可能な構造。
+
+- **`packages/avatar-2d/emotionMotion.ts`**: 14ステート(idle/listen/thinking/answer/
+  happy/surprised/worried/confident/working/sleepy/error/celebrate/alert/approval_wait)の
+  `emotionMotionMap`(expression/motion/duration/loop/fallback)。`EmotionStateManager`
+  (setEmotion/reset/getCurrent/getCurrentMotion/onChange、duration経過後にfallback自動復帰、
+  ループは明示遷移まで継続、Scheduler注入でテスト可能)。テスト13件
+- **`AvatarMotionPage`(デバッグUI)**: ムササビアバターをCSS transformで各モーション
+  再生+14ボタン+現在ステート詳細(表情/モーション/継続時間/ループ/fallback)+遷移履歴+
+  idleリセット。GLOBAL_NAV「アバターモーション」から到達
+- **styles.css**: 14モーションのCSS keyframes(idle_float/lean_forward/head_tilt/
+  gesture_talk/jump_light/quick_pop/shrink/chest_up/typing_or_processing/sway_slow/
+  shake_small/small_spin_or_banzai/attention_pop/wait_pose)+prefers-reduced-motion対応
+
+### 受け入れ条件の充足
+emotionMotionMap定義済 / 14ステート実装 / 各ステートにexpression・motion・duration・
+loop・fallback / setAvatarEmotion相当(setEmotion)で切替 / duration経過後fallback復帰 /
+loopは継続 / デバッグUIで各モーション確認可 / 実3Dモデル未完成でも仮モーションで動作 /
+制御層と描画層を分離。
+
+### テスト結果
+- `@musasabi/avatar-2d` 22件 pass(emotionMotion 13件を追加)
+- Playwright E2E: 14ボタン・working継続・happy→1800ms後idle自動復帰・0エラーを実画面確認
+
 ## 2026-07-08 — アバター刷新 + 架電リスト検索の最大5000件対応
 
 ### 実装内容(ユーザー指示: 添付マスコット画像を3Dアバターへ / リスト検索出力を最大5000件)
