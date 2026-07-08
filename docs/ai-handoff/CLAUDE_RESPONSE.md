@@ -3,6 +3,30 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-08 — Phase 8 AIエコシステム + Phase 11 Musasabi AGI
+
+### 実装内容
+指示書 `PHASE8_AI_ECOSYSTEM.md` と `PHASE11_MUSASABI_AGI.md` を実装。すべて決定論・Mock、
+外部本番依存なし、重要変更は人間承認必須・監査ログ保持・自律的本番デプロイなし。
+
+- **Phase 8(`packages/ecosystem`)**: 部門/AI社員/ワークフローのテンプレート、
+  `instantiateTemplate`(Mock生成・実登録なし)、内部モジュールマーケットプレイス
+  (導入済み/利用可能)、安定拡張API(後方互換宣言)、`summarizeEcosystem`。テスト7件。
+  UI `EcosystemPage`(テンプレート作成・マーケット・拡張API)
+- **Phase 11(`packages/agi`)**: AGI提案(自己最適化/ワークフロー/部門新設/AI社員新設/
+  Company Brain進化/戦略)、`requiresApproval`(significant・部門/社員新設は承認必須)、
+  `prioritizeAgiProposals`、Musasabi Constitution(憲章5条)、`checkAgainstConstitution`、
+  AI CEO戦略立案 `buildStrategicPlan`。テスト6件。UI `AgiPage`(提案一覧・憲章チェック・憲章)
+
+### 完了条件の充足
+- Phase8: Mock実装優先・後方互換・外部本番依存なし・test/README/CLAUDE_RESPONSE更新 ✅
+- Phase11: 重要変更は承認必須・監査ログ保持・自律的本番デプロイなし・test/README/CLAUDE_RESPONSE更新 ✅
+
+### テスト結果
+- `@musasabi/ecosystem` 7件 / `@musasabi/agi` 6件 pass
+- Playwright E2E: エコシステム(テンプレート6・インスタンス化・マーケット6)、AGI(提案6・
+  部門新設は承認必須・憲章チェック・憲章5条)・0エラーを実画面確認
+
 ## 2026-07-08 — Advanced Modules Roadmap(12モジュールのMockパネル/スタブ)
 
 ### 実装内容

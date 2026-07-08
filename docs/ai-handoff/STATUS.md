@@ -4,7 +4,14 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Advanced Modules Roadmap)
+## 直近の完了内容(Phase 8 エコシステム + Phase 11 AGI)
+指示書 PHASE8_AI_ECOSYSTEM.md と PHASE11_MUSASABI_AGI.md を実装。Phase8 ecosystem(部門/AI社員/
+ワークフローのテンプレート・内部マーケットプレイス・安定拡張API)、Phase11 agi(AGI提案・
+承認ゲート・Musasabi憲章・憲章チェック・AI CEO戦略立案)。EcosystemPage/AgiPage を新設。
+ecosystem 7件・agi 6件 pass。Playwrightで実画面確認(0エラー)。重要変更は承認必須・監査ログ保持・
+自律的本番デプロイなし・外部本番依存なし。
+
+## それ以前の完了(Advanced Modules Roadmap)
 指示書 ADVANCED_MODULES_ROADMAP.md に基づき `packages/advanced-modules` を新設。次世代12モジュール
 (Musasabi DNA/Company Brain 2.0/COO指令室/ナレッジ品質/意思決定支援/営業コーチング/出版スタジオ/
 開発レビュー/役員秘書/戦略室/事業シミュレータ/学習ラボ)を Mock パネル+サービススタブとして実装。

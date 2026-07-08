@@ -17,6 +17,8 @@ import { GovernancePage } from "./components/Enterprise/GovernancePage";
 import { AuditPage } from "./components/Enterprise/AuditPage";
 import { OrgStructurePage } from "./components/Enterprise/OrgStructurePage";
 import { AdvancedModulesPage } from "./components/Enterprise/AdvancedModulesPage";
+import { EcosystemPage } from "./components/Enterprise/EcosystemPage";
+import { AgiPage } from "./components/Enterprise/AgiPage";
 import { WorkflowPage } from "./components/Workflow/WorkflowPage";
 import { CollaborationPage } from "./components/Collaboration/CollaborationPage";
 import { WorkspacePage } from "./components/Workspace/WorkspacePage";
@@ -86,6 +88,8 @@ type Page =
   | "audit"
   | "org_structure"
   | "advanced_modules"
+  | "ecosystem"
+  | "agi"
   | "workflow"
   | "company_brain"
   | "collaboration"
@@ -129,6 +133,8 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   audit: "AI監査・リスク",
   org_structure: "AI組織構造",
   advanced_modules: "アドバンスドモジュール",
+  ecosystem: "AIエコシステム",
+  agi: "Musasabi AGI",
   workflow: "ワークフロー",
   company_brain: "Company Brain",
   collaboration: "コラボレーション",
@@ -189,6 +195,8 @@ const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
   { label: "AI監査・リスク", page: "audit" },
   { label: "AI組織構造", page: "org_structure" },
   { label: "アドバンスドモジュール", page: "advanced_modules" },
+  { label: "AIエコシステム", page: "ecosystem" },
+  { label: "Musasabi AGI", page: "agi" },
   { label: "ワークフロー", page: "workflow" },
   { label: "AI社員管理", page: "company" },
   { label: "Company Brain", page: "company_brain" },
@@ -396,6 +404,10 @@ export function App() {
           <OrgStructurePage />
         ) : page === "advanced_modules" ? (
           <AdvancedModulesPage />
+        ) : page === "ecosystem" ? (
+          <EcosystemPage />
+        ) : page === "agi" ? (
+          <AgiPage />
         ) : page === "workflow" ? (
           <WorkflowPage onOpenPage={(target) => replayNavigate(target)} />
         ) : page === "company_brain" ? (
