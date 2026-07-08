@@ -46,3 +46,16 @@ test("サポート要約は未対応と対応中の件数を伝える", async ()
   assert.ok(lines.some((l) => l.includes("未対応の問い合わせが1件")));
   assert.ok(lines.some((l) => l.includes("2件の問い合わせに対応中")));
 });
+
+test("parseTicketOverrides は不正な入力を捨てる", async () => {
+  const { parseTicketOverrides, applyTicketOverrides } = await import("./supportDesk");
+  assert.deepEqual(parseTicketOverrides(null), {});
+  assert.deepEqual(parseTicketOverrides("{broken"), {});
+  assert.deepEqual(parseTicketOverrides('["a"]'), {});
+  assert.deepEqual(parseTicketOverrides('{"T-1041":"対応中","T-1040":"bogus"}'), {
+    "T-1041": "対応中",
+  });
+  const applied = applyTicketOverrides(SUPPORT_TICKETS, { "T-1041": "クローズ", "T-9999": "未対応" });
+  assert.equal(applied.find((t) => t.id === "T-1041")?.status, "クローズ");
+  assert.equal(applied.length, SUPPORT_TICKETS.length);
+});

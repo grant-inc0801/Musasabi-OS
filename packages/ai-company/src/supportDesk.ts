@@ -173,6 +173,35 @@ export function setTicketStatus(
   return tickets.map((t) => (t.id === id ? { ...t, status } : t));
 }
 
+/** チケットID→ステータスの上書き(localStorage 永続化用)。 */
+export type TicketOverrides = Record<string, TicketStatus>;
+
+/** JSON文字列から上書きを復元する。壊れた入力・不正な値は捨てる。 */
+export function parseTicketOverrides(json: string | null): TicketOverrides {
+  if (!json) return {};
+  try {
+    const parsed: unknown = JSON.parse(json);
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return {};
+    const result: TicketOverrides = {};
+    for (const [id, status] of Object.entries(parsed)) {
+      if (typeof status === "string" && (TICKET_STATUSES as readonly string[]).includes(status)) {
+        result[id] = status as TicketStatus;
+      }
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
+
+/** マスタのチケットに保存済みステータスを適用する(未知IDは無視)。 */
+export function applyTicketOverrides(
+  tickets: readonly SupportTicket[],
+  overrides: TicketOverrides,
+): SupportTicket[] {
+  return tickets.map((t) => (overrides[t.id] ? { ...t, status: overrides[t.id] } : t));
+}
+
 /** アバター吹き出し用のサポート要約(未対応があれば先頭で知らせる)。 */
 export function buildSupportSummaryJa(): string[] {
   const kpi = buildSupportKpi(SUPPORT_TICKETS);
