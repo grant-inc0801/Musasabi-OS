@@ -4,7 +4,13 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(D-014 Desktop Assistant & Workspace)
+## 直近の完了内容(D-015 AI Self Evolution)
+buildEvolutionInsights(頻出アクション/自動化候補/稼働主体/短期長期内訳)を追加し、
+AI自己進化ページを新設(自動化候補→Automation導線、長期昇格、頻出/主体)。
+サイドバーから到達。全 workspace テスト303件 pass。
+次は D-016 AI Company Operation を実施予定(D-011〜016 の最終)。
+
+## それ以前の完了(D-014 Desktop Assistant & Workspace)
 デスクトップアシスタントのワークスペースを新設。本日のダイジェスト(承認待ち/
 進行中WF/未対応サポート/開発エラー/連携中の横断集約)+件数タイル+クイック
 アクション+最近の業務ログ。サイドバー先頭から到達。全 workspace テスト300件 pass。
