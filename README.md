@@ -75,6 +75,7 @@ packages/
   ai-secretary/       AI役員秘書/参謀(統一カード9カテゴリ・デイリーブリーフィング・フィルタ・Mockアクション)+市場調査レポート(標準形式・機会スコア・競合比較)+マーケSNS投稿ワークフロー(テキストロック/繰り返し/頻度/添付/承認/Mock予約・本番投稿はロック)。Mock)
   ai-model-registry/  AI統合センター/モデルレジストリ(9プロバイダ・能力スコア14軸・タスク別ルーティング・モデル比較・アップグレード評価・AI秘書通知・Company Brain利用ナレッジ・Secret Centerルール。APIキー非保持=参照名のみ。本番接続は承認までロック。Mock)
   marketing-pdca/     マーケティングPDCAエンジン(投稿タイトル単位管理・数値分析12指標・PDCA・バージョン管理・Company Brainナレッジ化・AI秘書統一カード。テキストロック時は解析のみ。実SNS接続/本番投稿なし。Mock)
+  intelligence-layer/ Musasabi Intelligence Layer(AI Policy Engine 13カテゴリ/優先度6段・Knowledge Graph 14種ノード・Workflow Composer 13種ノード+例示フロー・Explainability Center 13項目+スコア5軸。AI秘書/AI監査/CEO/Company Brain統合。実強制は承認までロック。Mock)
   memory/             Brain Memory Engine(未実装、Epic β-001完了後)
   vision/             Vision Engine(未実装、Epic β-001完了後)
   automation/         Automation Engine(未実装、Epic β-001完了後)
