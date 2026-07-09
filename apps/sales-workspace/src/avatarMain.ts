@@ -31,6 +31,7 @@ import {
 import { addWorkLogEntry } from "@musasabi/call-training";
 import { loadWorkLog, saveWorkLog } from "./lib/workLogStorage";
 import brandIconUrl from "./assets/brand-icon.png";
+import { computeBriefing, summarizeSecretaryJa } from "@musasabi/ai-secretary";
 
 // 右下常駐アバターウィンドウ本体(D-20260706-004)。
 // apps/desktop/src-tauri/src/lib.rs が avatar.html として右下に生成する。
@@ -545,12 +546,49 @@ function showBubbleState(text: string): AssistantPanelState {
   return { ...panelState, bubble: text };
 }
 
+// 最小化アイコンのステータス光彩+バッジ(MARKETING_PDCA_AND_MINIMIZED_ICON_DIRECTIVE.md §2)。
+// 緑=健全/完了・黄=作業中・紫=承認待ち・赤=エラー/要注意。バッジは承認+アラート件数。
+function updateMinimizedIcon(): void {
+  const avatar = el("avatar");
+  const badge = el("avatar-badge");
+  if (!avatar) return;
+  const b = computeBriefing();
+  const alerts = b.approvalsWaiting + b.risks;
+  // 優先度: 赤(リスク) > 紫(承認待ち) > 黄(作業中相当=高優先) > 緑(健全)
+  let accent = "rgba(34, 197, 94, 0.55)"; // green
+  if (b.risks > 0) accent = "rgba(239, 68, 68, 0.6)"; // red
+  else if (b.approvalsWaiting > 0) accent = "rgba(155, 89, 182, 0.6)"; // purple
+  else if (b.highPriority > 0) accent = "rgba(245, 158, 11, 0.55)"; // yellow(working)
+  avatar.style.setProperty("--status-accent", accent);
+  if (badge) {
+    if (alerts > 0) {
+      badge.textContent = String(alerts);
+      badge.classList.remove("hidden");
+    } else {
+      badge.classList.add("hidden");
+    }
+  }
+}
+
+// ホバーで AI秘書の短いサマリーを吹き出し表示(Mock)。パネル/吹き出し表示中は邪魔しない。
+function setupIconHover(): void {
+  const avatar = el("avatar");
+  if (!avatar) return;
+  avatar.addEventListener("mouseenter", () => {
+    if (panelState.panelOpen || panelState.bubble !== null) return;
+    panelState = showBubbleState(summarizeSecretaryJa());
+    renderPanel();
+  });
+}
+
 renderAvatar(stateMachine.getState());
 setupUi();
+setupIconHover();
 setupBizViews();
 applyAvatarSize();
 renderPanel();
 void initAvatar();
+updateMinimizedIcon();
 
 // メインウィンドウからのアバター状態遷移イベント(Tauri内のみ)。
 async function listenAvatarEvents(): Promise<void> {
