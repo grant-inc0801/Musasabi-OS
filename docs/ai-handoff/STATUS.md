@@ -4,7 +4,13 @@
 **Updated:** 2026-07-09
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(マーケティングPDCA + 最小化アイコンUI・Mock)
+## 直近の完了内容(UIフィードバック第10弾・最小化ウィンドウをアイコン枠と同サイズに)
+最小化時の透明ウィンドウがアイコンより大きく(96×122px)、余りがガラス枠として見えていた問題を修正。
+desiredWindowSize(アイコンのみ)をアイコン+16px(=80×80、バッジはみ出し分のみ)に縮小し、撤去済み
+ドラッグハンドルの高さ確保を全廃。ステータス光彩も余白内(7px)に縮小。Playwright(80×80)でアイコンが
+ウィンドウにぴったり収まることを確認・0エラー。
+
+## それ以前の完了内容(マーケティングPDCA + 最小化アイコンUI・Mock)
 指示書 MARKETING_PDCA_AND_MINIMIZED_ICON を実装。`packages/marketing-pdca`(新規): 投稿タイトル単位管理・
 数値分析12指標・PDCA(Plan/Do/Check/Act)・バージョン管理(ベスト印)・Company Brainナレッジ化・AI秘書統一カード。
 テキストロック時は解析のみ。テスト11件 pass。`MarketingPdcaSection`(マーケ部)+ AiSecretaryPanel にマーケカード統合。
