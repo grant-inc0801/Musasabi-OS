@@ -7,6 +7,7 @@ import {
 } from "@musasabi/ai-company";
 import { buildXlsx } from "@musasabi/call-list";
 import { saveBinaryFile } from "../../lib/saveFile";
+import { SnsPostingWorkflow } from "./SnsPostingWorkflow";
 
 // マーケティング部ページ(従来画面・コア部署の完成フェーズ)。
 // すべてMock(実広告出稿・実SNS投稿なし)。
@@ -111,6 +112,8 @@ export function MarketingPage() {
           ))}
         </ul>
       </section>
+
+      <SnsPostingWorkflow />
     </>
   );
 }

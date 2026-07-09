@@ -17,6 +17,7 @@ import { DepartmentCylinder } from "./DepartmentCylinder";
 import { VaultDetailPanel } from "./VaultDetailPanel";
 import { DepartmentDetailPanel } from "./DepartmentDetailPanel";
 import { DepartmentCommandChat } from "./DepartmentCommandChat";
+import { AiSecretaryPanel } from "./AiSecretaryPanel";
 import { CeoDashboardPanel } from "./CeoDashboardPanel";
 import brandIcon from "../../assets/brand-icon.png";
 
@@ -141,13 +142,16 @@ export function CommandCenterPage({
 
       {selectedId === "vault" ? (
         <VaultDetailPanel onClose={() => setSelectedId(null)} />
-      ) : (
+      ) : selected ? (
         <DepartmentDetailPanel
           dept={selected}
           salesLive={salesLive}
           onClose={() => setSelectedId(null)}
           onOpenDetail={(deptId) => onOpenPage(DEPT_PAGE[deptId] ?? "company")}
         />
+      ) : (
+        /* 部署未選択の既定状態: AI秘書 / 参謀モード(AI Secretary directive) */
+        <AiSecretaryPanel />
       )}
 
       {/* 右下フロート: Musasabi アシスタントチャット(第8弾でアバターを置き換え) */}

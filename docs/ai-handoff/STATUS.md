@@ -4,7 +4,15 @@
 **Updated:** 2026-07-09
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(UIフィードバック第9弾・管理画面コンパクト化+重複削除)
+## 直近の完了内容(AI秘書 右詳細パネル + 市場調査/マーケティング部門)
+指示書 AI_SECRETARY_RIGHT_DETAIL_PANEL / MARKET_RESEARCH_AND_MARKETING_DEPARTMENT を統合実装(Mock)。
+`packages/ai-secretary`(新規): 統一カード9カテゴリ・デイリーブリーフィング・フィルタ・6種Mockアクション、
+市場調査レポート(標準形式・機会スコア・競合トップ3)、マーケSNS投稿(テキストロック/繰り返し/頻度5種/添付/
+承認/決定論解析/Mock予約・本番投稿ロック)。テスト11件 pass。`AiSecretaryPanel`(CC右パネル既定=部署未選択で
+AI秘書、選択で部署詳細、閉じると復帰)、`ResearchReportsSection`(市場調査部)、`SnsPostingWorkflow`(マーケ部)。
+build成功・秘密情報スキャン pass・Playwright E2E 0エラー。
+
+## それ以前の完了内容(UIフィードバック第9弾・管理画面コンパクト化+重複削除)
 管理画面(main.content)の文字/余白/カード/テーブルを詰めてデスクトップ1画面に収まりやすく調整。
 サイドバー注記の重なりを修正(.sidebar-nav flex-shrink:0)。重複ページ「AI自己進化」(self_evolution)を削除し
 「AI改善提案 / 自己進化」(improvement)へ集約(OperationsPage 導線も更新)。デスクトップ常駐アイコンを完全固定
