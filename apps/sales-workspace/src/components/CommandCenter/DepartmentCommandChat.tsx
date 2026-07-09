@@ -1,92 +1,109 @@
 import { useState } from "react";
 import type { CommandDepartment, DeptChatEntry } from "@musasabi/ai-company";
-import { buildDeptReplyJa } from "@musasabi/ai-company";
 import { VoiceInputButton } from "./VoiceInputButton";
 import { recordMemory } from "../../lib/memoryStorage";
 import { appendDeptChat, loadDeptChatHistory } from "../../lib/deptChatStorage";
+import { buildAssistantReply, HELP_SUGGESTIONS } from "../../lib/assistantHelp";
+import brandIcon from "../../assets/brand-icon.png";
 
-// 下部: 部署指定チャット指示欄(D-20260706-007 + チャット強化フェーズ)。
-// 指示先部署プルダウン+入力欄+ファイル添付+音声入力Mock+送信+クイックテンプレート。
-// 送信すると部署の状態に応じたMock応答をローカル生成して表示し、履歴を
-// localStorage(musasabi.deptChatHistory)へ永続化する(実AI API・外部送信なし)。
+// コマンドセンター右下: Musasabi アシスタントチャット(UIフィードバック第8弾)。
+// 部署プルダウンを廃止し、単一のアシスタントが指示・提案・操作方法・「何がどこにあるか」を案内する。
+// 送信するとローカルで決定論的な Mock 応答を生成して履歴へ表示・永続化する(実AI API・外部送信なし)。
+// カラー・ボタンは管理画面テーマ(トークン)に統一。右下フロートで開閉可能。
 
-const QUICK_TEMPLATES = [
-  "進捗状況を教えて",
-  "本日の目標を共有して",
-  "課題を報告して",
-  "優先タスクを教えて",
-];
-
-export function DepartmentCommandChat({ departments }: { departments: readonly CommandDepartment[] }) {
-  const [target, setTarget] = useState(departments[0]?.id ?? "");
+export function DepartmentCommandChat({ departments: _departments }: { departments: readonly CommandDepartment[] }) {
+  const [open, setOpen] = useState(true);
   const [text, setText] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
   const [history, setHistory] = useState<DeptChatEntry[]>(() => loadDeptChatHistory());
 
   function handleSend(): void {
-    const dept = departments.find((d) => d.id === target);
     const message = text.trim();
-    if (message === "" || !dept) return;
+    if (message === "") return;
     const entry: DeptChatEntry = {
-      deptId: dept.id,
-      deptName: dept.name,
+      deptId: "assistant",
+      deptName: "アシスタント",
       message: message + (fileName ? `(添付: ${fileName})` : ""),
-      reply: buildDeptReplyJa(dept, message),
+      reply: buildAssistantReply(message),
       atMs: Date.now(),
     };
     setHistory(appendDeptChat(entry));
     recordMemory({
       category: "work",
       actor: "user",
-      action: "部署へ指示",
-      detail: `${dept.name}: ${message}`,
-      tags: ["command-chat"],
+      action: "アシスタントへ相談",
+      detail: message,
+      tags: ["assistant-chat"],
     });
     setText("");
     setFileName(null);
   }
 
-  return (
-    <div className="command-chat" aria-label="部署指定チャット">
-      <label className="command-chat-target">
-        指示先部署
-        <select value={target} onChange={(e) => setTarget(e.target.value)}>
-          {departments.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
-          ))}
-        </select>
-      </label>
+  if (!open) {
+    return (
+      <button
+        type="button"
+        className="cc-chat-fab"
+        onClick={() => setOpen(true)}
+        aria-label="アシスタントチャットを開く"
+        title="アシスタントに聞く"
+      >
+        <img src={brandIcon} width={22} height={22} alt="" />
+        <span>アシスタント</span>
+      </button>
+    );
+  }
 
-      {/* 入力欄(拡大)+テンプレートを右側に縦並び(ユーザーFB第6弾) */}
+  return (
+    <div className="command-chat cc-chat-dock" aria-label="Musasabi アシスタントチャット">
+      <div className="cc-chat-head">
+        <img src={brandIcon} width={20} height={20} alt="" style={{ borderRadius: 5 }} />
+        <strong>Musasabi アシスタント</strong>
+        <span className="cc-chat-hint">操作方法や「何がどこにあるか」を案内します</span>
+        <button type="button" className="cc-chat-close" onClick={() => setOpen(false)} aria-label="閉じる">
+          ×
+        </button>
+      </div>
+
+      {history.length > 0 && (
+        <div className="command-chat-history cc-chat-log">
+          {history.slice(0, 4).map((m) => (
+            <div key={m.atMs} style={{ margin: "0.2rem 0" }}>
+              <div style={{ color: "var(--text-muted)" }}>
+                {new Date(m.atMs).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })} あなた: {m.message}
+              </div>
+              <div>🐿️ {m.reply}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="command-chat-body">
         <textarea
           className="command-chat-input"
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => {
-            // Enterで送信、Shift+Enterで改行
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               handleSend();
             }
           }}
-          placeholder="指示内容を入力してください…(Shift+Enterで改行)"
+          placeholder="指示・質問を入力…(例: 全社ダッシュボードはどこ?)"
         />
-        <div className="command-chat-templates" aria-label="クイックテンプレート">
-          {QUICK_TEMPLATES.map((t) => (
-            <button key={t} type="button" className="quick-template" onClick={() => setText(t)}>
-              {t}
-            </button>
-          ))}
-        </div>
       </div>
 
-      {/* 添付・音声送信は入力欄の下に配置(ユーザーFB第6弾) */}
+      <div className="command-chat-templates" aria-label="クイック質問">
+        {HELP_SUGGESTIONS.map((t) => (
+          <button key={t} type="button" className="quick-template" onClick={() => setText(t)}>
+            {t}
+          </button>
+        ))}
+      </div>
+
       <div className="command-chat-actions">
         <label className="attach-btn">
-          📎 ファイル添付
+          📎 添付
           <input
             type="file"
             style={{ display: "none" }}
@@ -94,26 +111,11 @@ export function DepartmentCommandChat({ departments }: { departments: readonly C
           />
         </label>
         <VoiceInputButton />
-        {fileName && (
-          <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>添付: {fileName}</span>
-        )}
+        {fileName && <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>添付: {fileName}</span>}
         <button type="button" onClick={handleSend} className="send-btn">
           送信
         </button>
       </div>
-
-      {history.length > 0 && (
-        <div className="command-chat-history">
-          {history.slice(0, 3).map((m) => (
-            <div key={m.atMs} style={{ margin: "0.15rem 0" }}>
-              <div style={{ color: "var(--text-muted)" }}>
-                {new Date(m.atMs).toLocaleTimeString("ja-JP")} [{m.deptName}] {m.message}
-              </div>
-              <div>↩ {m.reply}(Mock応答)</div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

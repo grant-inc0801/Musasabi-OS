@@ -590,6 +590,10 @@ main section:hover,
   font-size: 1rem;
 }
 
+/* 全社ダッシュボードは稼働率の直下に配置(UIフィードバック第8弾)。設定のみ最下部。 */
+.cc-navbtn {
+  width: 100%;
+}
 .cc-settings {
   margin-top: auto;
   width: 100%;
@@ -1302,7 +1306,7 @@ main section:hover,
 .dept-cyl-window {
   display: block;
   position: relative; z-index: 1;
-  width: 80px; height: 168px;
+  width: 80px; height: 112px;
   box-sizing: border-box;
   border-radius: 13px;
   background: linear-gradient(90deg, rgba(0,0,0,0.92), rgba(20,25,30,0.72) 50%, rgba(0,0,0,0.95));
@@ -1550,3 +1554,67 @@ main section:hover,
 .android-eye-glow { display: block; width: 78%; height: 8px; border-radius: 5px; opacity: 0.95; }
 @keyframes android-eye-scan { 0% { transform: translateX(-60%); } 50% { transform: translateX(60%); } 100% { transform: translateX(-60%); } }
 @keyframes android-eye-blink { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0.25; } }
+
+/* ── コマンドセンター右下: Musasabi アシスタントチャット(UIフィードバック第8弾) ── */
+/* アバターを廃止し、チャット欄を右下フロートへ。カラー/ボタンは管理画面テーマに統一。 */
+.cc-chat-dock {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 60;
+  width: min(360px, calc(100vw - 40px));
+  max-height: min(70vh, 560px);
+  margin-top: 0 !important;
+  overflow: hidden;
+}
+.cc-chat-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+.cc-chat-head .cc-chat-hint {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cc-chat-close {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.cc-chat-close:hover { background: var(--metal, rgba(255,255,255,0.06)); }
+.cc-chat-log {
+  max-height: 34vh;
+  overflow-y: auto;
+}
+/* 折りたたみ時のフローティングボタン(管理画面ボタンと同トーン) */
+.cc-chat-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.85rem;
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(46, 52, 59, 0.95), rgba(16, 19, 23, 0.96));
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--glass-highlight);
+}
+.cc-chat-fab:hover { border-color: color-mix(in srgb, var(--accent, #6c8cff) 60%, var(--border)); }
+.cc-chat-fab img { border-radius: 6px; }

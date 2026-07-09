@@ -4,7 +4,15 @@
 **Updated:** 2026-07-09
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Musasabi Android アバター制作仕様・完全版)
+## 直近の完了内容(UIフィードバック第8弾・アバター全廃→アイコン)
+シリンダー縦2/3(112px)、ミニパネル(overlay avatar.html)をダークガンメタルへ統一、全社ダッシュボード
+ボタンを稼働率の直下に配置、キャラクターアバター全廃→musasabiアイコン化(avatarMain.ts は常にアイコン、
+移動なし・サイズ固定・ガラス面をアイコン枠で切り取り、ドラッグ/スライダー撤去)、コマンドセンターの
+AssistantAvatar撤去、チャット欄を右下フロート化(cc-chat-dock/fab)+部署プルダウン廃止+単一の
+Musasabiアシスタント(操作方法・何がどこにあるかを案内、lib/assistantHelp.ts)。build成功・E2E 0エラー。
+※アバター関連ページ(スタジオ/モーション/Musasabi Android仕様)はユーザー確認まで残置。マージは確認待ち。
+
+## それ以前の完了内容(Musasabi Android アバター制作仕様・完全版)
 指示書「Musasabi OS アバター制作 指示書(完全版)」に基づき公式アバター Musasabi Android の仕様を実装。
 `packages/avatar-android`(新規): モノアイ8感情+発光カラー(HEX)+ライトアニメ、制御パラメータ導出
 (色/明るさ/点滅/スキャン)、Emotion State ペイロード、モーション16種、3Dモデル仕様(GLB/FBX/VRM・

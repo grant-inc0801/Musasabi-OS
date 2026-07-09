@@ -382,7 +382,8 @@ export function App() {
 
         <p className="sidebar-note">
           β版はMock構成です。実API接続・実架電・実認証情報の保存は行いません。
-          ウィンドウを閉じる/最小化すると右下のMUSAアバターだけが常駐します。
+          ウィンドウを閉じる/最小化するとデスクトップ右下に musasabi アイコンが固定表示され、
+          クリックでミニパネルを開けます。
         </p>
       </aside>
       <main className="content">
