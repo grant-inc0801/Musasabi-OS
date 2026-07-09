@@ -4,7 +4,15 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Musasabi World)
+## 直近の完了内容(Master Roadmap to Production)
+指示書 MASTER_ROADMAP_TO_PRODUCTION.md に基づき `packages/production-roadmap` を新設。Mock 完成状況の
+追跡(14スコープ・全 done・100%)と Production Readiness フェーズのゲート可視化(11項目・全て承認必須・
+既定ロック)を実装。isProductionReadinessUnlocked は Mock完成 かつ 人間承認済みのときのみ解放
+(既定 PRODUCTION_APPROVED=false でロック維持)。ProductionRoadmapPage を新設(完成度メーター・開発方針・
+Mockスコープ・ロックされた本番項目🔒・リリースチェックリスト・本番ルール警告)。認証/secrets/本番DB 等は
+実装せず追跡のみ(stop条件と整合)。production-roadmap テスト11件 pass。Playwrightで確認(0エラー)。
+
+## それ以前の完了内容(Musasabi World)
 指示書 MUSASABI_WORLD_DIRECTIVE.md に基づき `packages/musasabi-world`(business-factory 依存)を新設。
 1つの事業アイデア/テンプレートから AI 会社ワークスペース(AI CEO体制・役員・事業ユニット・部門マップ・
 AI社員名簿・KPI・ワークフロー・Company Brain・Musasabi DNA・Knowledge Vault・レポート・監査・Mock運用

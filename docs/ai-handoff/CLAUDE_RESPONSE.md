@@ -3,6 +3,38 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-09 — Master Roadmap to Production(MASTER_ROADMAP_TO_PRODUCTION)
+
+### 実装内容
+指示書 `MASTER_ROADMAP_TO_PRODUCTION.md` に基づき、Mock 完成状況の追跡と Production Readiness
+フェーズのゲート可視化を行う「本番ロードマップ」を実装。**追跡・可視化・ゲートのみ**で、認証・
+secrets・本番DB 等は実装しない(人間承認が明示されるまでロック)。stop 条件と整合。
+
+- **`packages/production-roadmap`(新規)**:
+  - `DEVELOPMENT_POLICY`(5ステップ)、`MOCK_COMPLETION_SCOPE`(14項目・各実装元付き=
+    ガバナンス/部門AI社員/Company Brain/DNA憲章/CEOダッシュボード/二層UI/Business Factory/
+    Business Templates/Musasabi World/Evolution Modules/監査KPIリスク/ワークフロー/ダッシュボード/
+    レポート、全て done)
+  - `PRODUCTION_READINESS_ITEMS`(11項目・全て `requiresApproval:true`・既定 `locked`)、
+    `PRODUCTION_LAUNCH_CHECKLIST`(テスト/ドキュメント/ガバナンスは済み、セキュリティ/バックアップ/
+    ロールバック/人間承認は保留)
+  - `computeMockCompletion`(100%/complete)、`isProductionReadinessUnlocked(approved)`
+    (**Mock完成 かつ 承認済みのときのみ解放**、既定 `PRODUCTION_APPROVED=false` でロック維持)、
+    `summarizeRoadmapJa`(アバター要約)、`PRODUCTION_RULE`、`ROADMAP_GOVERNANCE_NOTES`。テスト11件 pass
+- **`ProductionRoadmapPage`(新規)**: Mock完成度メーター(100%)・開発方針・Mock完成スコープ
+  (14カード・ステータス色)・Production Readiness(11ロックカード🔒)・リリースチェックリスト・
+  本番ルール警告を表示。GLOBAL_NAV に「本番ロードマップ」を追加
+
+### 完了条件の充足
+- Mock 完成状況を追跡・可視化 ✅ / Production Readiness は人間承認まで明示的にロック(ゲート関数で
+  担保)✅ / 本番連携・課金・secrets を承認前に一切行わないルールを明示 ✅ / test・README・
+  CLAUDE_RESPONSE 更新 ✅
+
+### テスト結果
+- `@musasabi/production-roadmap` 11件 pass(ゲートが未承認/Mock未完で解放しないことを含む)
+- Playwright E2E: Mock完成100%メーター・14スコープ・11本番項目ロック・ロック見出し🔒・
+  リリースチェックリスト・本番ルール警告・0エラーを実画面確認
+
 ## 2026-07-09 — Musasabi World(MUSASABI_WORLD_DIRECTIVE)
 
 ### 実装内容
