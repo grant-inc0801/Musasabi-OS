@@ -4,7 +4,14 @@
 **Updated:** 2026-07-09
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(AI統合センター / AIモデルレジストリ・Mock)
+## 直近の完了内容(マーケティングPDCA + 最小化アイコンUI・Mock)
+指示書 MARKETING_PDCA_AND_MINIMIZED_ICON を実装。`packages/marketing-pdca`(新規): 投稿タイトル単位管理・
+数値分析12指標・PDCA(Plan/Do/Check/Act)・バージョン管理(ベスト印)・Company Brainナレッジ化・AI秘書統一カード。
+テキストロック時は解析のみ。テスト11件 pass。`MarketingPdcaSection`(マーケ部)+ AiSecretaryPanel にマーケカード統合。
+最小化アイコン(overlay avatar.html): 枠線/箱枠撤去(border:none)・メタリック下地+光沢/反射のみ・ステータス光彩
+(緑/黄/紫/赤)・承認/アラート件数バッジ・ホバーで秘書サマリー。build成功・秘密情報スキャン pass・E2E 0エラー。
+
+## それ以前の完了内容(AI統合センター / AIモデルレジストリ・Mock)
 指示書 AI_MODEL_REGISTRY_DIRECTIVE を実装。`packages/ai-model-registry`(新規): 9プロバイダ・能力スコア14軸・
 タスク別ルーティング(8)・モデル比較(7項目)・アップグレード評価(CEO承認申請・実採用ロック)・AI秘書通知6種・
 Company Brain 利用ナレッジ・Secret Center ルール(APIキー非保持・参照名のみ)。テスト12件 pass。

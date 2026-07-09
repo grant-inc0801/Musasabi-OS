@@ -208,9 +208,11 @@
         flex-direction: column;
         align-items: center;
       }
-      /* musasabi 常駐アイコン(アバター全廃・UIフィードバック第8弾)。
-         移動なし・大きさ固定。ガラス面はアイコン枠(角丸)に沿って切り取る。 */
+      /* musasabi 最小化アイコン(MARKETING_PDCA_AND_MINIMIZED_ICON_DIRECTIVE.md §2)。
+         ガラスの枠線・箱枠は持たない。メタリックな下地+光沢+反射のみで表現し、
+         デスクトップに溶け込む。移動なし・大きさ固定。ステータス光彩+バッジ付き。 */
       #avatar {
+        --status-accent: rgba(120, 224, 255, 0.0);
         width: var(--avatar-size);
         height: var(--avatar-size);
         position: relative;
@@ -220,17 +222,25 @@
         line-height: 1;
         cursor: pointer;
         user-select: none;
-        border-radius: 18px;
-        overflow: hidden; /* ガラス面をアイコン枠に沿って切り取り */
-        background: linear-gradient(160deg, rgba(46, 52, 59, 0.55), rgba(16, 19, 23, 0.45));
-        border: 1px solid rgba(210, 224, 236, 0.28);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
-        /* 75%透過(不透明度25%)。ホバー時のみ視認・クリックしやすいよう不透明化。 */
-        opacity: 0.25;
-        transition: opacity 0.15s ease;
+        border: none; /* 枠線なし */
+        /* メタリック下地(中央から外へフェード=箱にしない)+ ステータス光彩 */
+        background: radial-gradient(120% 120% at 50% 25%, rgba(140, 150, 160, 0.12), rgba(0, 0, 0, 0) 68%);
+        box-shadow: 0 0 16px 3px var(--status-accent);
+        opacity: 0.5; /* 半透明(ガラス感)。ホバーで不透明化 */
+        transition: opacity 0.15s ease, box-shadow 0.25s ease;
       }
       #avatar:hover {
         opacity: 1;
+      }
+      /* ガラスの光沢・反射(枠線なし。上部からのハイライトのみ) */
+      #avatar::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        border-radius: 40% 40% 45% 45%;
+        background: linear-gradient(155deg, rgba(255, 255, 255, 0.30) 0%, rgba(255, 255, 255, 0.06) 26%, rgba(255, 255, 255, 0) 52%);
+        mix-blend-mode: screen;
       }
       /* musasabi アイコン。クリックはコンテナ(#avatar)側で受けるため素通し。 */
       #avatar img {
@@ -239,7 +249,30 @@
         object-fit: contain;
         display: block;
         pointer-events: none;
+        position: relative;
+        z-index: 1;
       }
+      /* 承認/アラート件数バッジ */
+      #avatar-badge {
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        box-sizing: border-box;
+        border-radius: 8px;
+        background: #ef4444;
+        color: #fff;
+        font-size: 10px;
+        line-height: 16px;
+        text-align: center;
+        font-weight: 700;
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.55);
+        pointer-events: none;
+        z-index: 2;
+      }
+      #avatar-badge.hidden { display: none; }
     </style>
   </head>
   <body>
@@ -276,6 +309,7 @@
       </div>
       <div id="avatar-wrap">
         <span id="avatar" title="クリックでミニパネルを開閉"></span>
+        <span id="avatar-badge" class="hidden"></span>
       </div>
     </div>
     <script type="module" src="/src/avatarMain.ts"></script>
