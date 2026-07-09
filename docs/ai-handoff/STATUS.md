@@ -4,7 +4,17 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Business Template Catalog)
+## 直近の完了内容(Musasabi Evolution Modules)
+指示書 MUSASABI_EVOLUTION_MODULES_DIRECTIVE.md に基づき `packages/evolution-modules` を新設。次世代の
+内部オペレーティングモジュール12種(AI Operating Manual/Skill Marketplace/Sandbox/Incident Center/
+Meeting Room/Simulation Engine/Recruiting/Upgrade Manager/Health Center/Memory Timeline/
+Command Console/Builder Department)を Mock パネル+サービススタブとして実装。各モジュールは Company
+Brain・Musasabi DNA・ガバナンス・監査・経営ダッシュボードとの統合ポイントを表示。EvolutionModulesPage
+を新設しGLOBAL_NAVから到達。右下アバター吹き出しに進化モジュール状況要約を追加。承認必須・監査ログ・
+COO→CEO を明記。evolution-modules テスト8件 pass。Playwrightで12パネル・サービス実行・アバター要約を
+確認(0エラー)。外部本番接続・secretsなし。
+
+## それ以前の完了内容(Business Template Catalog)
 指示書 BUSINESS_TEMPLATE_CATALOG_DIRECTIVE.md(AI_BUSINESS_FACTORY の拡張)に基づき、選択式の業種
 テンプレートカタログを実装。`packages/business-factory` に `BUSINESS_TEMPLATES`(8種: MEISHI-TUBE/
 SaaS/営業代行/出版/コールセンター/EC/飲食店/コンサル)と `provisionFromTemplate` を追加。テンプレート
