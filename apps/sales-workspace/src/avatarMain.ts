@@ -55,7 +55,8 @@ const stateMachine = new AvatarStateMachine();
 let panelState: AssistantPanelState = createAssistantPanelState(
   loadEmployeeSettings().defaultCallMode,
 );
-let avatarSizePx = loadAvatarSettings().sizePx;
+// アイコンは固定サイズ(少し小さめ)。サイズ変更スライダーは廃止済み(UIフィードバック第8〜9弾)。
+let avatarSizePx = 64;
 
 // 3Dアバター(Issue #200)。three.js + @pixiv/three-vrm による実レンダラー。
 // 初期化に失敗した環境(WebGL不可)では従来の絵文字表示へフォールバックする。
@@ -198,6 +199,10 @@ function desiredWindowSize(): { w: number; h: number } {
 // リサイズの直列化キュー。並行した outerSize/setPosition の読み書き競合で
 // ウィンドウが右下方向へ流れていくのを防ぐ。
 let resizeChain: Promise<void> = Promise.resolve();
+// 右下アンカーを一度だけ確定して固定する(UIフィードバック第9弾)。
+// 毎回 current 位置から再計算するとDPI丸め誤差が蓄積し、開閉のたびにアイコンが右へずれる。
+// 初回に右下座標(right, bottom)を記録し、以後は常にその固定点からサイズ分だけ左上へ広げる。
+let anchor: { right: number; bottom: number } | null = null;
 
 function resizeWindowToContent(): void {
   resizeChain = resizeChain.then(doResizeWindow).catch(() => {});
@@ -215,12 +220,15 @@ async function doResizeWindow(): Promise<void> {
     const next = desiredWindowSize();
     const nextW = Math.round(next.w * scale);
     const nextH = Math.round(next.h * scale);
+    // 右下アンカーは初回のみ確定し固定する(以後は再計算しない=ドリフト防止)。
+    if (anchor === null) {
+      anchor = { right: position.x + current.width, bottom: position.y + current.height };
+    }
     if (nextW === current.width && nextH === current.height) {
       return;
     }
-    // 右下アンカー: 右下座標(x+w, y+h)を固定したままサイズを変える。
-    const x = position.x + current.width - nextW;
-    const y = position.y + current.height - nextH;
+    const x = anchor.right - nextW;
+    const y = anchor.bottom - nextH;
     await win.setSize(new PhysicalSize(nextW, nextH));
     await win.setPosition(new PhysicalPosition(x, y));
   } catch {
