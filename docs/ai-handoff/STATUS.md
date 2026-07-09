@@ -4,7 +4,16 @@
 **Updated:** 2026-07-09
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(UIフィードバック第10弾・最小化ウィンドウをアイコン枠と同サイズに)
+## 直近の完了内容(Musasabi Intelligence Layer・Mock)
+指示書 MUSASABI_INTELLIGENCE_LAYER を実装。`packages/intelligence-layer`(新規): AI Policy Engine
+(13カテゴリ・優先度6段・validateDecision=実外部変更/課金を遮断)、Knowledge Graph(ノード14種・
+MEISHI-TUBE連結・関連検索/根拠追跡)、Workflow Composer(ノード13種・例示フロー=営業→調査→マーケ→
+CEO承認→開発→監査・validateWorkflow)、Explainability Center(13項目+スコア5軸・弱い説明検出)。
+AI秘書統一カード/AI監査監視6種/CEOサマリー/Company Brain保存を統合。テスト11件 pass。
+IntelligenceLayerPage(Knowledge)+CeoDashboardPanelサマリー+秘書カード統合。build成功・E2E 0エラー。
+実ポリシー強制・実実行は承認までロック。
+
+## それ以前の完了内容(UIフィードバック第10弾・最小化ウィンドウをアイコン枠と同サイズに)
 最小化時の透明ウィンドウがアイコンより大きく(96×122px)、余りがガラス枠として見えていた問題を修正。
 desiredWindowSize(アイコンのみ)をアイコン+16px(=80×80、バッジはみ出し分のみ)に縮小し、撤去済み
 ドラッグハンドルの高さ確保を全廃。ステータス光彩も余白内(7px)に縮小。Playwright(80×80)でアイコンが

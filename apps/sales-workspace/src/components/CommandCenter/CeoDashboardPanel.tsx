@@ -14,6 +14,7 @@ import {
   compositeScore,
   type CeoProposal,
 } from "@musasabi/ceo-dashboard";
+import { computeIntelligenceSummary } from "@musasabi/intelligence-layer";
 import type { CommandDepartment } from "@musasabi/ai-company";
 
 // Layer A: AI CEO 経営ダッシュボードの追加モジュール
@@ -26,6 +27,7 @@ export function CeoDashboardPanel({ departments }: { departments: readonly Comma
     [departments],
   );
   const alerts = useMemo(() => sortAlertsByPriority(MOCK_ALERTS), []);
+  const intel = useMemo(() => computeIntelligenceSummary(), []);
   const ranking = useMemo(() => rankEmployees(), []);
   const [proposals, setProposals] = useState<CeoProposal[]>(() => MOCK_CEO_PROPOSALS.map((p) => ({ ...p })));
   const [issueNote, setIssueNote] = useState<string | null>(null);
@@ -117,6 +119,20 @@ export function CeoDashboardPanel({ departments }: { departments: readonly Comma
         </ol>
         <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: "0.2rem 0 0" }}>
           総合スコア = 貢献・速度・品質・稼働率の加重 + 提案数(Mock)。
+        </p>
+      </div>
+
+      {/* Musasabi Intelligence サマリー(MUSASABI_INTELLIGENCE_LAYER_DIRECTIVE §7) */}
+      <div className="ceo-card" aria-label="Musasabi Intelligence サマリー">
+        <h3>Musasabi Intelligence</h3>
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", fontSize: "0.8rem" }}>
+          <span>ポリシー <b>{intel.policyCount}</b>(違反 {intel.policyViolations})</span>
+          <span>ナレッジグラフ <b>{intel.graphNodes}</b>ノード</span>
+          <span>WFテンプレ <b>{intel.workflowTemplates}</b></span>
+          <span>説明アラート <b style={{ color: intel.explainabilityAlerts > 0 ? "#F59E0B" : "inherit" }}>{intel.explainabilityAlerts}</b></span>
+        </div>
+        <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: "0.25rem 0 0" }}>
+          直近の意思決定: {intel.recentDecisions.join(" / ")}
         </p>
       </div>
     </section>

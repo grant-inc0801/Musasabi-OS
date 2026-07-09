@@ -3,6 +3,37 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-09 — Musasabi Intelligence Layer(Mock)
+
+### 実装内容
+指示書 `MUSASABI_INTELLIGENCE_LAYER_DIRECTIVE.md` を実装。Company Brain の上位レイヤーとして
+判断品質・ナレッジ関係・ワークフロー設計・説明可能性を全AI社員へ提供(AI CEO → Intelligence Layer →
+Company Brain / ワークフロー / 部署 / AI社員)。すべて Mock・決定論。実ポリシー強制・実実行は
+Production Readiness 承認まで無効。
+
+- **`packages/intelligence-layer`(新規)**:
+  - **AI Policy Engine**: 管理ルール13カテゴリ・優先度6段(憲章>DNA>ポリシー>部署>WF>個別AI)、
+    `validateDecision`(関連ポリシー確認→承認要否→リスク見積→Explainabilityへ送付。実外部変更・課金は遮断)
+  - **Knowledge Graph**: ノード種別14・Mockノード17/エッジ11(MEISHI-TUBE→事業ユニット/WF/レポート/顧客の連結)、
+    `relatedNodes`(関連検索)/`traceDecision`(推奨根拠の追跡)
+  - **Workflow Composer**: ノード種別13、テンプレート(例示フロー: 営業→調査→マーケ→AI CEO承認→開発→監査、
+    Brain保存・秘書通知込み)、`validateWorkflow`(承認ノード・破損エッジ検査)
+  - **Explainability Center**: 必須13項目+スコア5軸(確信度/根拠強度/リスク/コスト/期待効果)の説明レポート、
+    `weakExplainability`(弱い説明の検出)
+  - 統合: AI秘書統一カード(違反/新リンク/WF提案/弱い説明)、AI監査監視6種、CEOサマリー、Company Brain保存5種。
+    テスト11件 pass
+- **`IntelligenceLayerPage`(新規・Knowledge に追加)**: 4モジュール+統合を可視化。「Why(理由)」クリックで
+  Explainability 詳細を展開。Decision Validation のMockデモ(適合=続行可/課金・実接続=遮断)
+- **AiSecretaryPanel**: Intelligence Layer 由来の統一カードを統合
+- **CeoDashboardPanel**: Musasabi Intelligence サマリーパネル(ポリシー/グラフ/WFテンプレ/説明アラート/直近意思決定)
+
+### テスト結果
+- `intelligence-layer` テスト **11件 pass**、build成功、秘密情報スキャン pass
+- Playwright E2E: 4セクション表示・遮断デモ・例示フロー(承認/監査)・Whyパネル展開・グラフ関連検索・
+  秘書カード/CEOサマリー統合 — **ページエラー 0**
+
+---
+
 ## 2026-07-09 — UIフィードバック第10弾(最小化ウィンドウをアイコン枠と同サイズに)
 
 ### 実装内容

@@ -18,6 +18,7 @@ import {
 } from "@musasabi/ai-secretary";
 import { MODEL_NOTIFICATIONS, NOTIFICATION_LABEL_JA, getModel } from "@musasabi/ai-model-registry";
 import { buildMarketingSecretaryItems } from "@musasabi/marketing-pdca";
+import { buildIntelligenceSecretaryItems } from "@musasabi/intelligence-layer";
 import { recordMemory } from "../../lib/memoryStorage";
 
 // 右詳細パネルの既定状態 = AI役員秘書 / 参謀(AI_SECRETARY_RIGHT_DETAIL_PANEL_DIRECTIVE.md)。
@@ -38,8 +39,11 @@ export function AiSecretaryPanel() {
   const [department, setDepartment] = useState<string | "all">("all");
   const [actionNote, setActionNote] = useState<string | null>(null);
 
-  // 基本の秘書アイテム + マーケPDCA由来の秘書カード(統一形式)を統合。
-  const allItems = useMemo(() => [...SECRETARY_ITEMS, ...buildMarketingSecretaryItems()], []);
+  // 基本の秘書アイテム + マーケPDCA + Intelligence Layer 由来の秘書カード(統一形式)を統合。
+  const allItems = useMemo(
+    () => [...SECRETARY_ITEMS, ...buildMarketingSecretaryItems(), ...buildIntelligenceSecretaryItems()],
+    [],
+  );
   const briefing = useMemo(() => computeBriefing(allItems), [allItems]);
   const depts = useMemo(() => departmentsOf(allItems), [allItems]);
   const items = useMemo(
