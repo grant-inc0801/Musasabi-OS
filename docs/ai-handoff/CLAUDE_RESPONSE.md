@@ -3,6 +3,37 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-09 — Musasabi Android アバター制作仕様(完全版・Mock/Tripo3Dはロック)
+
+### 実装内容
+指示書「Musasabi OS アバター制作 指示書(完全版)」に基づき、公式アバター **Musasabi Android** の
+モノアイ発光・感情モーション・3Dモデル仕様・カラーパレット・Tripo3D 連携フローを宣言的に定義。
+**実モデル生成(Tripo3D API)は APIキー+人間承認が必要なため未実行**(決定論的なプロンプト/
+リクエスト・テンプレート生成のみ。外部接続・課金は一切なし。`TRIPO_GENERATION_LOCKED=true`)。
+
+- **`packages/avatar-android`(新規)**: 8モノアイ感情ステート(通常/喜び/考え中/作業中/驚き/困り/眠い/
+  エラー、各 HEX 発光カラー+ライトアニメ)/ モノアイ制御パラメータ導出(色・明るさ・点滅・スキャン)/
+  Emotion State ペイロード(指示書 JSON と同形)/ モーションカタログ16種(感情+動作+待機)/
+  3Dモデル制作仕様(GLB/FBX/VRM・約6万ポリゴン・PBR 4K・フルリグ)/ カラー参照 / Tripo3D フロー
+  (gated ステップ)/ 決定論的 `buildTripoPrompt`・`buildTripoRequest`(APIキーは参照名のみ)。テスト12件 pass
+- **`AvatarAndroidPage`(新規)**: 発光モノアイビジョア(scan/blink アニメ)の8感情カード、制御パラメータ
+  メーター+Emotion State JSON、モーション一覧、3Dモデル仕様表、カラーパレット、Tripo3D フロー
+  (🔒 承認待ちバッジ)+生成プロンプト+未送信リクエスト・テンプレート。サイドバー AI Assistant に追加
+- モノアイ発光の CSS アニメ(`android-eye-scan` / `android-eye-blink`)を styles.css に追加
+
+### 完了条件の充足
+- モノアイ8感情+発光カラー ✅ / 制御パラメータ ✅ / モーション一式 ✅ / 3Dモデル仕様 ✅ /
+  カラーパレット ✅ / Tripo3D フロー(実生成はロック)✅ / 生成プロンプト決定論 ✅ /
+  APIキー・実接続・課金なし ✅ / test・README・CLAUDE_RESPONSE 更新 ✅
+
+### テスト結果
+- `avatar-android` テスト **12件 pass**、`npm run build`(sales-workspace)成功
+- 秘密情報スキャン: 「秘密情報らしきパターンは見つかりませんでした」(APIキーの実値なし)
+- Playwright E2E: Musasabi Android 画面で 8モノアイカード・生成プロンプト・3Dモデル仕様・
+  Tripo3D ロック・リクエスト・テンプレートを確認、実キー値なし、**ページエラー 0**
+
+---
+
 ## 2026-07-09 — Production Readiness 設計(設計のみ・実装は承認後)
 
 ### 実装内容

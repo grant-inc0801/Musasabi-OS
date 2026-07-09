@@ -72,6 +72,7 @@ packages/
   musasabi-world/     Musasabi World(1つの事業アイデア/テンプレートから AI会社ワークスペースを生成。AI CEO体制・役員・部門・AI社員・KPI・ワークフロー・DNA・Knowledge Vault・レポート・監査・運用データ。business-factory依存。Mock)
   production-roadmap/ 本番ロードマップ(Mock完成追跡14スコープ+Production Readiness 11項目のゲート管理。各項目に設計方針(design)を保持し設計のみ用意=実装は承認後。人間承認まで本番項目はロック。追跡・可視化のみ。Mock。設計書 docs/ai-handoff/PRODUCTION_READINESS_DESIGN.md・構成テンプレート docs/production-readiness/)
   mission-control/    Mission Control 司令室(AI CEO/AI PM/部署一覧/Today's Tasks/Approval/GitHub状況/AI Timeline/System Status のダミーデータ。後からGitHub等へ差し替え可能なオブジェクト設計。Mock)
+  avatar-android/     Musasabi Android アバター制作仕様(モノアイ8感情+発光カラー/制御パラメータ/モーション16種/3Dモデル仕様/カラー参照/Tripo3D連携フロー。実生成はAPIキー+人間承認までロック=決定論プロンプト/テンプレートのみ。Mock)
   memory/             Brain Memory Engine(未実装、Epic β-001完了後)
   vision/             Vision Engine(未実装、Epic β-001完了後)
   automation/         Automation Engine(未実装、Epic β-001完了後)
