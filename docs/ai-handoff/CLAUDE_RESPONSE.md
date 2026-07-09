@@ -17,8 +17,10 @@
 - チャット欄をコマンドセンター右下のフロート(`.cc-chat-dock`/折りたたみ `.cc-chat-fab`)へ移動。
   部署プルダウンを廃止し、単一の Musasabi アシスタント(チャットボット)へ。操作方法・「何がどこにあるか」・
   提案を決定論的に案内(`lib/assistantHelp.ts`)。履歴は従来の deptChatStorage に永続化
-- ※アバター削除の範囲は「キャラクター(3D/マスコット)を廃止しアイコン化」まで実施。管理画面のアバター
-  関連ページ(アバター作成スタジオ/アバターモーション/Musasabi Android仕様)はユーザー確認まで保留(残置)
+- アバター全廃(ユーザー確認=B案)。管理画面のアバター関連ページとナビも全削除:
+  アバター作成スタジオ(AvatarStudioPanel)・アバターモーション(AvatarMotionPage)・
+  Musasabi Android仕様(AvatarAndroidPage)、および `packages/avatar-android`(build/deps 含む)、
+  未使用の AssistantAvatar.tsx を削除。データ管理の「アバター作成で再取り込み」注記も除去
 
 ### テスト結果
 - `npm run build`(sales-workspace)成功。Playwright E2E(コマンドセンター): チャット右下ドック=1・
