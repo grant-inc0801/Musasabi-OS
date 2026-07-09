@@ -2,11 +2,10 @@ import { forwardRef, useEffect, useState } from "react";
 import { DEPT_STATUS_COLOR, DEPT_STATUS_LABEL_JA, deptIcon } from "@musasabi/ai-company";
 import type { CommandDepartment } from "@musasabi/ai-company";
 
-// 部署パネル 円柱型進捗メーター(部署パネルUI仕様書)。
-// 機械的・重厚感のある一体型シリンダー(背景パネルなし)。上部の金属キャップに
-// アイコン、円柱本体に部署名・ステータス、中央のガラス窓に下から上へ充填するメーター、
-// 台座にパーセンテージを一体表示する。進捗に応じて下から上へ充填し、色はステータス連動。
-// 色覚多様性に配慮しアイコンとラベルでも状態を示す。
+// 部署パネル 円柱型進捗メーター(メタリック・ステータスシリンダー仕様書)。
+// 鈍いメタルグレー〜クロムの一体型シリンダーに縦長のガラス窓を設け、中の発光液体メーターが
+// 下から上へ充填する。上部にアイコン・部署名・ステータス、下部に大きな%と発光ライン。
+// 進捗に応じて充填、色はステータス連動。色覚多様性に配慮しアイコン/ラベルでも状態を示す。
 
 /** 表示名の短縮(高さ統一のため長い名称を1行に収める)。 */
 const SHORT_NAME: Record<string, string> = {
@@ -21,11 +20,11 @@ export const DepartmentCylinder = forwardRef<
   const target = Math.max(0, Math.min(100, dept.progressPercent));
   const displayName = SHORT_NAME[dept.name] ?? dept.name;
 
-  // 反射光(流光)をシリンダーごとにランダム(決定論・id由来)なタイミングにして、
-  // 一斉に光らないようにする。
+  // 金属/液体の流光をシリンダーごとにランダム(決定論・id由来)なタイミングにする。
   const seed = [...dept.id].reduce((a, c) => a + c.charCodeAt(0), 0);
-  const shineDelay = `${-((seed % 55) / 10)}s`; // 0 〜 -5.4s
-  const shineDur = `${4.2 + (seed % 34) / 10}s`; // 4.2 〜 7.5s
+  const shineSpeed = `${4.4 + (seed % 36) / 10}s`;   // 4.4〜7.9s
+  const shineDelay = `${-((seed % 40) / 10)}s`;       // 0〜-3.9s
+  const liquidDelay = `${-((seed % 32) / 10)}s`;      // 0〜-3.1s
 
   // マウント後に 0 → target へアニメーション(下から上に上昇)。
   const [fill, setFill] = useState(0);
@@ -41,44 +40,46 @@ export const DepartmentCylinder = forwardRef<
       className={`dept-cyl${selected ? " selected" : ""}`}
       style={{
         ["--glow" as string]: color,
+        ["--color" as string]: color,
+        ["--shine-speed" as string]: shineSpeed,
         ["--shine-delay" as string]: shineDelay,
-        ["--shine-dur" as string]: shineDur,
+        ["--liquid-delay" as string]: liquidDelay,
       }}
       onClick={() => onSelect(dept.id)}
       aria-pressed={selected}
       aria-label={`${dept.name} ${DEPT_STATUS_LABEL_JA[dept.status]} ${target}%`}
       title={`${dept.name}(${DEPT_STATUS_LABEL_JA[dept.status]})`}
     >
-      {/* 円柱型の金属シリンダー(キャップ〜本体〜台座を一体化した1つの筐体)。
-          上部にアイコン、名称・ステータス、中央にガラス窓メーター、下部にパーセンテージ。 */}
+      {/* 円柱型の金属シリンダー(一体型筐体) */}
       <span className="dept-cyl-vessel">
-        <span className="dept-cyl-icon">{deptIcon(dept.id)}</span>
-        <span className="dept-cyl-name">{displayName}</span>
-        <span className="dept-cyl-status">
-          <span className="dept-lamp" style={{ background: color, boxShadow: `0 0 6px ${color}` }} />
-          {DEPT_STATUS_LABEL_JA[dept.status]}
+        {/* 上部: アイコン・部署名・ステータス */}
+        <span className="dept-cyl-header">
+          <span className="dept-cyl-icon">{deptIcon(dept.id)}</span>
+          <span className="dept-cyl-name">{displayName}</span>
+          <span className="dept-cyl-status">
+            <span className="dept-lamp" style={{ background: color, boxShadow: `0 0 6px ${color}` }} />
+            {DEPT_STATUS_LABEL_JA[dept.status]}
+          </span>
         </span>
 
-        {/* 金属に開けたガラス窓+中のメーター(下から上へ・ステータス色メタリック) */}
+        {/* 中央: 金属フレーム付きのガラス窓+発光液体メーター */}
         <span className="dept-cyl-frame" aria-hidden="true">
           <span className="dept-cyl-window">
             <span className="dept-cyl-scale">
               <span>100</span>
+              <span>75</span>
               <span>50</span>
+              <span>25</span>
               <span>0</span>
             </span>
-            <span
-              className="dept-cyl-fill"
-              style={{
-                height: `${fill}%`,
-                background: `linear-gradient(90deg, ${color}88 0%, #ffffffbb 16%, ${color} 42%, ${color} 58%, ${color}55 84%, ${color}88 100%)`,
-                boxShadow: `0 0 16px ${color}cc inset, 0 -1px 5px ${color} inset`,
-              }}
-            />
+            <span className="dept-cyl-liquid" style={{ height: `${fill}%` }} />
+            <span className="dept-cyl-glass" />
           </span>
         </span>
 
-        <span className="dept-cyl-pct" style={{ color }}>{target}%</span>
+        {/* 下部: パーセンテージ+発光ライン(一体型) */}
+        <span className="dept-cyl-pct">{target}<span>%</span></span>
+        <span className="dept-cyl-baseline" aria-hidden="true" />
       </span>
     </button>
   );

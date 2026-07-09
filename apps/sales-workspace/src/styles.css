@@ -623,10 +623,11 @@ main section:hover,
   display: grid;
   /* 円柱型メーター: 幅に応じて自動配置。1段あたり最大7個(max-widthで制限)、
      部署数が増えたら自動で2段以上に折り返す(部署パネルUI仕様書)。 */
-  grid-template-columns: repeat(auto-fill, 106px);
+  grid-template-columns: repeat(auto-fill, 112px);
   justify-content: center;
-  gap: 1.7rem 0.75rem;
-  max-width: 720px;
+  align-items: end;
+  gap: 1.5rem 0.7rem;
+  max-width: 740px;
   margin: 0 auto;
   z-index: 1;
 }
@@ -1179,172 +1180,219 @@ main section:hover,
    背景パネルなし。キャップ+本体+台座で1個の機械的な円柱として成立させる。 */
 .dept-cyl {
   --glow: #FACC15;
+  --color: #FACC15;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 106px;
+  width: 112px;
   padding: 0;
   border: none;
   background: transparent;
   color: var(--text);
   cursor: pointer;
   transition: transform 0.15s ease, filter 0.2s ease;
-  /* 背景から浮く重厚な影 */
-  filter: drop-shadow(0 12px 12px rgba(0, 0, 0, 0.66));
+  filter: drop-shadow(0 16px 20px rgba(0, 0, 0, 0.7));
 }
 .dept-cyl:hover {
-  transform: translateY(-2px) scale(1.04);
-  filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.74)) drop-shadow(0 0 9px color-mix(in srgb, var(--glow) 55%, transparent));
+  transform: translateY(-3px) scale(1.03);
+  filter: drop-shadow(0 22px 26px rgba(0, 0, 0, 0.78)) drop-shadow(0 0 12px color-mix(in srgb, var(--glow) 55%, transparent));
 }
 .dept-cyl.selected .dept-cyl-vessel {
   border-color: var(--glow);
   box-shadow:
-    inset 13px 0 22px rgba(0, 0, 0, 0.5),
-    inset -13px 0 22px rgba(0, 0, 0, 0.5),
-    inset 0 0 0 1px color-mix(in srgb, var(--glow) 60%, transparent),
-    0 0 14px color-mix(in srgb, var(--glow) 45%, transparent);
+    inset 16px 0 26px rgba(255, 255, 255, 0.16),
+    inset -18px 0 30px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 1px color-mix(in srgb, var(--glow) 65%, transparent),
+    0 0 18px color-mix(in srgb, var(--glow) 45%, transparent);
 }
 
-/* 円柱型の金属シリンダー(キャップ〜本体〜台座を一体化した1つの筐体) */
+/* 円柱型の金属シリンダー(一体型・鈍いメタルグレー〜クロム) */
 .dept-cyl-vessel {
   position: relative;
   width: 100%;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 16px 8px 13px;
+  padding: 15px 8px 12px;
   box-sizing: border-box;
-  /* 上下は楕円(カプセル状)= 円柱の丸い天面/底面。側面は連続した金属 */
-  border-radius: 46px / 30px;
-  /* 縁が暗く中央に明るいクロムのハイライト(円筒の湾曲) */
+  border-radius: 26px;
+  /* 黒・ガンメタ・シルバーの強いクロム反射(左右に明るいハイライト) */
   background: linear-gradient(90deg,
-    #020305 0%, #10151b 12%, #2f3740 30%, #576069 46%, #6a747f 50%,
-    #4d5560 54%, #2a323b 70%, #10151b 88%, #020305 100%);
-  border: 1px solid rgba(230, 240, 250, 0.26);
+    #050607 0%, #1a1d21 10%, #6f7780 22%, #d9e1e8 32%, #353b42 45%,
+    #101318 58%, #7e8790 76%, #f2f6fa 86%, #15191f 100%);
+  border: 1px solid rgba(230, 240, 250, 0.28);
   box-shadow:
-    inset 13px 0 22px rgba(0, 0, 0, 0.5),
-    inset -13px 0 22px rgba(0, 0, 0, 0.5),
-    inset 0 11px 14px rgba(255, 255, 255, 0.14),   /* 天面の光沢 */
-    inset 0 -13px 18px rgba(0, 0, 0, 0.72),          /* 底面の陰影 */
-    0 3px 6px rgba(0, 0, 0, 0.5);
+    inset 16px 0 26px rgba(255, 255, 255, 0.18),   /* 左の反射 */
+    inset -18px 0 30px rgba(0, 0, 0, 0.7),          /* 右の陰 */
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),        /* 天面リムの光沢 */
+    inset 0 -14px 20px rgba(0, 0, 0, 0.6),          /* 底の陰影 */
+    0 3px 8px rgba(0, 0, 0, 0.5);
   overflow: hidden;
 }
-/* 天面の楕円キャップ(金属光沢の反射) */
+/* 天面の金属リング(クロムの光沢ライン) */
 .dept-cyl-vessel::before {
-  content: ""; position: absolute; z-index: 0; pointer-events: none;
-  top: 4px; left: 18%; right: 18%; height: 22px;
+  content: ""; position: absolute; z-index: 3; pointer-events: none;
+  top: 4px; left: 8%; right: 8%; height: 6px;
   border-radius: 50%;
-  background: radial-gradient(60% 100% at 50% 0%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 72%);
+  background: linear-gradient(180deg, #ffffff, #b9c1cb 55%, #5a626c);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  opacity: 0.9;
 }
-/* シリンダーを横切る流光(ごとにランダムなタイミング) */
+/* シリンダーを横切る流光(ごとにランダムな速度) */
 .dept-cyl-vessel::after {
   content: "";
   position: absolute; inset: 0; z-index: 4; pointer-events: none;
-  background: linear-gradient(108deg, transparent 0%, transparent 40%, rgba(255,255,255,0.2) 47%, rgba(255,255,255,0.05) 52%, transparent 62%, transparent 100%);
-  transform: translateX(-120%);
-  animation: metallic-flow var(--shine-dur, 5s) ease-in-out infinite;
+  background: linear-gradient(110deg, transparent 0%, transparent 38%, rgba(255,255,255,0.42) 48%, rgba(255,255,255,0.12) 54%, transparent 68%, transparent 100%);
+  transform: translateX(-140%);
+  animation: cyl-metal-sweep var(--shine-speed, 5s) ease-in-out infinite;
   animation-delay: var(--shine-delay, 0s);
 }
-/* アイコン(黒い丸座に白アイコン・天面に配置) */
-.dept-cyl-icon {
-  position: relative; z-index: 1;
-  width: 30px; height: 30px;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: 16px; line-height: 1; border-radius: 50%;
-  background: radial-gradient(circle at 38% 30%, #2c333b, #06080b 74%);
-  border: 1px solid rgba(230, 240, 250, 0.28);
-  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.25), inset 0 -2px 4px rgba(0, 0, 0, 0.9), 0 2px 4px rgba(0, 0, 0, 0.6);
-}
-.dept-cyl-name {
-  position: relative; z-index: 1;
-  font-size: 10.5px; font-weight: 700; text-align: center; line-height: 1.1;
-  white-space: nowrap;
-  color: #eef2f7; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
-}
-/* ステータス(黒ピル+ステータス色の文字) */
-.dept-cyl-status {
-  position: relative; z-index: 1;
-  font-size: 9.5px; font-weight: 700;
-  display: inline-flex; align-items: center; gap: 3px;
-  color: var(--glow);
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid color-mix(in srgb, var(--glow) 42%, transparent);
-  border-radius: 999px;
-  padding: 0 6px;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.7);
+@keyframes cyl-metal-sweep {
+  0%   { transform: translateX(-140%); opacity: 0; }
+  20%  { opacity: 0.8; }
+  48%  { transform: translateX(140%); opacity: 0.35; }
+  100% { transform: translateX(140%); opacity: 0; }
 }
 
-/* メーターを囲う重厚な金属フレーム(ベゼル) */
+/* 上部ヘッダー(アイコン・部署名・ステータス) */
+.dept-cyl-header {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  width: 100%;
+}
+.dept-cyl-icon {
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 15px; line-height: 1; border-radius: 50%;
+  background: radial-gradient(circle at 38% 30%, #2c333b, #06080b 74%);
+  border: 1px solid color-mix(in srgb, var(--glow) 45%, rgba(230, 240, 250, 0.28));
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.22), inset 0 -2px 4px rgba(0, 0, 0, 0.9), 0 0 8px color-mix(in srgb, var(--glow) 40%, transparent);
+}
+.dept-cyl-name {
+  font-size: 11px; font-weight: 700; text-align: center; line-height: 1.1;
+  white-space: nowrap;
+  color: #eef2f7; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+/* ステータス(ドット+テキスト・ステータス色) */
+.dept-cyl-status {
+  font-size: 9.5px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 4px;
+  color: color-mix(in srgb, var(--glow) 82%, white);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+/* メーターを囲う金属フレーム(ベゼル) */
 .dept-cyl-frame {
   display: block;
-  position: relative; z-index: 1;
-  width: 74px;
-  margin-top: 3px;
-  padding: 5px;
+  position: relative; z-index: 2;
+  width: 88px;
+  margin-top: 4px;
+  padding: 4px;
   box-sizing: border-box;
-  border-radius: 11px;
-  background: linear-gradient(180deg, #5a636e 0%, #333b45 34%, #171c22 66%, #090c10 100%);
-  border: 1px solid rgba(230, 240, 250, 0.30);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #6b7480 0%, #333b45 34%, #171c22 66%, #090c10 100%);
+  border: 1px solid rgba(230, 240, 250, 0.34);
   box-shadow:
-    inset 0 2px 2px rgba(255, 255, 255, 0.42),
+    inset 0 2px 2px rgba(255, 255, 255, 0.45),
     inset 0 -3px 6px rgba(0, 0, 0, 0.82),
     0 3px 6px rgba(0, 0, 0, 0.55);
 }
-/* フレームの金属光沢(上部の白い反射) */
-.dept-cyl-frame::before {
-  content: ""; position: absolute; z-index: 3; pointer-events: none;
-  top: 2px; left: 10%; right: 10%; height: 20%;
-  border-radius: 8px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
-}
-/* 中央のガラス窓(メーター) — 少し細く・空き部分は反射なしの暗色 */
+/* 中央の縦長ガラス窓(黒透明・発光縁) */
 .dept-cyl-window {
   display: block;
   position: relative; z-index: 1;
-  width: 64px; height: 96px;
+  width: 80px; height: 168px;
   box-sizing: border-box;
-  border-radius: 5px;
-  background: linear-gradient(180deg, #05070a 0%, #0a0d12 100%);
-  border: 1px solid rgba(0, 0, 0, 0.85);
-  box-shadow: inset 0 3px 9px rgba(0, 0, 0, 0.92), inset 0 0 4px rgba(0, 0, 0, 0.95);
+  border-radius: 13px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.92), rgba(20,25,30,0.72) 50%, rgba(0,0,0,0.95));
+  border: 1px solid color-mix(in srgb, var(--color) 40%, rgba(230, 245, 255, 0.36));
+  box-shadow:
+    0 0 16px color-mix(in srgb, var(--color) 30%, transparent),
+    inset 0 0 26px rgba(0, 0, 0, 0.9),
+    inset 8px 0 16px rgba(255, 255, 255, 0.06);
   overflow: hidden;
 }
-.dept-cyl-fill {
+/* 発光液体メーター(科学薬品のような光沢液体・下から充填) */
+.dept-cyl-liquid {
   position: absolute; left: 0; right: 0; bottom: 0;
-  border-radius: 0 0 4px 4px;
-  transition: height 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 0 0 12px 12px;
+  transition: height 0.95s cubic-bezier(0.22, 1, 0.36, 1);
   z-index: 1;
   overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 16%, rgba(255,255,255,0.9), transparent 12%),
+    linear-gradient(180deg, rgba(255,255,255,0.34), transparent 20%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--color) 55%, white),
+      var(--color),
+      color-mix(in srgb, var(--color) 62%, black));
+  box-shadow: 0 0 22px color-mix(in srgb, var(--color) 85%, transparent), inset 0 0 24px rgba(255, 255, 255, 0.22);
 }
-/* メーターの流光(下から上へ昇るハイライト・メタリック) */
-.dept-cyl-fill::after {
-  content: "";
-  position: absolute; left: 0; right: 0; height: 44%;
-  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.75) 50%, rgba(255,255,255,0) 100%);
-  mix-blend-mode: screen;
-  animation: cyl-rise 2.6s ease-in-out infinite;
+/* 液体内の粒子(浮遊するパーティクル) */
+.dept-cyl-liquid::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(1.6px 1.6px at 22% 32%, rgba(255,255,255,0.95), transparent 60%),
+    radial-gradient(1.2px 1.2px at 62% 58%, rgba(255,255,255,0.85), transparent 60%),
+    radial-gradient(1.6px 1.6px at 42% 80%, rgba(255,255,255,0.8), transparent 60%),
+    radial-gradient(1.1px 1.1px at 76% 42%, rgba(255,255,255,0.9), transparent 60%),
+    radial-gradient(1.2px 1.2px at 30% 60%, rgba(255,255,255,0.75), transparent 60%),
+    radial-gradient(1.4px 1.4px at 84% 74%, rgba(255,255,255,0.8), transparent 60%);
+  opacity: 0.75;
+  animation: cyl-particles 4.5s linear infinite;
 }
-@keyframes cyl-rise {
-  0%   { bottom: -46%; opacity: 0; }
-  25%  { opacity: 0.95; }
-  100% { bottom: 108%; opacity: 0; }
+@keyframes cyl-particles {
+  0% { transform: translateY(7px); opacity: 0.35; }
+  50% { opacity: 0.85; }
+  100% { transform: translateY(-7px); opacity: 0.35; }
 }
+/* 下から上への流光(縦の光の筋) */
+.dept-cyl-liquid::after {
+  content: ""; position: absolute; left: 42%; bottom: -40%;
+  width: 12px; height: 150%;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.95), transparent);
+  filter: blur(3px);
+  animation: cyl-liquid-flow 3.2s ease-in-out infinite;
+  animation-delay: var(--liquid-delay, 0s);
+}
+@keyframes cyl-liquid-flow {
+  0%   { transform: translateY(80%) rotate(8deg); opacity: 0; }
+  35%  { opacity: 1; }
+  100% { transform: translateY(-80%) rotate(8deg); opacity: 0; }
+}
+/* ガラスの斜め反射光 */
+.dept-cyl-glass {
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: linear-gradient(120deg, transparent 42%, rgba(255,255,255,0.14) 49%, rgba(255,255,255,0.04) 53%, transparent 60%);
+}
+/* 目盛り(窓の左・100/75/50/25/0) */
 .dept-cyl-scale {
-  position: absolute; right: 3px; top: 6px; bottom: 5px;
+  position: absolute; left: 4px; top: 6px; bottom: 6px;
   display: flex; flex-direction: column; justify-content: space-between;
-  font-size: 7px; color: rgba(232, 236, 242, 0.5); z-index: 2;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.8);
+  font-size: 6.5px; color: rgba(232, 236, 242, 0.55); z-index: 4;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.9);
 }
 
-/* パーセンテージ(シリンダー下部・底面に一体表示) */
+/* パーセンテージ(下部に大きく一体表示) */
 .dept-cyl-pct {
-  position: relative; z-index: 1;
+  position: relative; z-index: 2;
+  margin-top: 6px;
+  font-size: 22px; font-weight: 800; letter-spacing: 0.01em;
+  color: #ffffff;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--color) 75%, transparent), 0 2px 8px rgba(0, 0, 0, 0.85);
+}
+.dept-cyl-pct span { font-size: 12px; font-weight: 700; margin-left: 1px; opacity: 0.9; }
+/* 下端の発光ライン(ステータス色) */
+.dept-cyl-baseline {
+  position: relative; z-index: 2;
   margin-top: 4px;
-  font-size: 13.5px; font-weight: 800; letter-spacing: 0.02em;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  width: 46px; height: 3px; border-radius: 3px;
+  background: var(--color);
+  box-shadow: 0 0 10px var(--color), 0 0 4px var(--color);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dept-cyl-fill { transition: none; }
-  .dept-cyl-fill::after,
+  .dept-cyl-liquid { transition: none; }
+  .dept-cyl-liquid::before,
+  .dept-cyl-liquid::after,
   .dept-cyl-vessel::after { animation: none; opacity: 0; }
   .dept-cyl:hover { transform: none; }
 }
