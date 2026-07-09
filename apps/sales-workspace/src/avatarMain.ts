@@ -169,9 +169,11 @@ function el<T extends HTMLElement>(id: string): T | null {
 // - パネル表示中のウィンドウサイズはアバターサイズに依存しない固定値にする
 //   (スライダー操作ではウィンドウを一切動かさない)
 // - リサイズ処理は直列化し、並行実行による位置ドリフトを防ぐ
-const WINDOW_PADDING = 32; // #stack のpadding+影の余白
-const HANDLE_HEIGHT = 26; // ドラッグハンドル(⠿ 移動)の分
-const AVATAR_MAX = 160; // スライダー上限(パネル表示中はこの分を常に確保)
+// アイコンのみ表示時のウィンドウ余白(#stack の padding 8px ×左右/上下)。
+// ドラッグハンドルは撤去済みのため確保しない。ウィンドウをアイコン枠+通知バッジと
+// 同サイズに合わせ、余った透明領域(ガラス面)が見えないようにする(ユーザーFB第10弾)。
+const ICON_MARGIN = 16; // 8px × 両側(バッジの -3px はみ出しもこの中に収まる)
+const AVATAR_MAX = 160; // パネル表示中に確保するアイコン領域
 const PANEL_SIZE = { w: 340, h: 620 + AVATAR_MAX };
 const BUBBLE_SIZE = { w: 340, h: 240 };
 
@@ -179,21 +181,20 @@ function desiredWindowSize(): { w: number; h: number } {
   if (panelState.panelOpen) {
     // パネルの実寸を測ってウィンドウをコンテンツにフィットさせる
     // (固定の見積もりサイズだと膜がパネルより大きく見えるバグの修正)。
-    // アバター領域はスライダー上限(AVATAR_MAX)分だけ確保し、スライダー操作では
-    // ウィンドウを動かさない方針は維持する。
     const panelEl = el("panel");
     const panelH =
       panelEl && !panelEl.classList.contains("hidden") && panelEl.offsetHeight > 0
         ? panelEl.offsetHeight
         : PANEL_SIZE.h - AVATAR_MAX - 50;
-    return { w: PANEL_SIZE.w, h: panelH + 8 + HANDLE_HEIGHT + AVATAR_MAX + 16 };
+    return { w: PANEL_SIZE.w, h: panelH + 8 + AVATAR_MAX + 16 };
   }
   if (panelState.bubble !== null) {
     return { w: BUBBLE_SIZE.w, h: BUBBLE_SIZE.h + avatarSizePx };
   }
+  // 最小化(アイコンのみ): アイコン枠・通知枠ちょうどのサイズ。
   return {
-    w: avatarSizePx + WINDOW_PADDING,
-    h: avatarSizePx + WINDOW_PADDING + HANDLE_HEIGHT,
+    w: avatarSizePx + ICON_MARGIN,
+    h: avatarSizePx + ICON_MARGIN,
   };
 }
 

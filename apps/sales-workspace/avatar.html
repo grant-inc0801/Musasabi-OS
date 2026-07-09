@@ -225,7 +225,8 @@
         border: none; /* 枠線なし */
         /* メタリック下地(中央から外へフェード=箱にしない)+ ステータス光彩 */
         background: radial-gradient(120% 120% at 50% 25%, rgba(140, 150, 160, 0.12), rgba(0, 0, 0, 0) 68%);
-        box-shadow: 0 0 16px 3px var(--status-accent);
+        /* 光彩はウィンドウ余白(8px)内に収める(はみ出すと窓端で切れて枠に見えるため) */
+        box-shadow: 0 0 7px 1px var(--status-accent);
         opacity: 0.5; /* 半透明(ガラス感)。ホバーで不透明化 */
         transition: opacity 0.15s ease, box-shadow 0.25s ease;
       }
