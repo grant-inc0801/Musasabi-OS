@@ -3,9 +3,10 @@ import { DEPT_STATUS_COLOR, DEPT_STATUS_LABEL_JA, deptIcon } from "@musasabi/ai-
 import type { CommandDepartment } from "@musasabi/ai-company";
 
 // 部署パネル 円柱型進捗メーター(部署パネルUI仕様書)。
-// 円柱(メタリック調)を進捗に応じて下から上へ充填し、ステータス色で連動する。
-// 上部: アイコン・部署名・ステータス / 下部: パーセンテージ。クリックで詳細へ、
-// ホバーで軽い拡大(scale 1.05)。色覚多様性に配慮しアイコンとラベルでも状態を示す。
+// 機械的・重厚感のある一体型シリンダー(背景パネルなし)。上部の金属キャップに
+// アイコン、円柱本体に部署名・ステータス、中央のガラス窓に下から上へ充填するメーター、
+// 台座にパーセンテージを一体表示する。進捗に応じて下から上へ充填し、色はステータス連動。
+// 色覚多様性に配慮しアイコンとラベルでも状態を示す。
 
 export const DepartmentCylinder = forwardRef<
   HTMLButtonElement,
@@ -32,37 +33,42 @@ export const DepartmentCylinder = forwardRef<
       aria-label={`${dept.name} ${DEPT_STATUS_LABEL_JA[dept.status]} ${target}%`}
       title={`${dept.name}(${DEPT_STATUS_LABEL_JA[dept.status]})`}
     >
-      <div className="dept-cyl-head">
-        <span className="dept-cyl-icon" aria-hidden="true">{deptIcon(dept.id)}</span>
-        <div className="dept-cyl-name">{dept.name}</div>
-        <div className="dept-cyl-status">
-          <span className="dept-lamp" style={{ background: color, boxShadow: `0 0 8px ${color}` }} />
+      {/* 上部の金属キャップ+アイコン */}
+      <span className="dept-cyl-cap" aria-hidden="true">
+        <span className="dept-cyl-icon">{deptIcon(dept.id)}</span>
+      </span>
+
+      {/* 円柱本体(黒ガンメタ) */}
+      <span className="dept-cyl-body">
+        <span className="dept-cyl-name">{dept.name}</span>
+        <span className="dept-cyl-status">
+          <span className="dept-lamp" style={{ background: color, boxShadow: `0 0 6px ${color}` }} />
           {DEPT_STATUS_LABEL_JA[dept.status]}
-        </div>
-      </div>
-
-      <div className="dept-cyl-tube" aria-hidden="true">
-        {/* 目盛り(100/50/0) */}
-        <span className="dept-cyl-scale">
-          <span>100</span>
-          <span>50</span>
-          <span>0</span>
         </span>
-        {/* 充填メーター(下から上へ・ステータス色メタリック) */}
-        <span
-          className="dept-cyl-fill"
-          style={{
-            height: `${fill}%`,
-            // 横方向の金属反射(左右陰影+中央ハイライト)でメタリックなメーターにする
-            background: `linear-gradient(90deg, ${color}88 0%, #ffffffcc 16%, ${color} 42%, ${color} 58%, ${color}55 84%, ${color}88 100%)`,
-            boxShadow: `0 0 14px ${color}aa inset, 0 -1px 4px ${color} inset`,
-          }}
-        />
-        {/* ガラスの光沢 */}
-        <span className="dept-cyl-gloss" />
-      </div>
 
-      <div className="dept-cyl-pct" style={{ color }}>{target}%</div>
+        {/* ガラス窓のメーター(下から上へ・ステータス色メタリック) */}
+        <span className="dept-cyl-window" aria-hidden="true">
+          <span className="dept-cyl-scale">
+            <span>100</span>
+            <span>50</span>
+            <span>0</span>
+          </span>
+          <span
+            className="dept-cyl-fill"
+            style={{
+              height: `${fill}%`,
+              background: `linear-gradient(90deg, ${color}88 0%, #ffffffbb 16%, ${color} 42%, ${color} 58%, ${color}55 84%, ${color}88 100%)`,
+              boxShadow: `0 0 16px ${color}cc inset, 0 -1px 5px ${color} inset`,
+            }}
+          />
+          <span className="dept-cyl-gloss" />
+        </span>
+      </span>
+
+      {/* 台座+パーセンテージ(一体型) */}
+      <span className="dept-cyl-base">
+        <span className="dept-cyl-pct" style={{ color }}>{target}%</span>
+      </span>
     </button>
   );
 });
