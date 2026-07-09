@@ -16,6 +16,7 @@ import {
   type SecretaryItem,
   type Priority,
 } from "@musasabi/ai-secretary";
+import { MODEL_NOTIFICATIONS, NOTIFICATION_LABEL_JA, getModel } from "@musasabi/ai-model-registry";
 import { recordMemory } from "../../lib/memoryStorage";
 
 // 右詳細パネルの既定状態 = AI役員秘書 / 参謀(AI_SECRETARY_RIGHT_DETAIL_PANEL_DIRECTIVE.md)。
@@ -90,6 +91,21 @@ export function AiSecretaryPanel() {
           {depts.map((d) => <option key={d} value={d}>{d}</option>)}
         </select>
       </div>
+
+      {/* AIモデル通知(AI Model Registry → 秘書へ) */}
+      <details className="secretary-brief" style={{ marginBottom: "0.5rem" }}>
+        <summary style={{ cursor: "pointer", fontSize: "0.8rem", fontWeight: 700 }}>
+          AIモデル通知({MODEL_NOTIFICATIONS.length})
+        </summary>
+        <ul style={{ listStyle: "none", paddingLeft: 0, margin: "0.35rem 0 0", fontSize: "0.74rem" }}>
+          {MODEL_NOTIFICATIONS.map((n) => (
+            <li key={n.id} style={{ display: "flex", gap: 6, padding: "0.1rem 0", alignItems: "center" }}>
+              <span className="badge" style={{ fontSize: "0.62rem" }}>{NOTIFICATION_LABEL_JA[n.type]}</span>
+              <span>{getModel(n.modelId)?.name}: {n.message}</span>
+            </li>
+          ))}
+        </ul>
+      </details>
 
       {actionNote && <div className="secretary-note">✓ {actionNote}</div>}
 

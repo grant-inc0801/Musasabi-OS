@@ -3,6 +3,29 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-09 — AI統合センター / AIモデルレジストリ(Mock)
+
+### 実装内容
+指示書 `AI_MODEL_REGISTRY_DIRECTIVE.md` を実装(すべて Mock・決定論)。すべてのAIモデルを一元管理し、
+選択・ルーティング・比較・アップグレード評価・監査・コスト管理を行う。**APIキーは保持せず論理参照名のみ**
+(実行時に AI Secret Center が注入)。本番接続・実課金は Production Readiness 承認まで無効。
+
+- **`packages/ai-model-registry`(新規)**: モデル一覧(9プロバイダ: OpenAI/Anthropic/Google/Microsoft/Meta/
+  Mistral/xAI/Ollama/LM Studio、7モデルのダミー)、能力スコア14軸、タスク別AIルーティング(8タスク・推奨+理由)、
+  モデル比較(コスト/速度/精度/文脈長/成功率/失敗率/推奨用途)、AIアップグレードマネージャ(Mock評価+CEO承認申請・
+  実採用ロック)、AI秘書通知(6種)、Company Brain 利用ナレッジ、Secret Center ルール(APIキー非保持・参照名のみ・
+  値は表示/記録しない)。`isSecretReferenceOnly` で実キー形式を排除。テスト12件 pass
+- **`AiIntegrationCenterPage`(新規)**: 上記を可視化(ダッシュボード表・ルーティング・比較・14軸スコアバー・
+  アップグレード評価・秘書通知・Company Brainナレッジ・Secret Centerルール)。サイドバー Integrations に追加
+- **AiSecretaryPanel**: AIモデル通知セクションを追加(秘書がモデル通知を受信)
+
+### テスト結果
+- `ai-model-registry` テスト **12件 pass**、`npm run build`(sales-workspace)成功、秘密情報スキャン pass
+- Playwright E2E: ダッシュボード(7モデル)・ルーティング更新・比較(7項目)・実キー値なし・参照名のみ・
+  本番ロック表示を確認、**ページエラー 0**
+
+---
+
 ## 2026-07-09 — AI秘書 右詳細パネル + 市場調査/マーケティング部門
 
 ### 実装内容

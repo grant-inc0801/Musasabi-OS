@@ -7,6 +7,7 @@ import { CompanyPage } from "./components/Company/CompanyPage";
 import { CompanyDashboardPage } from "./components/Company/CompanyDashboardPage";
 import { DepartmentDashboardPage } from "./components/Department/DepartmentDashboardPage";
 import { ConnectorsPage } from "./components/Connectors/ConnectorsPage";
+import { AiIntegrationCenterPage } from "./components/Enterprise/AiIntegrationCenterPage";
 import { AiPmPage } from "./components/Enterprise/AiPmPage";
 import { ProductPage } from "./components/Enterprise/ProductPage";
 import { OpsMonitorPage } from "./components/Enterprise/OpsMonitorPage";
@@ -83,6 +84,7 @@ type Page =
   | "company_dashboard"
   | "department_dashboard"
   | "connectors"
+  | "ai_integration_center"
   | "ai_pm"
   | "product"
   | "ops_monitor"
@@ -132,6 +134,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   company_dashboard: "全社ダッシュボード",
   department_dashboard: "部門ダッシュボード",
   connectors: "外部連携コネクタ",
+  ai_integration_center: "AI統合センター(モデルレジストリ)",
   ai_pm: "AI PM / 自律経営",
   product: "プロダクト / テナント",
   ops_monitor: "運用モニタリング",
@@ -250,6 +253,7 @@ const NAV_GROUPS: ReadonlyArray<{
     icon: "🔌",
     items: [
       { label: "外部連携コネクタ", page: "connectors" },
+      { label: "AI統合センター(モデルレジストリ)", page: "ai_integration_center" },
       { label: "プラグイン", page: "plugins" },
     ],
   },
@@ -427,6 +431,8 @@ export function App() {
           <DepartmentDashboardPage />
         ) : page === "connectors" ? (
           <ConnectorsPage />
+        ) : page === "ai_integration_center" ? (
+          <AiIntegrationCenterPage />
         ) : page === "ai_pm" ? (
           <AiPmPage />
         ) : page === "product" ? (

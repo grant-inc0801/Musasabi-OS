@@ -4,7 +4,14 @@
 **Updated:** 2026-07-09
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(AI秘書 右詳細パネル + 市場調査/マーケティング部門)
+## 直近の完了内容(AI統合センター / AIモデルレジストリ・Mock)
+指示書 AI_MODEL_REGISTRY_DIRECTIVE を実装。`packages/ai-model-registry`(新規): 9プロバイダ・能力スコア14軸・
+タスク別ルーティング(8)・モデル比較(7項目)・アップグレード評価(CEO承認申請・実採用ロック)・AI秘書通知6種・
+Company Brain 利用ナレッジ・Secret Center ルール(APIキー非保持・参照名のみ)。テスト12件 pass。
+`AiIntegrationCenterPage`(Integrations に追加)+ AiSecretaryPanel にモデル通知セクション。
+build成功・秘密情報スキャン pass・Playwright E2E 0エラー。本番接続は承認までロック。
+
+## それ以前の完了内容(AI秘書 右詳細パネル + 市場調査/マーケティング部門)
 指示書 AI_SECRETARY_RIGHT_DETAIL_PANEL / MARKET_RESEARCH_AND_MARKETING_DEPARTMENT を統合実装(Mock)。
 `packages/ai-secretary`(新規): 統一カード9カテゴリ・デイリーブリーフィング・フィルタ・6種Mockアクション、
 市場調査レポート(標準形式・機会スコア・競合トップ3)、マーケSNS投稿(テキストロック/繰り返し/頻度5種/添付/
