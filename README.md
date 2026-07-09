@@ -73,6 +73,7 @@ packages/
   production-roadmap/ 本番ロードマップ(Mock完成追跡14スコープ+Production Readiness 11項目のゲート管理。各項目に設計方針(design)を保持し設計のみ用意=実装は承認後。人間承認まで本番項目はロック。追跡・可視化のみ。Mock。設計書 docs/ai-handoff/PRODUCTION_READINESS_DESIGN.md・構成テンプレート docs/production-readiness/)
   mission-control/    Mission Control 司令室(AI CEO/AI PM/部署一覧/Today's Tasks/Approval/GitHub状況/AI Timeline/System Status のダミーデータ。後からGitHub等へ差し替え可能なオブジェクト設計。Mock)
   ai-secretary/       AI役員秘書/参謀(統一カード9カテゴリ・デイリーブリーフィング・フィルタ・Mockアクション)+市場調査レポート(標準形式・機会スコア・競合比較)+マーケSNS投稿ワークフロー(テキストロック/繰り返し/頻度/添付/承認/Mock予約・本番投稿はロック)。Mock)
+  ai-model-registry/  AI統合センター/モデルレジストリ(9プロバイダ・能力スコア14軸・タスク別ルーティング・モデル比較・アップグレード評価・AI秘書通知・Company Brain利用ナレッジ・Secret Centerルール。APIキー非保持=参照名のみ。本番接続は承認までロック。Mock)
   memory/             Brain Memory Engine(未実装、Epic β-001完了後)
   vision/             Vision Engine(未実装、Epic β-001完了後)
   automation/         Automation Engine(未実装、Epic β-001完了後)
