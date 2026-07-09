@@ -3,6 +3,39 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-09 — Musasabi World(MUSASABI_WORLD_DIRECTIVE)
+
+### 実装内容
+指示書 `MUSASABI_WORLD_DIRECTIVE.md` に基づき、1つの事業アイデア/テンプレートから AI 会社
+ワークスペースを Mock 生成するジェネレーター「Musasabi World」を実装。business-factory の
+テンプレート/プロビジョニングを土台に会社レイヤーを構築。実アカウント作成・課金・外部接続・
+secrets は一切なし。
+
+- **`packages/musasabi-world`(新規・business-factory 依存)**:
+  - `generateCompany({ templateId?, idea?, name? })`: AI CEO 体制・役員チーム・事業ユニット・
+    部門マップ・AI社員名簿・KPIダッシュボード・ワークフロー・Company Brain・Musasabi DNA
+    プロファイル・Knowledge Vault フォルダ・レポートテンプレート・監査モニタリング・Mock運用
+    データを決定論生成
+  - `inferTemplateId(idea)`: アイデア文からテンプレート推定(キーワード・既定 SaaS)
+  - `EXECUTIVE_TEAM`(AI COO/CFO/CTO/CMO/監査役)、`WORLD_REPORTING_LINE`、
+    `FIRST_USE_CASE_TEMPLATE_IDS`(MEISHI-TUBE/SaaS/営業代行/出版)、`summarizeCompanyJa`
+    (AI CEO アバター要約)、`summarizeWorld`、`WORLD_GOVERNANCE_NOTES`。テスト9件 pass
+- **`MusasabiWorldPage`(新規)**: AI会社作成ウィザード(アイデア入力+テンプレート選択+会社名)→
+  組織をプレビュー生成→生成組織プレビュー(CEO体制/部門マップ/AI社員/KPI/ワークフロー/DNA/
+  Knowledge Vault/レポート/監査)→起動確認(Mock)→生成会社ダッシュボード。初期ユースケース
+  4件のワンクリック生成。生成会社は localStorage に永続(リロード後も表示)。GLOBAL_NAV に
+  「Musasabi World」を追加
+
+### 完了条件の充足
+- テンプレートから Mock AI会社ワークスペースを作成できる ✅ / 生成ワークスペースがダッシュボードに
+  表示される(永続)✅ / AI CEO アバターが生成会社を要約できる ✅ / README・CLAUDE_RESPONSE 更新 ✅
+
+### テスト結果
+- `@musasabi/musasabi-world` 9件 pass
+- Playwright E2E: ウィザード・初期ユースケース4件・アイデアからMEISHI-TUBE生成・プレビュー
+  (CEO体制/DNA/Knowledge Vault)・起動→ダッシュボード表示・SaaS追加生成・**リロード後の永続**・
+  AI CEO要約・0エラーを実画面確認
+
 ## 2026-07-09 — Musasabi Evolution Modules(MUSASABI_EVOLUTION_MODULES_DIRECTIVE)
 
 ### 実装内容
