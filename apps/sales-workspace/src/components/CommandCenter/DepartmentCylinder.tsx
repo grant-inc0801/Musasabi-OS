@@ -48,10 +48,15 @@ export const DepartmentCylinder = forwardRef<
           <span>50</span>
           <span>0</span>
         </span>
-        {/* 充填メーター(下から上へ・ステータス色) */}
+        {/* 充填メーター(下から上へ・ステータス色メタリック) */}
         <span
           className="dept-cyl-fill"
-          style={{ height: `${fill}%`, background: `linear-gradient(180deg, ${color}, ${color}bb)`, boxShadow: `0 0 12px ${color}aa inset` }}
+          style={{
+            height: `${fill}%`,
+            // 横方向の金属反射(左右陰影+中央ハイライト)でメタリックなメーターにする
+            background: `linear-gradient(90deg, ${color}88 0%, #ffffffcc 16%, ${color} 42%, ${color} 58%, ${color}55 84%, ${color}88 100%)`,
+            boxShadow: `0 0 14px ${color}aa inset, 0 -1px 4px ${color} inset`,
+          }}
         />
         {/* ガラスの光沢 */}
         <span className="dept-cyl-gloss" />
