@@ -70,6 +70,7 @@ packages/
   business-factory/   AI事業ファクトリー(標準テンプレート/業種テンプレートカタログ8種で新規事業ユニット立ち上げ・自動プロビジョニング。MEISHI-TUBE/SaaS/営業代行/出版/コールセンター/EC/飲食店/コンサル。Mock)
   evolution-modules/  進化モジュール12種(Operating Manual/Skill Marketplace/Sandbox/Incident Center/Meeting Room/Simulation/Recruiting/Upgrade Manager/Health Center/Memory Timeline/Command Console/Builder Dept。Company Brain・DNA・ガバナンス・監査・経営DB統合。Mock)
   musasabi-world/     Musasabi World(1つの事業アイデア/テンプレートから AI会社ワークスペースを生成。AI CEO体制・役員・部門・AI社員・KPI・ワークフロー・DNA・Knowledge Vault・レポート・監査・運用データ。business-factory依存。Mock)
+  production-roadmap/ 本番ロードマップ(Mock完成追跡14スコープ+Production Readiness 11項目のゲート管理。人間承認まで本番項目はロック。追跡・可視化のみ。Mock)
   memory/             Brain Memory Engine(未実装、Epic β-001完了後)
   vision/             Vision Engine(未実装、Epic β-001完了後)
   automation/         Automation Engine(未実装、Epic β-001完了後)

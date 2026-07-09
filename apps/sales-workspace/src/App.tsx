@@ -23,6 +23,7 @@ import { NextCoreModulesPage } from "./components/Enterprise/NextCoreModulesPage
 import { BusinessFactoryPage } from "./components/Enterprise/BusinessFactoryPage";
 import { EvolutionModulesPage } from "./components/Enterprise/EvolutionModulesPage";
 import { MusasabiWorldPage } from "./components/Enterprise/MusasabiWorldPage";
+import { ProductionRoadmapPage } from "./components/Enterprise/ProductionRoadmapPage";
 import { WorkflowPage } from "./components/Workflow/WorkflowPage";
 import { CollaborationPage } from "./components/Collaboration/CollaborationPage";
 import { WorkspacePage } from "./components/Workspace/WorkspacePage";
@@ -98,6 +99,7 @@ type Page =
   | "business_factory"
   | "evolution_modules"
   | "musasabi_world"
+  | "production_roadmap"
   | "workflow"
   | "company_brain"
   | "collaboration"
@@ -147,6 +149,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   business_factory: "AI事業ファクトリー",
   evolution_modules: "進化モジュール",
   musasabi_world: "Musasabi World",
+  production_roadmap: "本番ロードマップ",
   workflow: "ワークフロー",
   company_brain: "Company Brain",
   collaboration: "コラボレーション",
@@ -213,6 +216,7 @@ const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
   { label: "AI事業ファクトリー", page: "business_factory" },
   { label: "進化モジュール", page: "evolution_modules" },
   { label: "Musasabi World", page: "musasabi_world" },
+  { label: "本番ロードマップ", page: "production_roadmap" },
   { label: "ワークフロー", page: "workflow" },
   { label: "AI社員管理", page: "company" },
   { label: "Company Brain", page: "company_brain" },
@@ -432,6 +436,8 @@ export function App() {
           <EvolutionModulesPage />
         ) : page === "musasabi_world" ? (
           <MusasabiWorldPage />
+        ) : page === "production_roadmap" ? (
+          <ProductionRoadmapPage />
         ) : page === "workflow" ? (
           <WorkflowPage onOpenPage={(target) => replayNavigate(target)} />
         ) : page === "company_brain" ? (
