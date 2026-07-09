@@ -4,7 +4,15 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Master Roadmap to Production)
+## 直近の完了内容(Mission Control Dashboard Phase 1)
+指示書に基づき AI企業の司令室ホーム「Mission Control」を実装。`packages/mission-control`(全データを
+オブジェクト/配列で管理、後からGitHub等へ差し替え可能)+ `MissionControlPage`(10セクション: HEADER/
+AI CEO/AI PM/AI社員一覧/Department Cylinders/Today's Tasks/Approval Center/GitHub Development/
+AI Timeline/System Status LED)。既存メタリックUIで統一、数値カウントアップ・時刻毎秒更新・レスポンシブ・
+ロスターカードから部署ページへ遷移。サイドバー Dashboard に追加。mission-control テスト7件 pass。
+Playwrightで全セクション・0エラーを確認。※前回のUI刷新 Beta Build も成功(installer 3e4ba7b 9.78MB)。
+
+## それ以前の完了内容(Master Roadmap to Production)
 指示書 MASTER_ROADMAP_TO_PRODUCTION.md に基づき `packages/production-roadmap` を新設。Mock 完成状況の
 追跡(14スコープ・全 done・100%)と Production Readiness フェーズのゲート可視化(11項目・全て承認必須・
 既定ロック)を実装。isProductionReadinessUnlocked は Mock完成 かつ 人間承認済みのときのみ解放
