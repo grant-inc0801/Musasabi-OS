@@ -1279,21 +1279,24 @@ main section:hover,
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
-/* メーターを囲う金属フレーム(ベゼル) */
+/* メーターを囲う金属フレーム(ベゼル) — シリンダー本体と同じクロムで色を統一。
+   金属流光(vessel::after=z4)より前面に置き、ガラス窓に反射光を乗せない。 */
 .dept-cyl-frame {
   display: block;
-  position: relative; z-index: 2;
+  position: relative; z-index: 5;
   width: 88px;
   margin-top: 4px;
   padding: 4px;
   box-sizing: border-box;
   border-radius: 16px;
-  background: linear-gradient(180deg, #6b7480 0%, #333b45 34%, #171c22 66%, #090c10 100%);
-  border: 1px solid rgba(230, 240, 250, 0.34);
+  background: linear-gradient(90deg,
+    #050607 0%, #1a1d21 10%, #6f7780 22%, #d9e1e8 32%, #353b42 45%,
+    #101318 58%, #7e8790 76%, #f2f6fa 86%, #15191f 100%);
+  border: 1px solid rgba(230, 240, 250, 0.28);
   box-shadow:
-    inset 0 2px 2px rgba(255, 255, 255, 0.45),
-    inset 0 -3px 6px rgba(0, 0, 0, 0.82),
-    0 3px 6px rgba(0, 0, 0, 0.55);
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.7),
+    0 3px 6px rgba(0, 0, 0, 0.5);
 }
 /* 中央の縦長ガラス窓(黒透明・ネオン発光縁) */
 .dept-cyl-window {
@@ -1369,11 +1372,6 @@ main section:hover,
   12%  { opacity: 1; }
   88%  { opacity: 1; }
   100% { bottom: 102%; opacity: 0; }
-}
-/* ガラスの斜め反射光 */
-.dept-cyl-glass {
-  position: absolute; inset: 0; z-index: 3; pointer-events: none;
-  background: linear-gradient(120deg, transparent 42%, rgba(255,255,255,0.14) 49%, rgba(255,255,255,0.04) 53%, transparent 60%);
 }
 /* 目盛り(窓の左・100/75/50/25/0) */
 .dept-cyl-scale {

@@ -73,7 +73,6 @@ export const DepartmentCylinder = forwardRef<
               <span>0</span>
             </span>
             <span className="dept-cyl-liquid" style={{ height: `${fill}%` }} />
-            <span className="dept-cyl-glass" />
           </span>
         </span>
 
