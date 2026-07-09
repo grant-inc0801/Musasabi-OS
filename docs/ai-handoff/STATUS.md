@@ -4,7 +4,16 @@
 **Updated:** 2026-07-08
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Musasabi Evolution Modules)
+## 直近の完了内容(Musasabi World)
+指示書 MUSASABI_WORLD_DIRECTIVE.md に基づき `packages/musasabi-world`(business-factory 依存)を新設。
+1つの事業アイデア/テンプレートから AI 会社ワークスペース(AI CEO体制・役員・事業ユニット・部門マップ・
+AI社員名簿・KPI・ワークフロー・Company Brain・Musasabi DNA・Knowledge Vault・レポート・監査・Mock運用
+データ)を決定論生成する generateCompany を実装。MusasabiWorldPage を新設(AI会社作成ウィザード→組織
+プレビュー→起動確認Mock→生成会社ダッシュボード、初期ユースケース4件ワンクリック、生成会社を
+localStorage 永続)。AI CEO アバター要約 summarizeCompanyJa。musasabi-world テスト9件 pass。Playwrightで
+ウィザード・生成・永続・要約を確認(0エラー)。実アカウント作成・課金・外部接続・secretsなし。
+
+## それ以前の完了内容(Musasabi Evolution Modules)
 指示書 MUSASABI_EVOLUTION_MODULES_DIRECTIVE.md に基づき `packages/evolution-modules` を新設。次世代の
 内部オペレーティングモジュール12種(AI Operating Manual/Skill Marketplace/Sandbox/Incident Center/
 Meeting Room/Simulation Engine/Recruiting/Upgrade Manager/Health Center/Memory Timeline/
