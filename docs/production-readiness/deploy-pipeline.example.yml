@@ -1,0 +1,37 @@
+# セキュアデプロイパイプライン テンプレート(不活性・設計用の例)
+# 重要: これは example であり .github/workflows には配置しない(CI/CDで自動実行しない)。
+# 実デプロイ・実資格情報は Production Readiness の人間承認後にのみ有効化する。
+name: (example) Secure Deploy — DISABLED TEMPLATE
+
+on:
+  workflow_dispatch:   # 承認後に別途正式なワークフローとして用意する
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-sign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build artifact
+        run: echo "ここでビルド(実装は承認後)"
+      - name: Sign artifact (placeholder)
+        run: echo "署名(鍵はシークレットマネージャ参照・値は保持しない)"
+
+  approve-gate:
+    needs: build-and-sign
+    runs-on: ubuntu-latest
+    steps:
+      - name: Human approval gate (placeholder)
+        run: echo "人間承認ゲート。承認記録を監査ログへ(実装は承認後)"
+
+  deploy:
+    needs: approve-gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy with least-privilege creds (placeholder)
+        run: echo "最小権限のデプロイ資格情報で本番反映(実装・実資格情報は承認後)"
+      - name: Rollback plan (placeholder)
+        run: echo "失敗時は即時ロールバック"
