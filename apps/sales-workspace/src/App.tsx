@@ -24,6 +24,7 @@ import { BusinessFactoryPage } from "./components/Enterprise/BusinessFactoryPage
 import { EvolutionModulesPage } from "./components/Enterprise/EvolutionModulesPage";
 import { MusasabiWorldPage } from "./components/Enterprise/MusasabiWorldPage";
 import { ProductionRoadmapPage } from "./components/Enterprise/ProductionRoadmapPage";
+import { MissionControlPage } from "./components/MissionControl/MissionControlPage";
 import { WorkflowPage } from "./components/Workflow/WorkflowPage";
 import { CollaborationPage } from "./components/Collaboration/CollaborationPage";
 import { WorkspacePage } from "./components/Workspace/WorkspacePage";
@@ -61,6 +62,7 @@ import { loadSetupState } from "./lib/setupStorage";
 // コールトレーニング / Sales Brain)から各詳細ページへ遷移する。
 type Page =
   | "command_center"
+  | "mission_control"
   | "sales_kpi"
   | "sales_list"
   | "sales_call_training"
@@ -111,6 +113,7 @@ type Page =
 
 const PAGE_TITLE_JA: Record<Page, string> = {
   command_center: "Musasabi Command Center",
+  mission_control: "Mission Control",
   sales_kpi: "営業部 — KPI",
   sales_list: "営業部 — 営業リスト",
   sales_call_training: "営業部 — コールトレーニング",
@@ -176,6 +179,7 @@ const NAV_GROUPS: ReadonlyArray<{
     label: "Dashboard",
     icon: "📊",
     items: [
+      { label: "Mission Control(司令室)", page: "mission_control" },
       { label: "全社ダッシュボード", page: "company_dashboard" },
       { label: "部門ダッシュボード", page: "department_dashboard" },
       { label: "レポート", page: "reports" },
@@ -379,7 +383,9 @@ export function App() {
       </aside>
       <main className="content">
         <h1 style={{ marginTop: 0 }}>{PAGE_TITLE_JA[page]}</h1>
-        {page === "sales_kpi" ? (
+        {page === "mission_control" ? (
+          <MissionControlPage onOpenPage={(target) => replayNavigate(target)} />
+        ) : page === "sales_kpi" ? (
           <SalesKpiPage />
         ) : page === "sales_list" ? (
           <SalesListPage onNavigateToCallTraining={() => navigate("sales_call_training")} />
