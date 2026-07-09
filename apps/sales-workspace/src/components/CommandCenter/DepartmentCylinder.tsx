@@ -62,21 +62,23 @@ export const DepartmentCylinder = forwardRef<
           {DEPT_STATUS_LABEL_JA[dept.status]}
         </span>
 
-        {/* ガラス窓のメーター(下から上へ・ステータス色メタリック) */}
-        <span className="dept-cyl-window" aria-hidden="true">
-          <span className="dept-cyl-scale">
-            <span>100</span>
-            <span>50</span>
-            <span>0</span>
+        {/* 重厚な金属フレームで囲ったガラス窓メーター(下から上へ・ステータス色メタリック) */}
+        <span className="dept-cyl-frame" aria-hidden="true">
+          <span className="dept-cyl-window">
+            <span className="dept-cyl-scale">
+              <span>100</span>
+              <span>50</span>
+              <span>0</span>
+            </span>
+            <span
+              className="dept-cyl-fill"
+              style={{
+                height: `${fill}%`,
+                background: `linear-gradient(90deg, ${color}88 0%, #ffffffbb 16%, ${color} 42%, ${color} 58%, ${color}55 84%, ${color}88 100%)`,
+                boxShadow: `0 0 16px ${color}cc inset, 0 -1px 5px ${color} inset`,
+              }}
+            />
           </span>
-          <span
-            className="dept-cyl-fill"
-            style={{
-              height: `${fill}%`,
-              background: `linear-gradient(90deg, ${color}88 0%, #ffffffbb 16%, ${color} 42%, ${color} 58%, ${color}55 84%, ${color}88 100%)`,
-              boxShadow: `0 0 16px ${color}cc inset, 0 -1px 5px ${color} inset`,
-            }}
-          />
         </span>
       </span>
 
