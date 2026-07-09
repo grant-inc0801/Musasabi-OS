@@ -161,16 +161,31 @@ const PAGE_TITLE_JA: Record<Page, string> = {
 };
 
 /**
- * サイドバーのナビ構造: 大項目(最大7)+小項目。大項目クリックで小項目を開閉する
- * (アコーディオン。ユーザーFB: 項目過多の整理)。現在ページを含む大項目は既定で開く。
+ * サイドバーのナビ構造: 大項目(5〜7)+小項目の折りたたみナビ。
+ * 大項目クリックで小項目を開閉する(複数同時に開ける)。既存の全ページを大項目に
+ * 割り当てて到達性を維持する(機能を壊さない)。現在ページを含む大項目は既定で開く。
  */
 const NAV_GROUPS: ReadonlyArray<{
+  id: string;
   label: string;
   icon: string;
   items: ReadonlyArray<{ label: string; page: Page }>;
 }> = [
   {
-    label: "部門",
+    id: "dashboard",
+    label: "Dashboard",
+    icon: "📊",
+    items: [
+      { label: "全社ダッシュボード", page: "company_dashboard" },
+      { label: "部門ダッシュボード", page: "department_dashboard" },
+      { label: "レポート", page: "reports" },
+      { label: "通知センター", page: "notifications" },
+      { label: "ワークスペース", page: "workspace" },
+    ],
+  },
+  {
+    id: "departments",
+    label: "Departments",
     icon: "🏢",
     items: [
       { label: "営業部 — KPI", page: "sales_kpi" },
@@ -190,89 +205,84 @@ const NAV_GROUPS: ReadonlyArray<{
     ],
   },
   {
-    label: "経営・ダッシュボード",
-    icon: "📊",
-    items: [
-      { label: "全社ダッシュボード", page: "company_dashboard" },
-      { label: "部門ダッシュボード", page: "department_dashboard" },
-      { label: "ワークスペース", page: "workspace" },
-      { label: "オペレーション", page: "operations" },
-      { label: "レポート", page: "reports" },
-      { label: "ワークフロー", page: "workflow" },
-    ],
-  },
-  {
-    label: "AI経営・ガバナンス",
-    icon: "🏛️",
+    id: "ai-assistant",
+    label: "AI Assistant",
+    icon: "🤖",
     items: [
       { label: "AI PM / 自律経営", page: "ai_pm" },
-      { label: "AI経営ガバナンス", page: "governance" },
-      { label: "AI監査・リスク", page: "audit" },
-      { label: "AI組織構造", page: "org_structure" },
       { label: "Musasabi AGI", page: "agi" },
-      { label: "本番ロードマップ", page: "production_roadmap" },
-    ],
-  },
-  {
-    label: "事業・生成",
-    icon: "🚀",
-    items: [
-      { label: "AI事業ファクトリー", page: "business_factory" },
-      { label: "Musasabi World", page: "musasabi_world" },
-      { label: "プロダクト / テナント", page: "product" },
-    ],
-  },
-  {
-    label: "モジュール・拡張",
-    icon: "🧩",
-    items: [
       { label: "コアモジュール", page: "next_core_modules" },
       { label: "アドバンスドモジュール", page: "advanced_modules" },
       { label: "進化モジュール", page: "evolution_modules" },
       { label: "AIエコシステム", page: "ecosystem" },
+      { label: "AI改善提案 / 自己進化", page: "improvement" },
+      { label: "AI自己進化", page: "self_evolution" },
+      { label: "AI経営ガバナンス", page: "governance" },
+      { label: "AI監査・リスク", page: "audit" },
+      { label: "アバターモーション", page: "avatar_motion" },
+      { label: "Vision(画面解析)", page: "vision" },
+    ],
+  },
+  {
+    id: "workflow",
+    label: "Workflow",
+    icon: "🔄",
+    items: [
+      { label: "ワークフロー", page: "workflow" },
+      { label: "オペレーション", page: "operations" },
+      { label: "運用モニタリング", page: "ops_monitor" },
+      { label: "スケジューラ", page: "scheduler" },
+      { label: "Automation", page: "automation" },
+      { label: "コラボレーション", page: "collaboration" },
+      { label: "AI事業ファクトリー", page: "business_factory" },
+      { label: "Musasabi World", page: "musasabi_world" },
+      { label: "本番ロードマップ", page: "production_roadmap" },
+    ],
+  },
+  {
+    id: "knowledge",
+    label: "Knowledge",
+    icon: "📚",
+    items: [
+      { label: "Company Brain", page: "company_brain" },
+      { label: "AI組織構造", page: "org_structure" },
+      { label: "プロダクト / テナント", page: "product" },
+    ],
+  },
+  {
+    id: "integrations",
+    label: "Integrations",
+    icon: "🔌",
+    items: [
+      { label: "外部連携コネクタ", page: "connectors" },
       { label: "プラグイン", page: "plugins" },
     ],
   },
   {
-    label: "システム・運用",
-    icon: "⚙️",
-    items: [
-      { label: "運用モニタリング", page: "ops_monitor" },
-      { label: "AI改善提案 / 自己進化", page: "improvement" },
-      { label: "AI自己進化", page: "self_evolution" },
-      { label: "Company Brain", page: "company_brain" },
-      { label: "コラボレーション", page: "collaboration" },
-      { label: "外部連携コネクタ", page: "connectors" },
-      { label: "通知センター", page: "notifications" },
-      { label: "スケジューラ", page: "scheduler" },
-      { label: "Automation", page: "automation" },
-      { label: "Vision", page: "vision" },
-      { label: "アバターモーション", page: "avatar_motion" },
-    ],
-  },
-  {
-    label: "設定・ヘルプ",
+    id: "settings",
+    label: "Settings",
     icon: "🛠️",
     items: [
-      { label: "ヘルプ", page: "help" },
       { label: "設定", page: "settings" },
+      { label: "ヘルプ", page: "help" },
     ],
   },
 ];
 
-/** ページが属する大項目ラベルを返す(既定の開閉判定に使用)。 */
-function groupLabelOfPage(p: Page): string | undefined {
-  return NAV_GROUPS.find((g) => g.items.some((it) => it.page === p))?.label;
+/** ページが属する大項目IDを返す(既定の開閉判定・アクティブ表示に使用)。 */
+function groupIdOfPage(p: Page): string | undefined {
+  return NAV_GROUPS.find((g) => g.items.some((it) => it.page === p))?.id;
 }
 
 export function App() {
   // 既定画面は Musasabi Command Center(D-20260706-007)。
   const [page, setPage] = useState<Page>("command_center");
-  // 大項目クリックで小項目を開閉する(アコーディオン)。現在ページを含む大項目は既定で開く。
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  // 大項目クリックで小項目を開閉する(複数同時に開ける)。既定では Dashboard を開く。
+  // 現在ページを含む大項目も既定で開く。
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({ dashboard: true });
 
-  function toggleGroup(label: string, defaultOpen: boolean): void {
-    setExpandedGroups((prev) => ({ ...prev, [label]: !(prev[label] ?? defaultOpen) }));
+  function toggleGroup(id: string, defaultOpen: boolean): void {
+    setExpandedGroups((prev) => ({ ...prev, [id]: !(prev[id] ?? defaultOpen) }));
   }
 
   // ミニパネル(業務支援)からの遠隔コマンド(記録開始/停止/再実行)を受け付ける。
@@ -324,36 +334,39 @@ export function App() {
           ⌂ コマンドセンター
         </button>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+        <nav className="sidebar-nav" data-sidebar>
           {NAV_GROUPS.map((group) => {
-            const currentGroup = groupLabelOfPage(page);
-            const expanded = expandedGroups[group.label] ?? group.label === currentGroup;
+            const currentGroup = groupIdOfPage(page);
+            const expanded = expandedGroups[group.id] ?? group.id === currentGroup;
             return (
-              <div key={group.label}>
+              <div key={group.id} className={`sidebar-group${expanded ? " is-open" : ""}`}>
                 <button
                   type="button"
-                  className="nav-dept"
-                  onClick={() => toggleGroup(group.label, group.label === currentGroup)}
+                  className="sidebar-group-button"
+                  onClick={() => toggleGroup(group.id, group.id === currentGroup)}
                   aria-expanded={expanded}
                 >
-                  <span style={{ display: "inline-block", width: "1em" }}>
-                    {expanded ? "▾" : "▸"}
+                  <span className="sidebar-group-label">
+                    <span aria-hidden className="sidebar-group-icon">{group.icon}</span>
+                    {group.label}
                   </span>
-                  <span aria-hidden style={{ marginRight: "0.35rem" }}>{group.icon}</span>
-                  {group.label}
+                  <span className="sidebar-chevron" aria-hidden>{expanded ? "▼" : "▶"}</span>
                 </button>
-                {expanded &&
-                  group.items.map((item) => (
-                    <button
-                      key={item.page}
-                      type="button"
-                      className="nav-sub"
-                      onClick={() => navigate(item.page)}
-                      disabled={page === item.page}
-                    >
-                      ↳ {item.label}
-                    </button>
-                  ))}
+                {expanded && (
+                  <div className="sidebar-submenu">
+                    {group.items.map((item) => (
+                      <button
+                        key={item.page}
+                        type="button"
+                        className={`sidebar-item${page === item.page ? " is-active" : ""}`}
+                        aria-current={page === item.page ? "page" : undefined}
+                        onClick={() => navigate(item.page)}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}
