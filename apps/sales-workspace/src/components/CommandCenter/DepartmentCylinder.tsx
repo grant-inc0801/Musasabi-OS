@@ -8,12 +8,24 @@ import type { CommandDepartment } from "@musasabi/ai-company";
 // 台座にパーセンテージを一体表示する。進捗に応じて下から上へ充填し、色はステータス連動。
 // 色覚多様性に配慮しアイコンとラベルでも状態を示す。
 
+/** 表示名の短縮(高さ統一のため長い名称を1行に収める)。 */
+const SHORT_NAME: Record<string, string> = {
+  "カスタマーサポート部": "サポート部",
+};
+
 export const DepartmentCylinder = forwardRef<
   HTMLButtonElement,
   { dept: CommandDepartment; selected: boolean; onSelect: (id: string) => void }
 >(function DepartmentCylinder({ dept, selected, onSelect }, ref) {
   const color = DEPT_STATUS_COLOR[dept.status];
   const target = Math.max(0, Math.min(100, dept.progressPercent));
+  const displayName = SHORT_NAME[dept.name] ?? dept.name;
+
+  // 反射光(流光)をシリンダーごとにランダム(決定論・id由来)なタイミングにして、
+  // 一斉に光らないようにする。
+  const seed = [...dept.id].reduce((a, c) => a + c.charCodeAt(0), 0);
+  const shineDelay = `${-((seed % 55) / 10)}s`; // 0 〜 -5.4s
+  const shineDur = `${4.2 + (seed % 34) / 10}s`; // 4.2 〜 7.5s
 
   // マウント後に 0 → target へアニメーション(下から上に上昇)。
   const [fill, setFill] = useState(0);
@@ -27,7 +39,11 @@ export const DepartmentCylinder = forwardRef<
       ref={ref}
       type="button"
       className={`dept-cyl${selected ? " selected" : ""}`}
-      style={{ ["--glow" as string]: color }}
+      style={{
+        ["--glow" as string]: color,
+        ["--shine-delay" as string]: shineDelay,
+        ["--shine-dur" as string]: shineDur,
+      }}
       onClick={() => onSelect(dept.id)}
       aria-pressed={selected}
       aria-label={`${dept.name} ${DEPT_STATUS_LABEL_JA[dept.status]} ${target}%`}
@@ -40,7 +56,7 @@ export const DepartmentCylinder = forwardRef<
 
       {/* 円柱本体(黒ガンメタ) */}
       <span className="dept-cyl-body">
-        <span className="dept-cyl-name">{dept.name}</span>
+        <span className="dept-cyl-name">{displayName}</span>
         <span className="dept-cyl-status">
           <span className="dept-lamp" style={{ background: color, boxShadow: `0 0 6px ${color}` }} />
           {DEPT_STATUS_LABEL_JA[dept.status]}
@@ -61,7 +77,6 @@ export const DepartmentCylinder = forwardRef<
               boxShadow: `0 0 16px ${color}cc inset, 0 -1px 5px ${color} inset`,
             }}
           />
-          <span className="dept-cyl-gloss" />
         </span>
       </span>
 
