@@ -4,7 +4,18 @@
 **Updated:** 2026-07-09
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Production Readiness 設計・設計のみ)
+## 直近の完了内容(Musasabi Android アバター制作仕様・完全版)
+指示書「Musasabi OS アバター制作 指示書(完全版)」に基づき公式アバター Musasabi Android の仕様を実装。
+`packages/avatar-android`(新規): モノアイ8感情+発光カラー(HEX)+ライトアニメ、制御パラメータ導出
+(色/明るさ/点滅/スキャン)、Emotion State ペイロード、モーション16種、3Dモデル仕様(GLB/FBX/VRM・
+約6万ポリゴン・PBR 4K・フルリグ)、カラー参照、Tripo3D フロー、決定論的 buildTripoPrompt/buildTripoRequest。
+`AvatarAndroidPage`(新規): 発光モノアイビジョア(scan/blink)8カード+制御メーター+Emotion State JSON+
+モーション一覧+3Dモデル仕様表+カラーパレット+Tripo3D フロー(🔒承認待ち)+生成プロンプト+未送信テンプレート。
+サイドバー AI Assistant に追加。**実モデル生成(Tripo3D API)は APIキー+人間承認が必要なため未実行**
+(TRIPO_GENERATION_LOCKED=true、外部接続・課金なし、APIキーは参照名のみ)。avatar-android テスト12件 pass、
+秘密情報スキャン pass、Playwright で 8モノアイ・プロンプト・ロック・0エラー確認。
+
+## それ以前の完了内容(Production Readiness 設計・設計のみ)
 指示書 MASTER_ROADMAP_TO_PRODUCTION.md 再送に対し、ユーザー選択「本番準備の設計だけ作成」で Production
 Readiness の **設計ドキュメント・構成テンプレート(secretsなし)** を Mock 用意。**実装はしない**(実認証情報・
 実接続・課金・本番デプロイは人間承認まで一切なし。全項目ロック維持)。`production-roadmap` の `ReadinessItem`

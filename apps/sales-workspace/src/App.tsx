@@ -8,6 +8,7 @@ import { CompanyPage } from "./components/Company/CompanyPage";
 import { CompanyDashboardPage } from "./components/Company/CompanyDashboardPage";
 import { DepartmentDashboardPage } from "./components/Department/DepartmentDashboardPage";
 import { AvatarMotionPage } from "./components/Avatar/AvatarMotionPage";
+import { AvatarAndroidPage } from "./components/Avatar/AvatarAndroidPage";
 import { ConnectorsPage } from "./components/Connectors/ConnectorsPage";
 import { AiPmPage } from "./components/Enterprise/AiPmPage";
 import { ProductPage } from "./components/Enterprise/ProductPage";
@@ -86,6 +87,7 @@ type Page =
   | "company_dashboard"
   | "department_dashboard"
   | "avatar_motion"
+  | "avatar_android"
   | "connectors"
   | "ai_pm"
   | "product"
@@ -137,6 +139,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   company_dashboard: "全社ダッシュボード",
   department_dashboard: "部門ダッシュボード",
   avatar_motion: "アバターモーション",
+  avatar_android: "Musasabi Android(アバター仕様)",
   connectors: "外部連携コネクタ",
   ai_pm: "AI PM / 自律経営",
   product: "プロダクト / テナント",
@@ -224,6 +227,7 @@ const NAV_GROUPS: ReadonlyArray<{
       { label: "AI経営ガバナンス", page: "governance" },
       { label: "AI監査・リスク", page: "audit" },
       { label: "アバターモーション", page: "avatar_motion" },
+      { label: "Musasabi Android(仕様)", page: "avatar_android" },
       { label: "Vision(画面解析)", page: "vision" },
     ],
   },
@@ -435,6 +439,8 @@ export function App() {
           <DepartmentDashboardPage />
         ) : page === "avatar_motion" ? (
           <AvatarMotionPage />
+        ) : page === "avatar_android" ? (
+          <AvatarAndroidPage />
         ) : page === "connectors" ? (
           <ConnectorsPage />
         ) : page === "ai_pm" ? (

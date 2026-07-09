@@ -1540,3 +1540,13 @@ main section:hover,
 .mc-tl-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
 .mc-tl-dept { font-weight: 700; }
 .mc-tl-sum { color: var(--text-muted); }
+
+/* Musasabi Android — モノアイ発光ビジョア(アバター制作仕様) */
+.android-eye-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.55rem; }
+.android-eye-card { text-align: left; cursor: pointer; background: linear-gradient(160deg, #23272e, #16181c); border: 1px solid var(--border); transition: border-color .15s, transform .15s; }
+.android-eye-card:hover { transform: translateY(-1px); }
+.android-eye-card.is-active { border-color: var(--eye, var(--accent)); box-shadow: 0 0 0 1px var(--accent) inset; }
+.android-eye { position: relative; height: 30px; border-radius: 7px; background: radial-gradient(circle at 50% 40%, #2b2f34, #101215); border: 1px solid #3a3f46; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.android-eye-glow { display: block; width: 78%; height: 8px; border-radius: 5px; opacity: 0.95; }
+@keyframes android-eye-scan { 0% { transform: translateX(-60%); } 50% { transform: translateX(60%); } 100% { transform: translateX(-60%); } }
+@keyframes android-eye-blink { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0.25; } }
