@@ -1295,7 +1295,7 @@ main section:hover,
     inset 0 -3px 6px rgba(0, 0, 0, 0.82),
     0 3px 6px rgba(0, 0, 0, 0.55);
 }
-/* 中央の縦長ガラス窓(黒透明・発光縁) */
+/* 中央の縦長ガラス窓(黒透明・ネオン発光縁) */
 .dept-cyl-window {
   display: block;
   position: relative; z-index: 1;
@@ -1303,14 +1303,15 @@ main section:hover,
   box-sizing: border-box;
   border-radius: 13px;
   background: linear-gradient(90deg, rgba(0,0,0,0.92), rgba(20,25,30,0.72) 50%, rgba(0,0,0,0.95));
-  border: 1px solid color-mix(in srgb, var(--color) 40%, rgba(230, 245, 255, 0.36));
+  border: 1px solid color-mix(in srgb, var(--color) 60%, rgba(230, 245, 255, 0.4));
   box-shadow:
-    0 0 16px color-mix(in srgb, var(--color) 30%, transparent),
+    0 0 20px color-mix(in srgb, var(--color) 50%, transparent),
+    0 0 40px color-mix(in srgb, var(--color) 22%, transparent),
     inset 0 0 26px rgba(0, 0, 0, 0.9),
     inset 8px 0 16px rgba(255, 255, 255, 0.06);
   overflow: hidden;
 }
-/* 発光液体メーター(科学薬品のような光沢液体・下から充填) */
+/* 発光液体メーター(ネオンの光沢液体・下から充填) */
 .dept-cyl-liquid {
   position: absolute; left: 0; right: 0; bottom: 0;
   border-radius: 0 0 12px 12px;
@@ -1318,17 +1319,25 @@ main section:hover,
   z-index: 1;
   overflow: hidden;
   background:
-    radial-gradient(circle at 50% 16%, rgba(255,255,255,0.9), transparent 12%),
-    linear-gradient(180deg, rgba(255,255,255,0.34), transparent 20%),
+    /* 光沢: 左に強い縦ハイライト+右に淡い反射 */
+    linear-gradient(90deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.08) 18%, transparent 40%, transparent 74%, rgba(255,255,255,0.18) 100%),
+    /* 表面(液面)の光沢 */
+    linear-gradient(180deg, rgba(255,255,255,0.42), transparent 13%),
+    radial-gradient(circle at 50% 10%, rgba(255,255,255,0.85), transparent 12%),
+    /* ネオンのベース色(彩度高め) */
     linear-gradient(180deg,
-      color-mix(in srgb, var(--color) 55%, white),
+      color-mix(in srgb, var(--color) 40%, white),
       var(--color),
-      color-mix(in srgb, var(--color) 62%, black));
-  box-shadow: 0 0 22px color-mix(in srgb, var(--color) 85%, transparent), inset 0 0 24px rgba(255, 255, 255, 0.22);
+      color-mix(in srgb, var(--color) 58%, black));
+  box-shadow:
+    0 0 28px var(--color),
+    0 0 14px rgba(255, 255, 255, 0.4),
+    inset 0 3px 0 rgba(255, 255, 255, 0.42),
+    inset 0 0 26px rgba(255, 255, 255, 0.22);
 }
 /* 液体内の粒子(浮遊するパーティクル) */
 .dept-cyl-liquid::before {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
   background:
     radial-gradient(1.6px 1.6px at 22% 32%, rgba(255,255,255,0.95), transparent 60%),
     radial-gradient(1.2px 1.2px at 62% 58%, rgba(255,255,255,0.85), transparent 60%),
@@ -1336,27 +1345,30 @@ main section:hover,
     radial-gradient(1.1px 1.1px at 76% 42%, rgba(255,255,255,0.9), transparent 60%),
     radial-gradient(1.2px 1.2px at 30% 60%, rgba(255,255,255,0.75), transparent 60%),
     radial-gradient(1.4px 1.4px at 84% 74%, rgba(255,255,255,0.8), transparent 60%);
-  opacity: 0.75;
+  opacity: 0.7;
   animation: cyl-particles 4.5s linear infinite;
 }
 @keyframes cyl-particles {
-  0% { transform: translateY(7px); opacity: 0.35; }
-  50% { opacity: 0.85; }
-  100% { transform: translateY(-7px); opacity: 0.35; }
+  0% { transform: translateY(7px); opacity: 0.3; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-7px); opacity: 0.3; }
 }
-/* 下から上への流光(縦の光の筋) */
+/* 下から上へ昇る横ライン状の流光(ネオンのスキャンライン) */
 .dept-cyl-liquid::after {
-  content: ""; position: absolute; left: 42%; bottom: -40%;
-  width: 12px; height: 150%;
-  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.95), transparent);
-  filter: blur(3px);
-  animation: cyl-liquid-flow 3.2s ease-in-out infinite;
+  content: ""; position: absolute; left: -12%; right: -12%; bottom: 0;
+  height: 9px;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.55) 35%, rgba(255,255,255,0.98) 50%, rgba(255,255,255,0.55) 65%, transparent);
+  filter: blur(1.5px);
+  box-shadow: 0 0 14px rgba(255,255,255,0.85), 0 0 22px var(--color);
+  z-index: 2;
+  animation: cyl-scan-up 2.9s ease-in-out infinite;
   animation-delay: var(--liquid-delay, 0s);
 }
-@keyframes cyl-liquid-flow {
-  0%   { transform: translateY(80%) rotate(8deg); opacity: 0; }
-  35%  { opacity: 1; }
-  100% { transform: translateY(-80%) rotate(8deg); opacity: 0; }
+@keyframes cyl-scan-up {
+  0%   { bottom: -10%; opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { bottom: 102%; opacity: 0; }
 }
 /* ガラスの斜め反射光 */
 .dept-cyl-glass {
