@@ -49,20 +49,17 @@ export const DepartmentCylinder = forwardRef<
       aria-label={`${dept.name} ${DEPT_STATUS_LABEL_JA[dept.status]} ${target}%`}
       title={`${dept.name}(${DEPT_STATUS_LABEL_JA[dept.status]})`}
     >
-      {/* 上部の金属キャップ+アイコン */}
-      <span className="dept-cyl-cap" aria-hidden="true">
+      {/* 円柱型の金属シリンダー(キャップ〜本体〜台座を一体化した1つの筐体)。
+          上部にアイコン、名称・ステータス、中央にガラス窓メーター、下部にパーセンテージ。 */}
+      <span className="dept-cyl-vessel">
         <span className="dept-cyl-icon">{deptIcon(dept.id)}</span>
-      </span>
-
-      {/* 円柱本体(黒ガンメタ) */}
-      <span className="dept-cyl-body">
         <span className="dept-cyl-name">{displayName}</span>
         <span className="dept-cyl-status">
           <span className="dept-lamp" style={{ background: color, boxShadow: `0 0 6px ${color}` }} />
           {DEPT_STATUS_LABEL_JA[dept.status]}
         </span>
 
-        {/* 重厚な金属フレームで囲ったガラス窓メーター(下から上へ・ステータス色メタリック) */}
+        {/* 金属に開けたガラス窓+中のメーター(下から上へ・ステータス色メタリック) */}
         <span className="dept-cyl-frame" aria-hidden="true">
           <span className="dept-cyl-window">
             <span className="dept-cyl-scale">
@@ -80,10 +77,7 @@ export const DepartmentCylinder = forwardRef<
             />
           </span>
         </span>
-      </span>
 
-      {/* 台座+パーセンテージ(一体型) */}
-      <span className="dept-cyl-base">
         <span className="dept-cyl-pct" style={{ color }}>{target}%</span>
       </span>
     </button>

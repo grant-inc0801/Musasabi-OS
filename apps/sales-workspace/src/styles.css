@@ -1098,76 +1098,62 @@ main section:hover,
   transform: translateY(-2px) scale(1.04);
   filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.74)) drop-shadow(0 0 9px color-mix(in srgb, var(--glow) 55%, transparent));
 }
-.dept-cyl.selected .dept-cyl-body,
-.dept-cyl.selected .dept-cyl-cap,
-.dept-cyl.selected .dept-cyl-base {
+.dept-cyl.selected .dept-cyl-vessel {
   border-color: var(--glow);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--glow) 60%, transparent), 0 0 12px color-mix(in srgb, var(--glow) 45%, transparent);
+  box-shadow:
+    inset 13px 0 22px rgba(0, 0, 0, 0.5),
+    inset -13px 0 22px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px color-mix(in srgb, var(--glow) 60%, transparent),
+    0 0 14px color-mix(in srgb, var(--glow) 45%, transparent);
 }
 
-/* 上部の金属キャップ(ドーム状の蓋・強めのクロム反射) */
-.dept-cyl-cap {
+/* 円柱型の金属シリンダー(キャップ〜本体〜台座を一体化した1つの筐体) */
+.dept-cyl-vessel {
   position: relative;
-  z-index: 3;
-  width: 90px; height: 25px;
-  margin-bottom: -10px;
-  border-radius: 46px / 18px;
-  background: linear-gradient(180deg, #626b75 0%, #2b323c 42%, #090c10 100%);
-  border: 1px solid rgba(230, 240, 250, 0.32);
+  width: 100%;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 16px 8px 13px;
+  box-sizing: border-box;
+  /* 上下は楕円(カプセル状)= 円柱の丸い天面/底面。側面は連続した金属 */
+  border-radius: 46px / 30px;
+  /* 縁が暗く中央に明るいクロムのハイライト(円筒の湾曲) */
+  background: linear-gradient(90deg,
+    #020305 0%, #10151b 12%, #2f3740 30%, #576069 46%, #6a747f 50%,
+    #4d5560 54%, #2a323b 70%, #10151b 88%, #020305 100%);
+  border: 1px solid rgba(230, 240, 250, 0.26);
   box-shadow:
-    inset 0 2px 3px rgba(255, 255, 255, 0.5),
-    inset 0 -4px 7px rgba(0, 0, 0, 0.8),
-    0 3px 5px rgba(0, 0, 0, 0.5);
-  display: flex; align-items: center; justify-content: center;
+    inset 13px 0 22px rgba(0, 0, 0, 0.5),
+    inset -13px 0 22px rgba(0, 0, 0, 0.5),
+    inset 0 11px 14px rgba(255, 255, 255, 0.14),   /* 天面の光沢 */
+    inset 0 -13px 18px rgba(0, 0, 0, 0.72),          /* 底面の陰影 */
+    0 3px 6px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
 }
-/* キャップの光沢(上部の白い反射) */
-.dept-cyl-cap::before {
-  content: ""; position: absolute; z-index: 1; pointer-events: none;
-  top: 2px; left: 14%; right: 14%; height: 42%;
-  border-radius: 40px / 10px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+/* 天面の楕円キャップ(金属光沢の反射) */
+.dept-cyl-vessel::before {
+  content: ""; position: absolute; z-index: 0; pointer-events: none;
+  top: 4px; left: 18%; right: 18%; height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(60% 100% at 50% 0%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 72%);
 }
-/* アイコン(黒い丸座に白アイコン) */
+/* シリンダーを横切る流光(ごとにランダムなタイミング) */
+.dept-cyl-vessel::after {
+  content: "";
+  position: absolute; inset: 0; z-index: 4; pointer-events: none;
+  background: linear-gradient(108deg, transparent 0%, transparent 40%, rgba(255,255,255,0.2) 47%, rgba(255,255,255,0.05) 52%, transparent 62%, transparent 100%);
+  transform: translateX(-120%);
+  animation: metallic-flow var(--shine-dur, 5s) ease-in-out infinite;
+  animation-delay: var(--shine-delay, 0s);
+}
+/* アイコン(黒い丸座に白アイコン・天面に配置) */
 .dept-cyl-icon {
-  position: relative; z-index: 2;
+  position: relative; z-index: 1;
   width: 30px; height: 30px;
-  margin-top: -7px;
   display: inline-flex; align-items: center; justify-content: center;
   font-size: 16px; line-height: 1; border-radius: 50%;
   background: radial-gradient(circle at 38% 30%, #2c333b, #06080b 74%);
   border: 1px solid rgba(230, 240, 250, 0.28);
   box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.25), inset 0 -2px 4px rgba(0, 0, 0, 0.9), 0 2px 4px rgba(0, 0, 0, 0.6);
-}
-
-/* 円柱本体(黒ガンメタ・より強い金属反射) */
-.dept-cyl-body {
-  position: relative;
-  z-index: 2;
-  width: 96px;
-  padding: 14px 7px 9px;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  border-radius: 14px / 7px;
-  /* 縁が暗く中央に明るいクロムのハイライト(金属感を強調) */
-  background: linear-gradient(90deg,
-    #020305 0%, #10151b 12%, #2f3740 30%, #576069 46%, #667079 50%,
-    #4c545e 54%, #2a323b 70%, #10151b 88%, #020305 100%);
-  border-left: 1px solid rgba(0, 0, 0, 0.78);
-  border-right: 1px solid rgba(0, 0, 0, 0.78);
-  box-shadow:
-    inset 12px 0 20px rgba(0, 0, 0, 0.55),
-    inset -12px 0 20px rgba(0, 0, 0, 0.55),
-    inset 0 7px 10px rgba(255, 255, 255, 0.09),
-    inset 0 -6px 10px rgba(0, 0, 0, 0.6);
-  overflow: hidden;
-}
-/* 本体を横切る流光(シリンダーごとにランダムなタイミング) */
-.dept-cyl-body::after {
-  content: "";
-  position: absolute; inset: 0; z-index: 4; pointer-events: none;
-  background: linear-gradient(108deg, transparent 0%, transparent 40%, rgba(255,255,255,0.22) 47%, rgba(255,255,255,0.05) 52%, transparent 62%, transparent 100%);
-  transform: translateX(-120%);
-  animation: metallic-flow var(--shine-dur, 5s) ease-in-out infinite;
-  animation-delay: var(--shine-delay, 0s);
 }
 .dept-cyl-name {
   position: relative; z-index: 1;
@@ -1250,38 +1236,18 @@ main section:hover,
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.8);
 }
 
-/* 台座(パーセンテージ一体型のペデスタル・強めのクロム反射) */
-.dept-cyl-base {
-  position: relative;
-  z-index: 3;
-  width: 104px; height: 22px;
-  margin-top: -6px;
-  border-radius: 36px / 13px;
-  background: linear-gradient(180deg, #454e58 0%, #161b21 55%, #04060a 100%);
-  border: 1px solid rgba(230, 240, 250, 0.26);
-  box-shadow:
-    inset 0 2px 3px rgba(255, 255, 255, 0.4),
-    inset 0 -4px 7px rgba(0, 0, 0, 0.82),
-    0 6px 10px rgba(0, 0, 0, 0.55);
-  display: flex; align-items: center; justify-content: center;
-}
-/* 台座の金属光沢(上部の白い反射) */
-.dept-cyl-base::before {
-  content: ""; position: absolute; z-index: 1; pointer-events: none;
-  top: 2px; left: 16%; right: 16%; height: 38%;
-  border-radius: 30px / 8px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0));
-}
+/* パーセンテージ(シリンダー下部・底面に一体表示) */
 .dept-cyl-pct {
-  position: relative; z-index: 2;
+  position: relative; z-index: 1;
+  margin-top: 4px;
   font-size: 13.5px; font-weight: 800; letter-spacing: 0.02em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .dept-cyl-fill { transition: none; }
   .dept-cyl-fill::after,
-  .dept-cyl-body::after { animation: none; opacity: 0; }
+  .dept-cyl-vessel::after { animation: none; opacity: 0; }
   .dept-cyl:hover { transform: none; }
 }
 
