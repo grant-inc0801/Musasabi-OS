@@ -17,7 +17,6 @@ import { DepartmentCylinder } from "./DepartmentCylinder";
 import { VaultDetailPanel } from "./VaultDetailPanel";
 import { DepartmentDetailPanel } from "./DepartmentDetailPanel";
 import { DepartmentCommandChat } from "./DepartmentCommandChat";
-import { AssistantAvatar } from "./AssistantAvatar";
 import { CeoDashboardPanel } from "./CeoDashboardPanel";
 import brandIcon from "../../assets/brand-icon.png";
 
@@ -96,7 +95,7 @@ export function CommandCenterPage({
 
         <button
           type="button"
-          className="cc-settings"
+          className="cc-navbtn"
           onClick={() => onOpenPage("company_dashboard")}
         >
           📊 全社ダッシュボード
@@ -138,7 +137,6 @@ export function CommandCenterPage({
           ))}
         </div>
         <CeoDashboardPanel departments={departments} />
-        <DepartmentCommandChat departments={departments} />
       </main>
 
       {selectedId === "vault" ? (
@@ -152,7 +150,8 @@ export function CommandCenterPage({
         />
       )}
 
-      <AssistantAvatar departments={departments} detailOpen={selectedId !== null} />
+      {/* 右下フロート: Musasabi アシスタントチャット(第8弾でアバターを置き換え) */}
+      <DepartmentCommandChat departments={departments} />
     </div>
   );
 }

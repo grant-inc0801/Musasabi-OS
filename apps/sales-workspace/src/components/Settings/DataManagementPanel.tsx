@@ -100,7 +100,6 @@ export function DataManagementPanel() {
       <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "44rem" }}>
         この端末に保存されたデータ(Memory・コールログ・営業リスト・自動化ルーチン・
         各種設定 = 現在{entryCount}エントリ)をJSONファイルへバックアップ/復元できます。
-        VRMアバターファイルは含まれません(設定 &gt; アバター作成で再取り込み)。
         処理は端末内で完結し、外部送信はしません。
       </p>
       <button type="button" onClick={() => void handleExport()}>

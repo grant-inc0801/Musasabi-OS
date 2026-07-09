@@ -30,7 +30,7 @@ import {
 } from "./lib/automationStorage";
 import { addWorkLogEntry } from "@musasabi/call-training";
 import { loadWorkLog, saveWorkLog } from "./lib/workLogStorage";
-import mascotUrl from "./assets/mascot.png";
+import brandIconUrl from "./assets/brand-icon.png";
 
 // 右下常駐アバターウィンドウ本体(D-20260706-004)。
 // apps/desktop/src-tauri/src/lib.rs が avatar.html として右下に生成する。
@@ -69,8 +69,8 @@ type Avatar3d = {
 };
 let avatar3d: Avatar3d | null = null;
 
-// ミニパネルのアバターは管理画面(コマンドセンター)と同じ公式マスコット画像に
-// 統一する(ユーザーFB第5弾)。アバター作成でVRMを保存した場合のみ3D表示する。
+// アバター(キャラクター)は全廃(UIフィードバック第8弾)。常駐表示は musasabi アイコンに統一し、
+// クリックでミニパネルを開く。移動なし・大きさ固定・ガラス面はアイコン枠に沿って切り取り(avatar.html)。
 let mascotShown = false;
 
 function showMascot(): void {
@@ -78,7 +78,7 @@ function showMascot(): void {
   if (!container) return;
   container.textContent = "";
   const img = document.createElement("img");
-  img.src = mascotUrl;
+  img.src = brandIconUrl;
   img.alt = "";
   img.draggable = false;
   container.appendChild(img);
@@ -86,20 +86,9 @@ function showMascot(): void {
   mascotShown = true;
 }
 
-/** アバター表示の初期化: 保存済みVRMがあれば3D、無ければ公式マスコット画像。 */
+/** 常駐表示の初期化: アバターは廃止し、常に musasabi アイコンを表示する。 */
 async function initAvatar(): Promise<void> {
-  let hasVrm = false;
-  try {
-    hasVrm = (await loadVrmBlob()) !== null;
-  } catch {
-    hasVrm = false;
-  }
-  if (hasVrm) {
-    await initAvatar3d();
-    if (!avatar3d) showMascot(); // WebGL不可でもマスコット画像で統一
-  } else {
-    showMascot();
-  }
+  showMascot();
 }
 
 async function initAvatar3d(): Promise<void> {
