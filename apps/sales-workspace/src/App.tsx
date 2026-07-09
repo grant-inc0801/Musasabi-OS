@@ -160,83 +160,129 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   settings: "設定",
 };
 
-/** サイドバーのナビ構造: 部門名+サブ項目。サブ項目が無い部門は部門名クリックで遷移。 */
-const NAV_TREE: ReadonlyArray<{
+/**
+ * サイドバーのナビ構造: 大項目(5〜7)+小項目の折りたたみナビ。
+ * 大項目クリックで小項目を開閉する(複数同時に開ける)。既存の全ページを大項目に
+ * 割り当てて到達性を維持する(機能を壊さない)。現在ページを含む大項目は既定で開く。
+ */
+const NAV_GROUPS: ReadonlyArray<{
+  id: string;
   label: string;
-  page?: Page;
-  children?: ReadonlyArray<{ label: string; page: Page }>;
+  icon: string;
+  items: ReadonlyArray<{ label: string; page: Page }>;
 }> = [
   {
-    label: "営業部",
-    children: [
-      { label: "KPI", page: "sales_kpi" },
-      { label: "営業リスト", page: "sales_list" },
-      { label: "コールトレーニング", page: "sales_call_training" },
-      { label: "Sales Brain", page: "sales_brain" },
+    id: "dashboard",
+    label: "Dashboard",
+    icon: "📊",
+    items: [
+      { label: "全社ダッシュボード", page: "company_dashboard" },
+      { label: "部門ダッシュボード", page: "department_dashboard" },
+      { label: "レポート", page: "reports" },
+      { label: "通知センター", page: "notifications" },
+      { label: "ワークスペース", page: "workspace" },
     ],
   },
-  { label: "出版部", page: "publishing" },
-  { label: "企画部", page: "planning" },
-  { label: "市場調査部", page: "market_research" },
   {
-    label: "開発部",
-    children: [
-      { label: "部門トップ", page: "development" },
-      { label: "架電リスト制作課", page: "dev_call_list" },
+    id: "departments",
+    label: "Departments",
+    icon: "🏢",
+    items: [
+      { label: "営業部 — KPI", page: "sales_kpi" },
+      { label: "営業部 — 営業リスト", page: "sales_list" },
+      { label: "営業部 — コールトレーニング", page: "sales_call_training" },
+      { label: "営業部 — Sales Brain", page: "sales_brain" },
+      { label: "出版部", page: "publishing" },
+      { label: "企画部", page: "planning" },
+      { label: "市場調査部", page: "market_research" },
+      { label: "開発部", page: "development" },
+      { label: "開発部 — 架電リスト制作課", page: "dev_call_list" },
+      { label: "サポート部", page: "support" },
+      { label: "マーケティング部", page: "marketing" },
+      { label: "経理部", page: "accounting" },
+      { label: "人事部", page: "hr" },
+      { label: "AI社員管理", page: "company" },
     ],
   },
-  { label: "サポート部", page: "support" },
-  { label: "マーケティング部", page: "marketing" },
-  { label: "経理部", page: "accounting" },
-  { label: "人事部", page: "hr" },
+  {
+    id: "ai-assistant",
+    label: "AI Assistant",
+    icon: "🤖",
+    items: [
+      { label: "AI PM / 自律経営", page: "ai_pm" },
+      { label: "Musasabi AGI", page: "agi" },
+      { label: "コアモジュール", page: "next_core_modules" },
+      { label: "アドバンスドモジュール", page: "advanced_modules" },
+      { label: "進化モジュール", page: "evolution_modules" },
+      { label: "AIエコシステム", page: "ecosystem" },
+      { label: "AI改善提案 / 自己進化", page: "improvement" },
+      { label: "AI自己進化", page: "self_evolution" },
+      { label: "AI経営ガバナンス", page: "governance" },
+      { label: "AI監査・リスク", page: "audit" },
+      { label: "アバターモーション", page: "avatar_motion" },
+      { label: "Vision(画面解析)", page: "vision" },
+    ],
+  },
+  {
+    id: "workflow",
+    label: "Workflow",
+    icon: "🔄",
+    items: [
+      { label: "ワークフロー", page: "workflow" },
+      { label: "オペレーション", page: "operations" },
+      { label: "運用モニタリング", page: "ops_monitor" },
+      { label: "スケジューラ", page: "scheduler" },
+      { label: "Automation", page: "automation" },
+      { label: "コラボレーション", page: "collaboration" },
+      { label: "AI事業ファクトリー", page: "business_factory" },
+      { label: "Musasabi World", page: "musasabi_world" },
+      { label: "本番ロードマップ", page: "production_roadmap" },
+    ],
+  },
+  {
+    id: "knowledge",
+    label: "Knowledge",
+    icon: "📚",
+    items: [
+      { label: "Company Brain", page: "company_brain" },
+      { label: "AI組織構造", page: "org_structure" },
+      { label: "プロダクト / テナント", page: "product" },
+    ],
+  },
+  {
+    id: "integrations",
+    label: "Integrations",
+    icon: "🔌",
+    items: [
+      { label: "外部連携コネクタ", page: "connectors" },
+      { label: "プラグイン", page: "plugins" },
+    ],
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    icon: "🛠️",
+    items: [
+      { label: "設定", page: "settings" },
+      { label: "ヘルプ", page: "help" },
+    ],
+  },
 ];
 
-const GLOBAL_NAV: ReadonlyArray<{ label: string; page: Page }> = [
-  { label: "ワークスペース", page: "workspace" },
-  { label: "オペレーション", page: "operations" },
-  { label: "レポート", page: "reports" },
-  { label: "通知センター", page: "notifications" },
-  { label: "スケジューラ", page: "scheduler" },
-  { label: "ヘルプ", page: "help" },
-  { label: "全社ダッシュボード", page: "company_dashboard" },
-  { label: "部門ダッシュボード", page: "department_dashboard" },
-  { label: "アバターモーション", page: "avatar_motion" },
-  { label: "外部連携コネクタ", page: "connectors" },
-  { label: "AI PM / 自律経営", page: "ai_pm" },
-  { label: "プロダクト / テナント", page: "product" },
-  { label: "運用モニタリング", page: "ops_monitor" },
-  { label: "AI改善提案 / 自己進化", page: "improvement" },
-  { label: "AI経営ガバナンス", page: "governance" },
-  { label: "AI監査・リスク", page: "audit" },
-  { label: "AI組織構造", page: "org_structure" },
-  { label: "アドバンスドモジュール", page: "advanced_modules" },
-  { label: "AIエコシステム", page: "ecosystem" },
-  { label: "Musasabi AGI", page: "agi" },
-  { label: "コアモジュール", page: "next_core_modules" },
-  { label: "AI事業ファクトリー", page: "business_factory" },
-  { label: "進化モジュール", page: "evolution_modules" },
-  { label: "Musasabi World", page: "musasabi_world" },
-  { label: "本番ロードマップ", page: "production_roadmap" },
-  { label: "ワークフロー", page: "workflow" },
-  { label: "AI社員管理", page: "company" },
-  { label: "Company Brain", page: "company_brain" },
-  { label: "コラボレーション", page: "collaboration" },
-  { label: "AI自己進化", page: "self_evolution" },
-  { label: "Vision", page: "vision" },
-  { label: "Automation", page: "automation" },
-  { label: "プラグイン", page: "plugins" },
-  { label: "設定", page: "settings" },
-];
+/** ページが属する大項目IDを返す(既定の開閉判定・アクティブ表示に使用)。 */
+function groupIdOfPage(p: Page): string | undefined {
+  return NAV_GROUPS.find((g) => g.items.some((it) => it.page === p))?.id;
+}
 
 export function App() {
   // 既定画面は Musasabi Command Center(D-20260706-007)。
   const [page, setPage] = useState<Page>("command_center");
-  // 部署ボタン押下で小分類項目を開閉する(アコーディオン。ユーザーFB第3弾)。
-  // 既定では現在ページを含む営業部のみ開いた状態にする。
-  const [expandedDepts, setExpandedDepts] = useState<Record<string, boolean>>({ 営業部: true });
+  // 大項目クリックで小項目を開閉する(複数同時に開ける)。既定では Dashboard を開く。
+  // 現在ページを含む大項目も既定で開く。
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({ dashboard: true });
 
-  function toggleDept(label: string): void {
-    setExpandedDepts((prev) => ({ ...prev, [label]: !prev[label] }));
+  function toggleGroup(id: string, defaultOpen: boolean): void {
+    setExpandedGroups((prev) => ({ ...prev, [id]: !(prev[id] ?? defaultOpen) }));
   }
 
   // ミニパネル(業務支援)からの遠隔コマンド(記録開始/停止/再実行)を受け付ける。
@@ -288,65 +334,42 @@ export function App() {
           ⌂ コマンドセンター
         </button>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-          {NAV_TREE.map((dept) => {
-            const expanded = expandedDepts[dept.label] === true;
+        <nav className="sidebar-nav" data-sidebar>
+          {NAV_GROUPS.map((group) => {
+            const currentGroup = groupIdOfPage(page);
+            const expanded = expandedGroups[group.id] ?? group.id === currentGroup;
             return (
-              <div key={dept.label}>
-                {dept.children ? (
-                  <button
-                    type="button"
-                    className="nav-dept"
-                    onClick={() => toggleDept(dept.label)}
-                    aria-expanded={expanded}
-                  >
-                    <span style={{ display: "inline-block", width: "1em" }}>
-                      {expanded ? "▾" : "▸"}
-                    </span>
-                    {dept.label}
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="nav-dept"
-                    onClick={() => navigate(dept.page as Page)}
-                    disabled={page === dept.page}
-                  >
-                    <span style={{ display: "inline-block", width: "1em" }} />
-                    {dept.label}
-                  </button>
+              <div key={group.id} className={`sidebar-group${expanded ? " is-open" : ""}`}>
+                <button
+                  type="button"
+                  className="sidebar-group-button"
+                  onClick={() => toggleGroup(group.id, group.id === currentGroup)}
+                  aria-expanded={expanded}
+                >
+                  <span className="sidebar-group-label">
+                    <span aria-hidden className="sidebar-group-icon">{group.icon}</span>
+                    {group.label}
+                  </span>
+                  <span className="sidebar-chevron" aria-hidden>{expanded ? "▼" : "▶"}</span>
+                </button>
+                {expanded && (
+                  <div className="sidebar-submenu">
+                    {group.items.map((item) => (
+                      <button
+                        key={item.page}
+                        type="button"
+                        className={`sidebar-item${page === item.page ? " is-active" : ""}`}
+                        aria-current={page === item.page ? "page" : undefined}
+                        onClick={() => navigate(item.page)}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
                 )}
-                {expanded &&
-                  dept.children?.map((child) => (
-                    <button
-                      key={child.page}
-                      type="button"
-                      className="nav-sub"
-                      onClick={() => navigate(child.page)}
-                      disabled={page === child.page}
-                    >
-                      ↳ {child.label}
-                    </button>
-                  ))}
               </div>
             );
           })}
-        </nav>
-
-        <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: "0.75rem 0 0.1rem" }}>
-          全社
-        </div>
-        <nav style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-          {GLOBAL_NAV.map((item) => (
-            <button
-              key={item.page}
-              type="button"
-              onClick={() => navigate(item.page)}
-              disabled={page === item.page}
-            >
-              {item.label}
-            </button>
-          ))}
         </nav>
 
         <p className="sidebar-note">

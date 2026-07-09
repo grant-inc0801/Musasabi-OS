@@ -1,7 +1,6 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   COMMAND_DEPARTMENTS,
-  DEPT_CONNECTIONS,
   DEPT_STATUS_COLOR,
   DEPT_STATUS_LABEL_JA,
   DEPT_STATUSES,
@@ -16,7 +15,6 @@ import { loadMemoryRecords } from "../../lib/memoryStorage";
 import { VAULT_ITEMS, VAULT_STATUS_COLOR, computeVaultSummary } from "@musasabi/ai-company";
 import { DepartmentCylinder } from "./DepartmentCylinder";
 import { VaultDetailPanel } from "./VaultDetailPanel";
-import { DepartmentConnectionLines } from "./DepartmentConnectionLines";
 import { DepartmentDetailPanel } from "./DepartmentDetailPanel";
 import { DepartmentCommandChat } from "./DepartmentCommandChat";
 import { AssistantAvatar } from "./AssistantAvatar";
@@ -48,9 +46,6 @@ export function CommandCenterPage({
   onOpenPage: (page: string) => void;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  // callback ref で state に載せ、マウント後にライン計測が走るようにする
-  const [gridEl, setGridEl] = useState<HTMLDivElement | null>(null);
-  const cardRefs = useRef(new Map<string, HTMLElement>());
 
   // 営業部は実データ(テストコール履歴・営業リスト・Memory)を反映する。
   // データが無い場合はMock表示のまま(withLiveSalesData 側で判定)。
@@ -115,13 +110,7 @@ export function CommandCenterPage({
         <h1 className="cc-title">
           部署一覧 <small>リアルタイムステータス(Mock)</small>
         </h1>
-        <div className="cc-grid-wrap" ref={setGridEl}>
-          <DepartmentConnectionLines
-            container={gridEl}
-            cards={cardRefs.current}
-            connections={DEPT_CONNECTIONS}
-            departments={departments}
-          />
+        <div className="cc-grid-wrap">
           <div className="cc-grid">
             {departments.map((dept) => (
               <DepartmentCylinder
@@ -129,10 +118,6 @@ export function CommandCenterPage({
                 dept={dept}
                 selected={dept.id === selectedId}
                 onSelect={(id) => setSelectedId((prev) => (prev === id ? null : id))}
-                ref={(node) => {
-                  if (node) cardRefs.current.set(dept.id, node);
-                  else cardRefs.current.delete(dept.id);
-                }}
               />
             ))}
             <VaultCard
@@ -151,9 +136,6 @@ export function CommandCenterPage({
               {DEPT_STATUS_LABEL_JA[s]}
             </span>
           ))}
-          <span>
-            <span className="legend-line" /> 部門間連携中
-          </span>
         </div>
         <CeoDashboardPanel departments={departments} />
         <DepartmentCommandChat departments={departments} />

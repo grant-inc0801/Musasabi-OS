@@ -7,41 +7,91 @@
    ベースの配色・ガラス面・フォーム・テーブルの見た目はこのグローバルCSSで統一する。 */
 
 :root {
-  /* シルバーグレー×メタリック調(ユーザーFB第3弾)。
-     Glass面は白系半透明、地はシルバーのグラデーションで金属の光沢を出す */
-  --bg: #c3c8d0;
-  --bg-panel: rgba(255, 255, 255, 0.55);
-  --bg-card: rgba(255, 255, 255, 0.5);
-  --border: rgba(84, 94, 110, 0.28);
-  --border-strong: rgba(84, 94, 110, 0.45);
-  --glass-highlight: rgba(255, 255, 255, 0.85);
-  --text: #22262d;
-  --text-muted: #5b6270;
-  --accent: #2f6feb;
-  --accent-hover: #1e5cd6;
-  --warn: #b35a09;
-  --danger: #c93430;
-  --ok: #1a7f37;
-  --blur: blur(16px) saturate(1.15);
-  /* メタリック面(ボタン等): 上端が明るく下端がわずかに沈むグラデーション */
-  --metal: linear-gradient(180deg, #f6f7f9, #dadde3);
-  --metal-strong: linear-gradient(180deg, #eceef1, #c9cdd4);
-  /* アクセントもメタリックに(近未来感の統一・ユーザーFB第7弾): 青メタル */
-  --accent-metal: linear-gradient(180deg, #5b8cf5 0%, #2f6feb 52%, #1e51c0 100%);
-  --accent-metal-hover: linear-gradient(180deg, #6f9bf7 0%, #2f6feb 52%, #1a49ad 100%);
+  /* 近未来メタリックUI: 黒・ガンメタ・鈍いシルバー基調(AI UI Polish)。
+     面はガンメタのグラデーション、枠は細い金属フレーム、地は黒〜ガンメタ。 */
+  --bg: #0b0e11;
+  --bg-panel: linear-gradient(145deg, rgba(64, 71, 79, 0.92), rgba(18, 21, 25, 0.95));
+  --bg-card: linear-gradient(145deg, rgba(52, 58, 66, 0.92), rgba(15, 18, 21, 0.95));
+  --border: rgba(210, 220, 230, 0.18);
+  --border-strong: rgba(210, 220, 230, 0.34);
+  --glass-highlight: rgba(255, 255, 255, 0.18);
+  --text: #e7ecf2;
+  --text-muted: #9aa6b4;
+  --accent: #6ea2ff;
+  --accent-hover: #8bb6ff;
+  --warn: #e0a54a;
+  --danger: #ef6b67;
+  --ok: #5ac37a;
+  --blur: blur(16px) saturate(1.1);
+  /* メタリック面(ボタン等): ガンメタ〜黒銀。上端ハイライト、下端に沈む */
+  --metal: linear-gradient(145deg, rgba(74, 80, 87, 0.96), rgba(20, 23, 27, 0.98));
+  --metal-strong: linear-gradient(145deg, #3b424b 0%, #232830 45%, #12161a 100%);
+  /* 鈍いメタルグレー(シリンダー等) */
+  --metal-cylinder: linear-gradient(90deg, #171a1d 0%, #4f565c 18%, #9aa1a7 34%, #5a6268 50%, #2c3237 68%, #8b9298 82%, #1a1d20 100%);
+  /* アクセントもメタリックに: 青ガンメタ(白文字が読める濃度) */
+  --accent-metal: linear-gradient(160deg, #7fb0ff 0%, #3d6fd6 50%, #1c3f86 100%);
+  --accent-metal-hover: linear-gradient(160deg, #97c1ff 0%, #4a7ce0 50%, #24488f 100%);
 }
 
 html,
 body {
   margin: 0;
   color: var(--text);
-  /* シルバーの地金: 斜めの光沢(白のハイライト)+下端に向かって沈むグレー。
-     固定にしてスクロールで動かさない */
+  /* 黒〜ガンメタの地金: 斜め方向の薄い金属反射+奥行きのある暗い背景。固定 */
   background:
-    radial-gradient(1000px 700px at 80% -15%, rgba(255, 255, 255, 0.7), transparent 60%),
-    radial-gradient(700px 500px at -10% 35%, rgba(255, 255, 255, 0.4), transparent 55%),
-    linear-gradient(180deg, #dcdfe4 0%, #c3c8d0 55%, #aeb4bf 100%);
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 28%),
+    radial-gradient(1000px 720px at 85% -12%, rgba(150, 170, 200, 0.10), transparent 58%),
+    linear-gradient(135deg, #050607 0%, #15191d 45%, #08090b 100%);
   background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* ===== 共通メタリック・ユーティリティ(AI UI Polish) ===== */
+/* 流光(光が斜めに横切るアニメーション) */
+.metal-shine { position: relative; overflow: hidden; }
+.metal-shine::after,
+.card::after,
+main section::after,
+.cc-stat::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    110deg,
+    transparent 0%, transparent 35%,
+    rgba(255, 255, 255, 0.22) 48%,
+    rgba(255, 255, 255, 0.06) 54%,
+    transparent 68%, transparent 100%
+  );
+  transform: translateX(-120%);
+  animation: metallic-flow 5.2s ease-in-out infinite;
+}
+/* カード/セクションは内容を前面に保つ(流光は背面) */
+.card, main section, .cc-stat { position: relative; overflow: hidden; }
+.card > *, main section > *, .cc-stat > * { position: relative; z-index: 1; }
+
+@keyframes metallic-flow {
+  0% { transform: translateX(-120%); }
+  48% { transform: translateX(120%); }
+  100% { transform: translateX(120%); }
+}
+
+/* 背景から浮くフローティング影(共通ユーティリティ) */
+.floating-panel {
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .metal-shine::after,
+  .card::after,
+  main section::after,
+  .cc-stat::after { animation: none; opacity: 0; }
 }
 
 /* Windows Native: Segoe UI を第一候補にしたシステムフォントスタック */
@@ -90,12 +140,19 @@ button {
   padding: 0.4rem 0.85rem;
   cursor: pointer;
   font-size: 0.9rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  /* メタルボタン: 上端に薄い白ハイライト、下端に黒い影 */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.45);
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease, filter 120ms ease;
 }
 
 button:hover:not(:disabled) {
   border-color: var(--accent);
-  background: linear-gradient(180deg, #f0f4fd, #d8e2f7);
+  filter: brightness(1.15);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 10px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+button:active:not(:disabled) {
+  transform: translateY(1px);
+  filter: brightness(0.96);
 }
 
 button:disabled {
@@ -124,12 +181,13 @@ button.active {
 input,
 select,
 textarea {
-  background: rgba(255, 255, 255, 0.75);
+  background: linear-gradient(180deg, rgba(12, 15, 18, 0.85), rgba(24, 28, 33, 0.85));
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.4rem 0.6rem;
   font-size: 0.9rem;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.55), inset 0 -1px 0 rgba(255, 255, 255, 0.06);
 }
 
 input::placeholder {
@@ -160,9 +218,21 @@ main section,
   border-radius: 14px;
   padding: 1rem 1.25rem;
   margin-bottom: 1rem;
+  /* 背景から独立して浮くメタルパーツ(外側の濃い影+内側の上下ハイライト/影) */
   box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    0 8px 24px rgba(45, 52, 64, 0.18);
+    0 18px 40px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+main section:hover,
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow:
+    0 24px 52px rgba(0, 0, 0, 0.64),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.65);
 }
 
 /* サイドバーレイアウト(App.tsx) */
@@ -172,19 +242,115 @@ main section,
 }
 
 .sidebar {
-  width: 220px;
+  width: 232px;
   flex-shrink: 0;
-  /* サイドバーはひとまわり濃いメタリック面 */
-  background: linear-gradient(180deg, rgba(238, 240, 243, 0.85), rgba(203, 208, 215, 0.82));
+  /* サイドバーはひとまわり濃いガンメタ面 */
+  background: linear-gradient(180deg, rgba(40, 45, 51, 0.94), rgba(14, 17, 20, 0.96));
   -webkit-backdrop-filter: var(--blur);
   backdrop-filter: var(--blur);
   border-right: 1px solid var(--border);
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
-  padding: 1.25rem 1rem;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--glass-highlight), 8px 0 24px rgba(0, 0, 0, 0.4);
+  padding: 1.25rem 0.85rem;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
   box-sizing: border-box;
+  /* 縦に長い場合はスクロール可能に。上下の粘着でブランド/注記を固定はしない */
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+/* 折りたたみナビ(大項目=メタルパネル / 小項目=暗めのインデント) */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-height: 0;
+}
+.sidebar-group { display: flex; flex-direction: column; }
+.sidebar-group-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 13px;
+  border-radius: 12px;
+  border: 1px solid rgba(210, 220, 230, 0.18);
+  /* メタルパネル(ガンメタ) */
+  background: linear-gradient(145deg, rgba(74, 80, 88, 0.9), rgba(18, 22, 26, 0.96));
+  color: #f4f7fa;
+  font-weight: 700;
+  font-size: 0.92rem;
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+  transition: filter 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+.sidebar-group-button:hover {
+  filter: brightness(1.12);
+  border-color: rgba(210, 220, 230, 0.3);
+}
+/* 展開中の大項目は少し明るく強調 */
+.sidebar-group.is-open > .sidebar-group-button {
+  border-color: color-mix(in srgb, var(--accent) 45%, rgba(210, 220, 230, 0.3));
+  background: linear-gradient(145deg, rgba(96, 104, 114, 0.94), rgba(28, 34, 40, 0.97));
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6),
+    0 0 12px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+.sidebar-group-label { display: inline-flex; align-items: center; gap: 0.5rem; }
+.sidebar-group-icon { font-size: 1rem; }
+.sidebar-chevron { font-size: 0.7rem; color: rgba(230, 238, 245, 0.65); }
+
+/* 小項目(やや暗めにインデント・左に金属ライン) */
+.sidebar-submenu {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 10px 12px;
+  padding-left: 10px;
+  border-left: 1px solid rgba(220, 230, 240, 0.18);
+}
+.sidebar-item {
+  width: 100%;
+  padding: 8px 11px;
+  border-radius: 10px;
+  border: 1px solid rgba(180, 190, 200, 0.1);
+  background: rgba(10, 12, 15, 0.55);
+  color: rgba(245, 248, 252, 0.82);
+  text-align: left;
+  font-size: 0.82rem;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.sidebar-item:hover {
+  color: #fff;
+  border-color: rgba(210, 220, 230, 0.28);
+  background: rgba(30, 36, 43, 0.7);
+}
+/* 選択中の小項目は流光/光沢で強調 */
+.sidebar-item.is-active {
+  position: relative;
+  overflow: hidden;
+  color: #ffffff;
+  border-color: color-mix(in srgb, var(--accent) 50%, rgba(210, 220, 230, 0.3));
+  background: linear-gradient(135deg, rgba(230, 238, 245, 0.22), rgba(60, 70, 80, 0.82));
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.sidebar-item.is-active::after {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(110deg, transparent 0%, transparent 38%, rgba(255,255,255,0.28) 48%, rgba(255,255,255,0.08) 54%, transparent 66%, transparent 100%);
+  transform: translateX(-120%);
+  animation: metallic-flow 4.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-item.is-active::after { animation: none; opacity: 0; }
 }
 
 /* スクロールバー(Minimal) */
@@ -217,7 +383,9 @@ main section,
 }
 
 .sidebar .sidebar-note {
-  margin-top: auto;
+  /* ナビが縦に長い場合でも重ならないよう、フロー内でスクロールさせる */
+  margin-top: 1rem;
+  flex-shrink: 0;
   font-size: 0.75rem;
   color: var(--text-muted);
   line-height: 1.6;
@@ -349,6 +517,10 @@ main section,
   grid-template-columns: 180px minmax(0, 1fr) 340px;
   gap: 0;
   min-height: 100vh;
+  /* 暗いグレー地(黒ガンメタのシリンダーとの色分けでメリハリを出す) */
+  background:
+    radial-gradient(900px 600px at 78% -12%, rgba(150, 170, 200, 0.08), transparent 55%),
+    linear-gradient(140deg, #2b3038 0%, #20242c 48%, #161a21 100%);
 }
 
 .cc-sidebar {
@@ -357,11 +529,11 @@ main section,
   align-items: center;
   gap: 0.9rem;
   padding: 1.25rem 0.9rem;
-  background: linear-gradient(180deg, rgba(240, 242, 245, 0.85), rgba(206, 211, 218, 0.82));
+  background: linear-gradient(180deg, rgba(40, 45, 51, 0.94), rgba(14, 17, 20, 0.96));
   -webkit-backdrop-filter: var(--blur);
   backdrop-filter: var(--blur);
   border-right: 1px solid var(--border);
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--glass-highlight), 8px 0 24px rgba(0, 0, 0, 0.4);
 }
 
 .cc-logo {
@@ -451,10 +623,11 @@ main section,
   display: grid;
   /* 円柱型メーター: 幅に応じて自動配置。1段あたり最大7個(max-widthで制限)、
      部署数が増えたら自動で2段以上に折り返す(部署パネルUI仕様書)。 */
-  grid-template-columns: repeat(auto-fill, 110px);
+  grid-template-columns: repeat(auto-fill, 112px);
   justify-content: center;
-  gap: 1.4rem 1.2rem;
-  max-width: 900px;
+  align-items: end;
+  gap: 1.5rem 0.7rem;
+  max-width: 740px;
   margin: 0 auto;
   z-index: 1;
 }
@@ -511,14 +684,14 @@ main section,
   padding: 0.7rem 0.8rem;
   border-radius: 16px;
   border: 2px solid var(--glow);
-  /* メタル調(縦グラデ+ハイライト) */
+  /* ガンメタ調(縦グラデ+上端ハイライト) */
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(236, 238, 242, 0.72) 42%, rgba(205, 210, 218, 0.72) 100%);
+    linear-gradient(145deg, rgba(72, 79, 87, 0.96) 0%, rgba(34, 39, 45, 0.94) 45%, rgba(16, 19, 23, 0.96) 100%);
   -webkit-backdrop-filter: var(--blur);
   backdrop-filter: var(--blur);
   overflow: hidden;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
     inset 0 -2px 6px rgba(120, 128, 140, 0.22),
     0 0 10px color-mix(in srgb, var(--glow) 45%, transparent);
   cursor: pointer;
@@ -659,11 +832,11 @@ main section,
 /* 右: 部署詳細パネル */
 .dept-detail {
   padding: 1.1rem 1rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(228, 231, 236, 0.55));
+  background: linear-gradient(180deg, rgba(46, 52, 59, 0.92), rgba(16, 19, 23, 0.95));
   -webkit-backdrop-filter: var(--blur);
   backdrop-filter: var(--blur);
   border-left: 1px solid var(--border);
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--glass-highlight), -8px 0 24px rgba(0, 0, 0, 0.4);
   overflow-y: auto;
   max-height: 100vh;
 }
@@ -685,10 +858,11 @@ main section,
 }
 
 .detail-stats > div {
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.4rem 0.5rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.5);
 }
 
 .detail-stats span {
@@ -720,13 +894,13 @@ main section,
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(228, 231, 236, 0.6));
+  background: linear-gradient(180deg, rgba(46, 52, 59, 0.92), rgba(16, 19, 23, 0.95));
   -webkit-backdrop-filter: var(--blur);
   backdrop-filter: var(--blur);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 0.8rem 0.9rem;
-  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 6px 18px rgba(45, 52, 64, 0.14);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 -1px 0 rgba(0, 0, 0, 0.6), 0 14px 30px rgba(0, 0, 0, 0.5);
 }
 
 .command-chat-target {
@@ -754,8 +928,9 @@ main section,
   font: inherit;
   font-size: 0.95rem;
   line-height: 1.5;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: inset 0 1px 2px rgba(45, 52, 64, 0.1);
+  background: linear-gradient(180deg, rgba(12, 15, 18, 0.85), rgba(24, 28, 33, 0.85));
+  color: var(--text);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.55);
 }
 
 .command-chat-templates {
@@ -816,8 +991,8 @@ main section,
   border-radius: 10px;
   padding: 0.6rem 0.8rem;
   margin: 0 0 0.6rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(232, 235, 240, 0.7));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  background: var(--bg-card);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
 .mr-service-name {
@@ -876,13 +1051,14 @@ main section,
   /* 要約が長くなっても操作を妨げないよう高さを制限してスクロール */
   max-height: 240px;
   overflow-y: auto;
-  background: rgba(255, 255, 255, 0.97);
-  border: 1px solid var(--border);
+  background: linear-gradient(145deg, rgba(64, 71, 79, 0.96), rgba(16, 19, 23, 0.97));
+  color: var(--text);
+  border: 1px solid var(--border-strong);
   border-radius: 14px 14px 2px 14px;
   padding: 0.7rem 0.85rem;
   font-size: 0.82rem;
   line-height: 1.55;
-  box-shadow: 0 6px 18px rgba(45, 52, 64, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 16px 34px rgba(0, 0, 0, 0.55);
   cursor: pointer;
 }
 
@@ -1000,84 +1176,234 @@ main section,
 .org-audit { border-color: var(--warn, #f59e0b); border-style: dashed; font-weight: 600; }
 
 /* ===== 部署パネル 円柱型進捗メーター(部署パネルUI仕様書) ===== */
+/* ===== 一体型・重厚メタルシリンダー(部署パネルUI仕様書) =====
+   背景パネルなし。キャップ+本体+台座で1個の機械的な円柱として成立させる。 */
 .dept-cyl {
   --glow: #FACC15;
+  --color: #FACC15;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
-  width: 110px;
-  padding: 0.5rem 0.35rem 0.6rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  background: linear-gradient(160deg, #2a2d33, #16181c 60%);
-  color: var(--text, #e8e8ea);
+  width: 112px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s ease, filter 0.2s ease;
+  filter: drop-shadow(0 16px 20px rgba(0, 0, 0, 0.7));
 }
 .dept-cyl:hover {
-  transform: scale(1.05);
+  transform: translateY(-3px) scale(1.03);
+  filter: drop-shadow(0 22px 26px rgba(0, 0, 0, 0.78)) drop-shadow(0 0 12px color-mix(in srgb, var(--glow) 55%, transparent));
+}
+.dept-cyl.selected .dept-cyl-vessel {
   border-color: var(--glow);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--glow) 55%, transparent);
+  box-shadow:
+    inset 16px 0 26px rgba(255, 255, 255, 0.16),
+    inset -18px 0 30px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 1px color-mix(in srgb, var(--glow) 65%, transparent),
+    0 0 18px color-mix(in srgb, var(--glow) 45%, transparent);
 }
-.dept-cyl.selected {
-  border-color: var(--glow);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--glow) 70%, transparent);
-}
-.dept-cyl-head { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.dept-cyl-icon {
-  width: 32px; height: 32px;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: 20px; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #3a3d44, #14161a);
-  border: 1px solid rgba(255,255,255,0.1);
-}
-.dept-cyl-name { font-size: 13px; font-weight: 600; text-align: center; line-height: 1.1; }
-.dept-cyl-status { font-size: 11px; display: inline-flex; align-items: center; gap: 4px; color: var(--text-muted); }
 
-/* 円柱チューブ(メタリック+ガラス) */
-.dept-cyl-tube {
+/* 円柱型の金属シリンダー(一体型・鈍いメタルグレー〜クロム) */
+.dept-cyl-vessel {
   position: relative;
-  width: 64px;
-  height: 140px;
-  margin: 0.15rem 0;
-  border-radius: 32px / 20px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.12) 20%, rgba(0,0,0,0.35) 50%, rgba(255,255,255,0.10) 80%, rgba(255,255,255,0.03));
-  border: 1px solid rgba(255,255,255,0.14);
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5), 0 0 0 3px rgba(0,0,0,0.25);
+  width: 100%;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 15px 8px 12px;
+  box-sizing: border-box;
+  border-radius: 26px;
+  /* 黒・ガンメタ・シルバーの強いクロム反射(左右に明るいハイライト) */
+  background: linear-gradient(90deg,
+    #050607 0%, #1a1d21 10%, #6f7780 22%, #d9e1e8 32%, #353b42 45%,
+    #101318 58%, #7e8790 76%, #f2f6fa 86%, #15191f 100%);
+  border: 1px solid rgba(230, 240, 250, 0.28);
+  box-shadow:
+    inset 16px 0 26px rgba(255, 255, 255, 0.18),   /* 左の反射 */
+    inset -18px 0 30px rgba(0, 0, 0, 0.7),          /* 右の陰 */
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),        /* 天面リムの光沢 */
+    inset 0 -14px 20px rgba(0, 0, 0, 0.6),          /* 底の陰影 */
+    0 3px 8px rgba(0, 0, 0, 0.5);
   overflow: hidden;
 }
-/* 上部の楕円リム(メタルキャップ) */
-.dept-cyl-tube::before {
+/* 天面の金属リング(クロムの光沢ライン) */
+.dept-cyl-vessel::before {
+  content: ""; position: absolute; z-index: 3; pointer-events: none;
+  top: 4px; left: 8%; right: 8%; height: 6px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffffff, #b9c1cb 55%, #5a626c);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  opacity: 0.9;
+}
+/* シリンダーを横切る流光(ごとにランダムな速度) */
+.dept-cyl-vessel::after {
   content: "";
-  position: absolute; top: -1px; left: -1px; right: -1px; height: 14px;
-  border-radius: 32px / 10px;
-  background: linear-gradient(180deg, #4a4e57, #23262c);
-  border: 1px solid rgba(255,255,255,0.18);
-  z-index: 3;
+  position: absolute; inset: 0; z-index: 4; pointer-events: none;
+  background: linear-gradient(110deg, transparent 0%, transparent 38%, rgba(255,255,255,0.42) 48%, rgba(255,255,255,0.12) 54%, transparent 68%, transparent 100%);
+  transform: translateX(-140%);
+  animation: cyl-metal-sweep var(--shine-speed, 5s) ease-in-out infinite;
+  animation-delay: var(--shine-delay, 0s);
 }
-.dept-cyl-fill {
+@keyframes cyl-metal-sweep {
+  0%   { transform: translateX(-140%); opacity: 0; }
+  20%  { opacity: 0.8; }
+  48%  { transform: translateX(140%); opacity: 0.35; }
+  100% { transform: translateX(140%); opacity: 0; }
+}
+
+/* 上部ヘッダー(アイコン・部署名・ステータス) */
+.dept-cyl-header {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  width: 100%;
+}
+.dept-cyl-icon {
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 15px; line-height: 1; border-radius: 50%;
+  background: radial-gradient(circle at 38% 30%, #2c333b, #06080b 74%);
+  border: 1px solid color-mix(in srgb, var(--glow) 45%, rgba(230, 240, 250, 0.28));
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.22), inset 0 -2px 4px rgba(0, 0, 0, 0.9), 0 0 8px color-mix(in srgb, var(--glow) 40%, transparent);
+}
+.dept-cyl-name {
+  font-size: 11px; font-weight: 700; text-align: center; line-height: 1.1;
+  white-space: nowrap;
+  color: #eef2f7; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+/* ステータス(ドット+テキスト・ステータス色) */
+.dept-cyl-status {
+  font-size: 9.5px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 4px;
+  color: color-mix(in srgb, var(--glow) 82%, white);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+/* メーターを囲う金属フレーム(ベゼル) — シリンダー本体と同じクロムで色を統一。
+   金属流光(vessel::after=z4)より前面に置き、ガラス窓に反射光を乗せない。 */
+.dept-cyl-frame {
+  display: block;
+  position: relative; z-index: 5;
+  width: 88px;
+  margin-top: 4px;
+  padding: 4px;
+  box-sizing: border-box;
+  border-radius: 16px;
+  background: linear-gradient(90deg,
+    #050607 0%, #1a1d21 10%, #6f7780 22%, #d9e1e8 32%, #353b42 45%,
+    #101318 58%, #7e8790 76%, #f2f6fa 86%, #15191f 100%);
+  border: 1px solid rgba(230, 240, 250, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.7),
+    0 3px 6px rgba(0, 0, 0, 0.5);
+}
+/* 中央の縦長ガラス窓(黒透明・ネオン発光縁) */
+.dept-cyl-window {
+  display: block;
+  position: relative; z-index: 1;
+  width: 80px; height: 168px;
+  box-sizing: border-box;
+  border-radius: 13px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.92), rgba(20,25,30,0.72) 50%, rgba(0,0,0,0.95));
+  border: 1px solid color-mix(in srgb, var(--color) 60%, rgba(230, 245, 255, 0.4));
+  box-shadow:
+    0 0 20px color-mix(in srgb, var(--color) 50%, transparent),
+    0 0 40px color-mix(in srgb, var(--color) 22%, transparent),
+    inset 0 0 26px rgba(0, 0, 0, 0.9),
+    inset 8px 0 16px rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+/* 発光液体メーター(ネオンの光沢液体・下から充填) */
+.dept-cyl-liquid {
   position: absolute; left: 0; right: 0; bottom: 0;
-  border-radius: 0 0 30px 30px / 0 0 18px 18px;
-  transition: height 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 0 0 12px 12px;
+  transition: height 0.95s cubic-bezier(0.22, 1, 0.36, 1);
   z-index: 1;
+  overflow: hidden;
+  background:
+    /* 光沢: 左に強い縦ハイライト+右に淡い反射 */
+    linear-gradient(90deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.08) 18%, transparent 40%, transparent 74%, rgba(255,255,255,0.18) 100%),
+    /* 表面(液面)の光沢 */
+    linear-gradient(180deg, rgba(255,255,255,0.42), transparent 13%),
+    radial-gradient(circle at 50% 10%, rgba(255,255,255,0.85), transparent 12%),
+    /* ネオンのベース色(彩度高め) */
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--color) 40%, white),
+      var(--color),
+      color-mix(in srgb, var(--color) 58%, black));
+  box-shadow:
+    0 0 28px var(--color),
+    0 0 14px rgba(255, 255, 255, 0.4),
+    inset 0 3px 0 rgba(255, 255, 255, 0.42),
+    inset 0 0 26px rgba(255, 255, 255, 0.22);
 }
-.dept-cyl-gloss {
-  position: absolute; top: 12px; left: 10%; width: 22%; bottom: 8px;
-  border-radius: 40%;
-  background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.02));
-  z-index: 2; pointer-events: none;
+/* 液体内の粒子(浮遊するパーティクル) */
+.dept-cyl-liquid::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background:
+    radial-gradient(1.6px 1.6px at 22% 32%, rgba(255,255,255,0.95), transparent 60%),
+    radial-gradient(1.2px 1.2px at 62% 58%, rgba(255,255,255,0.85), transparent 60%),
+    radial-gradient(1.6px 1.6px at 42% 80%, rgba(255,255,255,0.8), transparent 60%),
+    radial-gradient(1.1px 1.1px at 76% 42%, rgba(255,255,255,0.9), transparent 60%),
+    radial-gradient(1.2px 1.2px at 30% 60%, rgba(255,255,255,0.75), transparent 60%),
+    radial-gradient(1.4px 1.4px at 84% 74%, rgba(255,255,255,0.8), transparent 60%);
+  opacity: 0.7;
+  animation: cyl-particles 4.5s linear infinite;
 }
+@keyframes cyl-particles {
+  0% { transform: translateY(7px); opacity: 0.3; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-7px); opacity: 0.3; }
+}
+/* 下から上へ昇る横ライン状の流光(ネオンのスキャンライン) */
+.dept-cyl-liquid::after {
+  content: ""; position: absolute; left: -12%; right: -12%; bottom: 0;
+  height: 9px;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.55) 35%, rgba(255,255,255,0.98) 50%, rgba(255,255,255,0.55) 65%, transparent);
+  filter: blur(1.5px);
+  box-shadow: 0 0 14px rgba(255,255,255,0.85), 0 0 22px var(--color);
+  z-index: 2;
+  animation: cyl-scan-up 2.9s ease-in-out infinite;
+  animation-delay: var(--liquid-delay, 0s);
+}
+@keyframes cyl-scan-up {
+  0%   { bottom: -10%; opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { bottom: 102%; opacity: 0; }
+}
+/* 目盛り(窓の左・100/75/50/25/0) */
 .dept-cyl-scale {
-  position: absolute; right: 4px; top: 14px; bottom: 6px;
+  position: absolute; left: 4px; top: 6px; bottom: 6px;
   display: flex; flex-direction: column; justify-content: space-between;
-  font-size: 8px; color: rgba(255,255,255,0.45); z-index: 2;
+  font-size: 6.5px; color: rgba(232, 236, 242, 0.55); z-index: 4;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.9);
 }
-.dept-cyl-pct { font-size: 16px; font-weight: 700; }
+
+/* パーセンテージ(下部に大きく一体表示) */
+.dept-cyl-pct {
+  position: relative; z-index: 2;
+  margin-top: 6px;
+  font-size: 22px; font-weight: 800; letter-spacing: 0.01em;
+  color: #ffffff;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--color) 75%, transparent), 0 2px 8px rgba(0, 0, 0, 0.85);
+}
+.dept-cyl-pct span { font-size: 12px; font-weight: 700; margin-left: 1px; opacity: 0.9; }
+/* 下端の発光ライン(ステータス色) */
+.dept-cyl-baseline {
+  position: relative; z-index: 2;
+  margin-top: 4px;
+  width: 46px; height: 3px; border-radius: 3px;
+  background: var(--color);
+  box-shadow: 0 0 10px var(--color), 0 0 4px var(--color);
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .dept-cyl-fill { transition: none; }
+  .dept-cyl-liquid { transition: none; }
+  .dept-cyl-liquid::before,
+  .dept-cyl-liquid::after,
+  .dept-cyl-vessel::after { animation: none; opacity: 0; }
   .dept-cyl:hover { transform: none; }
 }
 
