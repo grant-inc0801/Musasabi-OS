@@ -26,7 +26,6 @@ import { MissionControlPage } from "./components/MissionControl/MissionControlPa
 import { WorkflowPage } from "./components/Workflow/WorkflowPage";
 import { CollaborationPage } from "./components/Collaboration/CollaborationPage";
 import { WorkspacePage } from "./components/Workspace/WorkspacePage";
-import { SelfEvolutionPage } from "./components/SelfEvolution/SelfEvolutionPage";
 import { OperationsPage } from "./components/Operations/OperationsPage";
 import { ReportsPage } from "./components/Reports/ReportsPage";
 import { NotificationsPage } from "./components/Notifications/NotificationsPage";
@@ -102,7 +101,6 @@ type Page =
   | "workflow"
   | "company_brain"
   | "collaboration"
-  | "self_evolution"
   | "vision"
   | "automation"
   | "plugins"
@@ -152,7 +150,6 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   workflow: "ワークフロー",
   company_brain: "Company Brain",
   collaboration: "コラボレーション",
-  self_evolution: "AI自己進化",
   vision: "Vision(画面解析)",
   automation: "Automation(操作記録)",
   plugins: "プラグイン",
@@ -216,7 +213,6 @@ const NAV_GROUPS: ReadonlyArray<{
       { label: "進化モジュール", page: "evolution_modules" },
       { label: "AIエコシステム", page: "ecosystem" },
       { label: "AI改善提案 / 自己進化", page: "improvement" },
-      { label: "AI自己進化", page: "self_evolution" },
       { label: "AI経営ガバナンス", page: "governance" },
       { label: "AI監査・リスク", page: "audit" },
       { label: "Vision(画面解析)", page: "vision" },
@@ -467,8 +463,6 @@ export function App() {
           <CompanyBrainPage />
         ) : page === "collaboration" ? (
           <CollaborationPage />
-        ) : page === "self_evolution" ? (
-          <SelfEvolutionPage onOpenAutomation={() => navigate("automation")} />
         ) : page === "vision" ? (
           <VisionPage />
         ) : page === "automation" ? (

@@ -112,7 +112,7 @@ export function OperationsPage({ onOpenPage }: { onOpenPage: (page: string) => v
             { label: "全社ダッシュボード", page: "company_dashboard" },
             { label: "ワークフロー", page: "workflow" },
             { label: "コラボレーション", page: "collaboration" },
-            { label: "AI自己進化", page: "self_evolution" },
+            { label: "AI改善提案 / 自己進化", page: "improvement" },
             { label: "ワークスペース", page: "workspace" },
           ].map((m) => (
             <button key={m.page} type="button" onClick={() => onOpenPage(m.page)}>

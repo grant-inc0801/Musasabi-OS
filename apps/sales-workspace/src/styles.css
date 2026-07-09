@@ -266,6 +266,8 @@ main section:hover,
   flex-direction: column;
   gap: 0.4rem;
   min-height: 0;
+  /* ナビが縮んで中身がはみ出し注記に重なるのを防ぐ(サイドバー全体でスクロール)。 */
+  flex-shrink: 0;
 }
 .sidebar-group { display: flex; flex-direction: column; }
 .sidebar-group-button {
@@ -1618,3 +1620,35 @@ main section:hover,
 }
 .cc-chat-fab:hover { border-color: color-mix(in srgb, var(--accent, #6c8cff) 60%, var(--border)); }
 .cc-chat-fab img { border-radius: 6px; }
+
+/* ── 管理画面のコンパクト化: デスクトップ画面に収める(UIフィードバック第9弾) ── */
+/* .content(管理画面メイン)配下の文字/余白/カードを詰めて、1画面に収まりやすくする。
+   Command Center(.command-center)は別レイアウトのため影響を与えない。 */
+main.content {
+  padding: 0.9rem 1.15rem;
+  font-size: 0.85rem;
+}
+main.content > h1 {
+  font-size: 1.18rem;
+  margin-bottom: 0.55rem;
+}
+main.content section,
+main.content .card {
+  padding: 0.7rem 0.9rem;
+  margin-bottom: 0.7rem;
+  border-radius: 12px;
+}
+main.content h2 { font-size: 1.02rem; margin: 0.1rem 0 0.5rem; }
+main.content h3 { font-size: 0.9rem; margin: 0.1rem 0 0.45rem; }
+main.content h4 { font-size: 0.82rem; margin: 0.1rem 0 0.35rem; }
+main.content p { margin: 0.3rem 0; }
+main.content ul,
+main.content ol { margin: 0.3rem 0; padding-left: 1.25rem; }
+main.content li { margin: 0.12rem 0; }
+main.content table { font-size: 0.8rem; }
+main.content th,
+main.content td { padding: 0.28rem 0.5rem !important; }
+main.content button { padding: 0.32rem 0.7rem; font-size: 0.82rem; }
+/* 大きな数値(StatTile 等)を少し小さく */
+main.content section div[style*="1.6rem"],
+main.content section div[style*="1.5rem"] { font-size: 1.25rem !important; }
