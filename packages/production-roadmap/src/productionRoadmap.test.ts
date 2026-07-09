@@ -7,6 +7,7 @@ import {
   PRODUCTION_LAUNCH_CHECKLIST,
   PRODUCTION_RULE,
   PRODUCTION_APPROVED,
+  PRODUCTION_READINESS_DESIGN_DOC,
   ROADMAP_GOVERNANCE_NOTES,
   computeMockCompletion,
   isProductionReadinessUnlocked,
@@ -54,12 +55,18 @@ test("computeMockCompletion は未完スコープを反映する", () => {
   assert.equal(c.complete, false);
 });
 
-test("Production Readiness 項目はすべて承認必須・既定ロック", () => {
+test("Production Readiness 項目はすべて承認必須・既定ロック・設計ありで実装なし", () => {
   assert.equal(PRODUCTION_READINESS_ITEMS.length, 11);
   for (const r of PRODUCTION_READINESS_ITEMS) {
     assert.equal(r.requiresApproval, true, `${r.id} requiresApproval`);
     assert.equal(r.status, "locked", `${r.id} locked`);
+    // 設計のみ用意する(実装は承認後)。全項目に設計方針がある。
+    assert.ok(r.design.length > 0, `${r.id} design`);
   }
+});
+
+test("設計ドキュメントの場所が定義されている(設計のみ・実装は承認後)", () => {
+  assert.ok(PRODUCTION_READINESS_DESIGN_DOC.includes("PRODUCTION_READINESS_DESIGN"));
 });
 
 test("本番承認は既定 false、ゲートは未承認でロック解除しない", () => {

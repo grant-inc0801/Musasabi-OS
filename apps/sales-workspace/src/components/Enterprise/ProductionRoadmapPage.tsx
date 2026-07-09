@@ -8,6 +8,7 @@ import {
   CHECKLIST_STATUS_LABEL_JA,
   PRODUCTION_RULE,
   PRODUCTION_APPROVED,
+  PRODUCTION_READINESS_DESIGN_DOC,
   ROADMAP_GOVERNANCE_NOTES,
   computeMockCompletion,
   isProductionReadinessUnlocked,
@@ -85,16 +86,22 @@ export function ProductionRoadmapPage() {
         <h3>Production Readiness フェーズ（{unlocked ? "解放済み" : "ロック中 🔒"}）</h3>
         <p style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
           以下は Mock 完成後・かつ人間承認が明示された場合にのみ着手します。現在は承認未取得のためロックです。
+          各項目には<strong>設計方針のみ</strong>を用意しています(実装は承認後)。詳細設計は
+          <code style={{ margin: "0 0.2rem" }}>{PRODUCTION_READINESS_DESIGN_DOC}</code>を参照。
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(17rem, 1fr))", gap: "0.6rem" }}>
           {PRODUCTION_READINESS_ITEMS.map((r) => (
-            <div key={r.id} aria-label={`本番対応: ${r.name}`} className="card" style={{ padding: "0.55rem 0.75rem", opacity: r.status === "locked" ? 0.85 : 1 }}>
+            <div key={r.id} aria-label={`本番対応: ${r.name}`} className="card" style={{ padding: "0.55rem 0.75rem", opacity: r.status === "locked" ? 0.9 : 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span aria-hidden>{r.status === "locked" ? "🔒" : r.status === "approved" ? "✔" : "…"}</span>
                 <strong>{r.name}</strong>
                 <span className="badge" style={{ marginLeft: "auto", fontSize: "0.72rem" }}>{READINESS_STATUS_LABEL_JA[r.status]}</span>
               </div>
               <div style={{ color: "var(--text-muted)", fontSize: "0.76rem", marginTop: "0.2rem" }}>{r.note}</div>
+              <div style={{ marginTop: "0.35rem", fontSize: "0.76rem" }}>
+                <span className="badge" style={{ fontSize: "0.68rem" }}>設計</span>{" "}
+                <span style={{ color: "var(--text)" }}>{r.design}</span>
+              </div>
             </div>
           ))}
         </div>

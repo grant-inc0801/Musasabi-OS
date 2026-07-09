@@ -63,21 +63,29 @@ export interface ReadinessItem {
   /** 常に人間承認が必要(実装は承認後のみ)。 */
   requiresApproval: true;
   note: string;
+  /**
+   * 設計方針(実装ではなく設計のみ)。承認前に用意する「設計ドキュメント/構成テンプレート」の
+   * 要旨。実認証情報・実接続・課金は含めない。詳細は PRODUCTION_READINESS_DESIGN_DOC 参照。
+   */
+  design: string;
 }
+
+/** 設計ドキュメントの場所(実装は承認後・本フェーズは設計のみ)。 */
+export const PRODUCTION_READINESS_DESIGN_DOC = "docs/ai-handoff/PRODUCTION_READINESS_DESIGN.md";
 
 /** Production Readiness 項目(指示書 Production Readiness Phase)。Mock 完成後のみ・承認必須。 */
 export const PRODUCTION_READINESS_ITEMS: readonly ReadinessItem[] = [
-  { id: "authn-authz", name: "認証・認可", status: "locked", requiresApproval: true, note: "実認証情報が必要なため承認まで未着手。" },
-  { id: "secret-management", name: "シークレット管理", status: "locked", requiresApproval: true, note: "secrets を扱うため承認必須。" },
-  { id: "production-db", name: "本番データベース", status: "locked", requiresApproval: true, note: "実データ書き込みのため承認必須。" },
-  { id: "logging-monitoring", name: "本番ロギング・監視", status: "locked", requiresApproval: true, note: "本番環境接続のため承認必須。" },
-  { id: "backup-dr", name: "バックアップ・災害復旧", status: "locked", requiresApproval: true, note: "本番データ対象のため承認必須。" },
-  { id: "env-separation", name: "環境分離(dev/staging/prod)", status: "locked", requiresApproval: true, note: "本番環境構築のため承認必須。" },
-  { id: "secure-deploy", name: "セキュアデプロイパイプライン", status: "locked", requiresApproval: true, note: "本番デプロイのため承認必須。" },
-  { id: "data-migration", name: "データ移行", status: "locked", requiresApproval: true, note: "実データ移行のため承認必須。" },
-  { id: "perf-load-test", name: "性能・負荷テスト", status: "locked", requiresApproval: true, note: "本番相当環境が必要なため承認必須。" },
-  { id: "security-review", name: "セキュリティレビュー", status: "locked", requiresApproval: true, note: "本番公開前の必須ゲート。" },
-  { id: "prod-approval-gates", name: "本番承認ゲート", status: "locked", requiresApproval: true, note: "人間承認の最終ゲート。" },
+  { id: "authn-authz", name: "認証・認可", status: "locked", requiresApproval: true, note: "実認証情報が必要なため承認まで未着手。", design: "OIDC/OAuth2 + RBAC。ロール(admin/operator/viewer)と権限マトリクスを定義。secrets は外部シークレットマネージャ参照(値はコミットしない)。" },
+  { id: "secret-management", name: "シークレット管理", status: "locked", requiresApproval: true, note: "secrets を扱うため承認必須。", design: "シークレットマネージャ(例: Vault/クラウドKMS)に集約。アプリは環境変数経由で参照名のみ保持。.env.example はプレースホルダのみ。" },
+  { id: "production-db", name: "本番データベース", status: "locked", requiresApproval: true, note: "実データ書き込みのため承認必須。", design: "マネージドRDB。接続はシークレット経由、最小権限ロール、暗号化(at-rest/in-transit)、スキーマ/マイグレーション管理。" },
+  { id: "logging-monitoring", name: "本番ロギング・監視", status: "locked", requiresApproval: true, note: "本番環境接続のため承認必須。", design: "構造化ログ+集約基盤、メトリクス/アラート、SLO/エラーバジェット。個人情報のマスキング方針を定義。" },
+  { id: "backup-dr", name: "バックアップ・災害復旧", status: "locked", requiresApproval: true, note: "本番データ対象のため承認必須。", design: "定期自動バックアップ+リストア手順、RPO/RTO 目標、DR リージョン、復旧演習の計画。" },
+  { id: "env-separation", name: "環境分離(dev/staging/prod)", status: "locked", requiresApproval: true, note: "本番環境構築のため承認必須。", design: "dev/staging/prod を分離。環境別の設定・シークレット・アクセス制御。構成テンプレートは docs/production-readiness/ENVIRONMENTS.md。" },
+  { id: "secure-deploy", name: "セキュアデプロイパイプライン", status: "locked", requiresApproval: true, note: "本番デプロイのため承認必須。", design: "署名付きアーティファクト、承認ゲート付きデプロイ、ロールバック、最小権限のデプロイ資格情報。テンプレは deploy-pipeline.example.yml(不活性)。" },
+  { id: "data-migration", name: "データ移行", status: "locked", requiresApproval: true, note: "実データ移行のため承認必須。", design: "前方互換マイグレーション、ドライラン、バックアップ前提、ロールバック計画。実データは承認後にのみ扱う。" },
+  { id: "perf-load-test", name: "性能・負荷テスト", status: "locked", requiresApproval: true, note: "本番相当環境が必要なため承認必須。", design: "負荷シナリオ、目標スループット/レイテンシ、ステージング環境での実施計画。本番には実施しない。" },
+  { id: "security-review", name: "セキュリティレビュー", status: "locked", requiresApproval: true, note: "本番公開前の必須ゲート。", design: "脅威モデリング、依存脆弱性スキャン、秘密情報スキャン(既存 check-secret-patterns を拡張)、レビュー チェックリスト。" },
+  { id: "prod-approval-gates", name: "本番承認ゲート", status: "locked", requiresApproval: true, note: "人間承認の最終ゲート。", design: "リリース承認フロー(申請→レビュー→人間承認→記録)。承認は監査ログに残し、憲章に従う。" },
 ];
 
 export type ChecklistStatus = "done" | "pending";

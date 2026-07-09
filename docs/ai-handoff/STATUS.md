@@ -1,10 +1,20 @@
 # Status
 
 **State:** waiting_for_chatgpt
-**Updated:** 2026-07-08
+**Updated:** 2026-07-09
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Mission Control Dashboard Phase 1)
+## 直近の完了内容(Production Readiness 設計・設計のみ)
+指示書 MASTER_ROADMAP_TO_PRODUCTION.md 再送に対し、ユーザー選択「本番準備の設計だけ作成」で Production
+Readiness の **設計ドキュメント・構成テンプレート(secretsなし)** を Mock 用意。**実装はしない**(実認証情報・
+実接続・課金・本番デプロイは人間承認まで一切なし。全項目ロック維持)。`production-roadmap` の `ReadinessItem`
+に `design` を追加し11項目に設計要旨を記述+`PRODUCTION_READINESS_DESIGN_DOC` 定数。新規
+`docs/ai-handoff/PRODUCTION_READINESS_DESIGN.md`(11項目設計)と `docs/production-readiness/`
+(.env.example=プレースホルダのみ / ENVIRONMENTS.md / deploy-pipeline.example.yml=不活性・workflows外)。
+`ProductionRoadmapPage` に設計バッジ+設計テキスト+設計ドキュメント参照を表示(ロック維持)。
+production-roadmap テスト12件 pass、秘密情報スキャン pass、Playwright で 11カードの設計表示・0エラー確認。
+
+## それ以前の完了内容(Mission Control Dashboard Phase 1)
 指示書に基づき AI企業の司令室ホーム「Mission Control」を実装。`packages/mission-control`(全データを
 オブジェクト/配列で管理、後からGitHub等へ差し替え可能)+ `MissionControlPage`(10セクション: HEADER/
 AI CEO/AI PM/AI社員一覧/Department Cylinders/Today's Tasks/Approval Center/GitHub Development/

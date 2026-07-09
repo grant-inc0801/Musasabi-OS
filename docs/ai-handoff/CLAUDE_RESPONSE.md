@@ -3,6 +3,39 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-09 — Production Readiness 設計(設計のみ・実装は承認後)
+
+### 実装内容
+指示書 `MASTER_ROADMAP_TO_PRODUCTION.md` の再送に対し、ユーザー選択「本番準備の設計だけ作成」に基づき、
+Production Readiness フェーズの **設計ドキュメント・構成テンプレート(secretsなし)** を Mock で用意。
+**実装は行わない**(実認証情報・実接続・課金・本番デプロイは人間承認まで一切なし。全項目ロック維持)。
+
+- **`packages/production-roadmap`(拡張)**: `ReadinessItem` に `design`(設計方針)フィールドを追加し、
+  11項目すべてに設計要旨を記述(例: 認証=OIDC/OAuth2 + RBAC、secretsは外部マネージャ参照で値はコミット
+  しない)。全項目は `status: "locked" / requiresApproval: true` を維持。設計ドキュメントの場所を示す
+  `PRODUCTION_READINESS_DESIGN_DOC` 定数を追加。テスト12件 pass
+- **`docs/ai-handoff/PRODUCTION_READINESS_DESIGN.md`(新規)**: 11項目の設計をまとめた本書。実際の秘密情報は
+  含めず、構成テンプレートはプレースホルダのみ・`.github/workflows` には配置しない(=CIで自動実行されない
+  不活性テンプレート)。全項目 locked を明記
+- **`docs/production-readiness/`(新規)**: `.env.example`(プレースホルダのみ `<set-in-secret-manager>`)/
+  `ENVIRONMENTS.md`(dev/staging/prod 分離・バックアップ/DR・データ移行の設計)/
+  `deploy-pipeline.example.yml`(不活性テンプレート・workflow_dispatch のみ・`.github/workflows` 外)
+- **`ProductionRoadmapPage`(更新)**: 各 Production Readiness 項目に「設計」バッジ+設計テキストを表示。
+  設計ドキュメントへの参照を導入文に追加(ロック状態は維持)
+
+### 完了条件の充足
+- 設計ドキュメント・構成テンプレートを Mock で用意 ✅ / 実認証情報・実接続・課金なし ✅ /
+  全項目ロック維持(承認までゲート解除しない)✅ / secretsは含めずプレースホルダのみ ✅ /
+  秘密情報スキャン pass ✅ / test・README・CLAUDE_RESPONSE 更新 ✅
+
+### テスト結果
+- `production-roadmap` テスト **12件 pass**、`npm run build`(sales-workspace)成功
+- `scripts/ci/check-secret-patterns.js`: 「秘密情報らしきパターンは見つかりませんでした」
+- Playwright E2E: 本番ロードマップ画面で 11 の Production Readiness カードすべてに設計テキスト(OIDC 等)・
+  設計バッジ・設計ドキュメント参照を確認、全項目ロック、**ページエラー 0**
+
+---
+
 ## 2026-07-09 — Mission Control Dashboard(Phase 1・司令室ホーム)
 
 ### 実装内容
