@@ -4,7 +4,13 @@
 **Updated:** 2026-07-09
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Musasabi Intelligence Layer・Mock)
+## 直近の完了内容(STAGING-001: Mock/Staging デプロイ準備・Issue #302)
+build ✅ / 全テスト544件 pass ✅ / 秘密情報スキャン ✅(lint は各パッケージ未定義=ギャップとして文書化)。
+docs/ai-handoff 34ファイルの main 反映確認。docs/STAGING_DEPLOYMENT.md 新規(Web/Windows 配備手順・
+ロールバック・本番ゲート4種の状態)。npm run preview:web(vite preview)追加・動作確認。
+Production Readiness は4ゲートすべて無効のまま(本番デプロイは行わない)。
+
+## それ以前の完了内容(Musasabi Intelligence Layer・Mock)
 指示書 MUSASABI_INTELLIGENCE_LAYER を実装。`packages/intelligence-layer`(新規): AI Policy Engine
 (13カテゴリ・優先度6段・validateDecision=実外部変更/課金を遮断)、Knowledge Graph(ノード14種・
 MEISHI-TUBE連結・関連検索/根拠追跡)、Workflow Composer(ノード13種・例示フロー=営業→調査→マーケ→
