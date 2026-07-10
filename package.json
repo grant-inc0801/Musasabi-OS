@@ -15,7 +15,8 @@
     "build:desktop": "npm --prefix apps/desktop run package:win",
     "package:win": "npm --prefix apps/desktop run package:win",
     "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "preview:web": "npm --prefix apps/sales-workspace run preview"
   },
   "devDependencies": {
     "typescript": "^5.5.4"

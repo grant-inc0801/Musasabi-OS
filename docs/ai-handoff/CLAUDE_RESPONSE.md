@@ -3,6 +3,27 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-10 — STAGING-001: Mock/Staging デプロイ準備(Issue #302)
+
+### 実施内容
+- **検証**: `npm run build` ✅ / `npm test` = 38パッケージ・**544件 pass・fail 0** ✅ /
+  秘密情報スキャン ✅ / CI green ✅。`npm run lint` は各パッケージに lint スクリプト未定義
+  (`--if-present` で no-op)のため **ギャップとして文書化**(導入は後続タスク)
+- **docs/ai-handoff/ の main 反映確認**: 34ファイルすべて main に存在
+- **ステージング配備計画**: `docs/STAGING_DEPLOYMENT.md` を新規作成
+  (Webプレビュー/Windowsインストーラの配備手順・検証チェック・**ロールバック手順**・
+  本番ゲート4種の状態表・本番デプロイは対象外と明記)
+- **Web プレビュー導線**: `npm run preview:web`(vite preview・http://localhost:4173)を追加し動作確認
+- **Production Readiness はゲート維持**: `PRODUCTION_APPROVED` / `EXTERNAL_POSTING_ENABLED` /
+  `PRODUCTION_CONNECTIONS_ENABLED` / `REAL_ENFORCEMENT_ENABLED` すべて false を確認
+- 外部連携はすべて Mock/無効のまま。本番 secrets 不使用
+
+### 成果物
+- ステージング配備計画(docs/STAGING_DEPLOYMENT.md)/ ビルド・テスト結果サマリー(本エントリ)/
+  README 更新 / 後続課題: lint 導入(必要なら Issue 化はドラフトで提案)
+
+---
+
 ## 2026-07-09 — Musasabi Intelligence Layer(Mock)
 
 ### 実装内容
