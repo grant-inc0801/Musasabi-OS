@@ -4,7 +4,11 @@
 **Updated:** 2026-07-09
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(STAGING-001: Mock/Staging デプロイ準備・Issue #302)
+## 直近の完了内容(UIフィードバック第11弾・チャット欄横長化)
+コマンドセンター右下のアシスタントチャットをサイドバー境目(180px)から右端まで横長化
+(left:196px/right:20px)。クイック質問を横並びへ・入力/履歴の高さ圧縮。build成功・E2E 0エラー。
+
+## それ以前の完了内容(STAGING-001: Mock/Staging デプロイ準備・Issue #302)
 build ✅ / 全テスト544件 pass ✅ / 秘密情報スキャン ✅(lint は各パッケージ未定義=ギャップとして文書化)。
 docs/ai-handoff 34ファイルの main 反映確認。docs/STAGING_DEPLOYMENT.md 新規(Web/Windows 配備手順・
 ロールバック・本番ゲート4種の状態)。npm run preview:web(vite preview)追加・動作確認。
