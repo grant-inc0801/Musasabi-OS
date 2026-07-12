@@ -3,6 +3,23 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-12 — 本番実装第2弾①: 実STT(音声入力の本物化・whisperローカル自動検出)
+
+### 実装内容
+- **Rust `local_stt_request`**: WAV音声(base64)を multipart で localhost の whisper サーバへ転送
+  (localhost限定・外部送信なし)。独立クレートで multipart 実HTTP検証済み
+- **`lib/stt.ts`**: whisper サーバ自動検出(/health→/)・マイク録音(MediaRecorder)→
+  **WAV 16kHz mono へブラウザ内変換**→ whisper.cpp `/inference` へ送信
+  (404なら OpenAI互換 `/v1/audio/transcriptions` へ自動フォールバック)
+- **音声入力ボタンの本物化**: 押して話す→停止で実文字起こし→チャット入力欄へ挿入。
+  サーバ未検出時は「whisper未検出」表示(従来Mock相当・README に導入手順)
+
+### テスト結果
+- E2E(fakeマイク+偽whisperサーバへの実HTTP): 検出表示・録音→停止→文字起こし→入力欄反映・
+  サーバ側で WAV(RIFF)受信確認 **3/3 pass**・0エラー / build ✅ / 秘密情報スキャン ✅
+
+---
+
 ## 2026-07-12 — 無課金本番化 B: 無料外部連携(Webhook通知+GitHub実データ・オプトイン)
 
 ### 実装内容(「無課金で本番実装」最終弾)

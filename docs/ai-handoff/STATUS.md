@@ -4,7 +4,13 @@
 **Updated:** 2026-07-12
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(無課金本番化 B: 無料外部連携・オプトイン)
+## 直近の完了内容(本番実装第2弾①: 実STT)
+Rust local_stt_request(multipart・localhost限定)+lib/stt.ts(whisper自動検出・録音→WAV16k変換→
+/inference・OpenAI互換フォールバック)。音声入力ボタン本物化(未検出時はMock表示)。
+E2E 3/3(実録音→実HTTP文字起こし)0エラー。次: ②RSS実データ調査→③VOICEVOX→④自動バックアップ→
+⑤ファイル読み取りツール→⑥定例キャッチアップ。
+
+## それ以前の完了内容(無課金本番化 B: 無料外部連携・オプトイン)
 lib/freeConnectors.ts: Discord/Slack Webhook 実通知(エージェント完了時)+GitHub実データ
 (Mission Control に実カード表示)。URL/トークンは端末内のみ・未設定なら外部送信ゼロ。
 コネクタページに設定/テストUI。E2E 4/4(実HTTP受信検証)+回帰2本 0エラー。
