@@ -6,6 +6,7 @@ import { recordMemory } from "../../lib/memoryStorage";
 import { appendDeptChat, loadDeptChatHistory } from "../../lib/deptChatStorage";
 import { buildAssistantReply, HELP_SUGGESTIONS } from "../../lib/assistantHelp";
 import { loadLlmSettings } from "../../lib/llmSettings";
+import { resolveLlmFetch } from "../../lib/llmFetch";
 import brandIcon from "../../assets/brand-icon.png";
 
 // アプリ構成の要約(LLM頭脳に渡す案内用コンテキスト)。
@@ -30,7 +31,9 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
 
   // 起動時に頭脳を検出(ローカルLLM優先・未検出はルールベース)。
   useEffect(() => {
-    void detectBrain(loadLlmSettings()).then((b) => { brainRef.current = b; });
+    void resolveLlmFetch()
+      .then((f) => detectBrain(loadLlmSettings(), f))
+      .then((b) => { brainRef.current = b; });
   }, []);
 
   async function handleSend(): Promise<void> {

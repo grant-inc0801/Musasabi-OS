@@ -23,6 +23,12 @@
       "allow": [
         {
           "url": "https://serpapi.com/*"
+        },
+        {
+          "url": "http://127.0.0.1:11434/*"
+        },
+        {
+          "url": "http://localhost:11434/*"
         }
       ]
     },

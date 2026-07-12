@@ -4,7 +4,12 @@
 **Updated:** 2026-07-12
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(本物のエージェント転換: ローカルLLM+実行ループ)
+## 直近の完了内容(デスクトップ版Ollama接続のネイティブHTTP化)
+Tauri環境では @tauri-apps/plugin-http(Rust経由・CORS制約なし)でOllamaへ接続する llmFetch を追加。
+capabilities に 127.0.0.1:11434 / localhost:11434 を許可。OLLAMA_ORIGINS 設定不要で接続可能に。
+READMEにトラブルシューティング追記。E2E 2本 0エラー。
+
+## それ以前の完了内容(本物のエージェント転換: ローカルLLM+実行ループ)
 `packages/agent-runtime` 新規: 無料ローカルLLM(Ollama互換API・localhost)自動検出+ルールベース
 フォールバックの頭脳差し込み、計画→行動→承認→観察→報告の自律ループ(ポリシー検証・人間承認ゲート・
 監査ログ・Company Brain 書き込み・maxSteps ガード)。エージェント実行センター(Workflow)新設。
