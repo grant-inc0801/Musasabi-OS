@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AgentRuntime,
-  defaultTools,
   detectBrain,
   WORKFLOW_TEMPLATES,
   type AgentRunState,
@@ -11,7 +10,8 @@ import {
 import { loadLlmSettings, saveLlmSettings } from "../../lib/llmSettings";
 import { resolveLlmFetch } from "../../lib/llmFetch";
 import { recordMemory } from "../../lib/memoryStorage";
-import { searchBrain } from "../../lib/brainRag";
+import { buildAgentTools } from "../../lib/agentTools";
+import { saveBinaryFile } from "../../lib/saveFile";
 
 // エージェント実行センター — Musasabi を「本物のエージェント」として動かす画面。
 // 頭脳: ローカルLLM(Ollama・無料・localhost・外部送信なし)を自動検出。
@@ -69,21 +69,7 @@ export function AgentCenterPage() {
 
   async function startGoal(goal: AgentGoal): Promise<void> {
     const b = brain ?? (await probe());
-    // research_snapshot を実RAG(Company Brain 意味検索)へ差し替え(ヒットなしは従来Mock)
-    const tools = defaultTools().map((t) =>
-      t.name === "research_snapshot"
-        ? {
-            ...t,
-            run: async (input: string) => {
-              const { hits, state } = await searchBrain(input, 3);
-              if (hits.length === 0) return `社内データに関連記録なし(索引 ${state.indexedCount} 件)。市場スナップショット(Mock): 対象セグメントの需要は中〜高。`;
-              const lines = hits.map((h) => `・${h.doc.text}(関連度 ${(h.score * 100).toFixed(0)}%)`).join("\n");
-              return `社内データ検索(${state.providerName}・索引 ${state.indexedCount} 件):\n${lines}`;
-            },
-          }
-        : t,
-    );
-    const rt = new AgentRuntime({ provider: b.provider, tools });
+    const rt = new AgentRuntime({ provider: b.provider, tools: buildAgentTools() });
     runtimeRef.current = rt;
     setRunning(true);
     setSavedNote(null);
@@ -239,6 +225,28 @@ export function AgentCenterPage() {
             <div className="card" style={{ marginTop: "0.5rem" }}>
               <strong>📋 最終報告(説明可能性つき)</strong>
               <pre style={{ whiteSpace: "pre-wrap", fontSize: "0.78rem", margin: "0.3rem 0 0" }}>{run.finalReport}</pre>
+              <button
+                type="button"
+                style={{ marginTop: "0.4rem" }}
+                onClick={() => {
+                  const md = [
+                    `# エージェント実行報告 — ${run.goal.title}`,
+                    "",
+                    run.finalReport ?? "",
+                    "",
+                    "## ステップ詳細",
+                    ...run.steps.map((st) => `### ${st.index + 1}. [${STEP_KIND_LABEL[st.kind]}] ${st.actor}${st.tool ? `(${st.tool})` : ""}\n${st.output}`),
+                  ].join("\n");
+                  void saveBinaryFile(
+                    `agent-report-${new Date().toISOString().slice(0, 10)}.md`,
+                    new TextEncoder().encode(md),
+                    "Markdown",
+                    ["md"],
+                  );
+                }}
+              >
+                📄 報告をファイル保存(実ファイル)
+              </button>
             </div>
           )}
           {savedNote && <p style={{ color: "#22C55E", fontSize: "0.8rem" }}>✓ {savedNote}</p>}

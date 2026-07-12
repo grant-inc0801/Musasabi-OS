@@ -32,6 +32,7 @@ import { OperationsPage } from "./components/Operations/OperationsPage";
 import { ReportsPage } from "./components/Reports/ReportsPage";
 import { NotificationsPage } from "./components/Notifications/NotificationsPage";
 import { SchedulerPage } from "./components/Scheduler/SchedulerPage";
+import { startAgentScheduler } from "./lib/agentSchedule";
 import { HelpPage } from "./components/Help/HelpPage";
 import { SalesBrainPage } from "./components/SalesBrain/SalesBrainPage";
 import { FirstRunSetup } from "./components/Setup/FirstRunSetup";
@@ -282,6 +283,11 @@ function groupIdOfPage(p: Page): string | undefined {
 }
 
 export function App() {
+  // エージェント定例実行の監視(アプリ起動中・60秒間隔・多重起動なし)
+  useEffect(() => {
+    startAgentScheduler();
+  }, []);
+
   // 既定画面は Musasabi Command Center(D-20260706-007)。
   const [page, setPage] = useState<Page>("command_center");
   // 大項目クリックで小項目を開閉する(複数同時に開ける)。既定では Dashboard を開く。
