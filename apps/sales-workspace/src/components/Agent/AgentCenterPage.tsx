@@ -40,6 +40,7 @@ export function AgentCenterPage() {
   const [settings, setSettings] = useState(() => loadLlmSettings());
   const [brain, setBrain] = useState<DetectedBrain | null>(null);
   const [probing, setProbing] = useState(false);
+  const [transport, setTransport] = useState<string>("");
   const [run, setRun] = useState<AgentRunState | null>(null);
   const [running, setRunning] = useState(false);
   const [customGoal, setCustomGoal] = useState("");
@@ -49,7 +50,9 @@ export function AgentCenterPage() {
   async function probe(): Promise<DetectedBrain> {
     setProbing(true);
     try {
-      const b = await detectBrain(settings, await resolveLlmFetch());
+      const f = await resolveLlmFetch();
+      setTransport(f ? "ネイティブHTTP(デスクトップ)" : "ブラウザfetch");
+      const b = await detectBrain(settings, f);
       setBrain(b);
       return b;
     } finally {
@@ -128,6 +131,12 @@ export function AgentCenterPage() {
                 ? "ローカルLLMに接続済み。推論はこの端末内で完結します。"
                 : "ローカルLLM未検出。Ollama をインストールすると本物のLLM頭脳に切り替わります(README参照)。現在はルールベースで動作。"}
             </div>
+            {brain?.source === "fallback" && !probing && (
+              <div style={{ fontSize: "0.7rem", color: "#F59E0B", marginTop: "0.15rem" }}>
+                診断: 接続先 {settings.baseUrl} / 経路 {transport || "不明"} / 失敗理由 {brain.probeError ?? "不明"}。
+                Ollama 起動中か(ブラウザで {settings.baseUrl} を開くと "Ollama is running")を確認し、「保存して接続テスト」を押してください。
+              </div>
+            )}
           </div>
           <div style={{ marginLeft: "auto", display: "flex", gap: "0.4rem", flexWrap: "wrap", alignItems: "center" }}>
             <input
