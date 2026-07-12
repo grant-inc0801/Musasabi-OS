@@ -11,6 +11,7 @@ import { loadLlmSettings } from "./llmSettings";
 import { resolveLlmFetch } from "./llmFetch";
 import { recordMemory } from "./memoryStorage";
 import { appLogger } from "./appLogger";
+import { sendAgentNotification } from "./freeConnectors";
 
 export interface ScheduleRunLog {
   atMs: number;
@@ -103,6 +104,8 @@ export async function runScheduleNow(schedule: AgentSchedule): Promise<AgentSche
         detail: (state.finalReport ?? "").slice(0, 200),
         tags: ["agent-schedule", schedule.id],
       });
+      // 無料コネクタ(Webhook)設定時のみ実通知(未設定なら何も送らない)
+      void sendAgentNotification(`定例実行完了: ${schedule.title}`, state.finalReport ?? "").catch(() => undefined);
     }
     log = {
       atMs: startedAt,

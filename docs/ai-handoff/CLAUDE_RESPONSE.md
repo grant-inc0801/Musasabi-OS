@@ -3,6 +3,28 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-12 — 無課金本番化 B: 無料外部連携(Webhook通知+GitHub実データ・オプトイン)
+
+### 実装内容(「無課金で本番実装」最終弾)
+- **`lib/freeConnectors.ts`(新規)**: ユーザーが自分の Webhook URL / トークンを入力した場合のみ
+  有効になる**本物の外部連携(無料枠のみ)**。URL・トークンは端末内(localStorage)のみ保存・
+  リポジトリ/外部へ保存しない。**未設定なら外部送信は一切発生しない**
+  - **Discord/Slack Webhook 通知**: エージェント実行完了(手動/定例)を実送信。送信は
+    Company Brain に記録。Tauri ではネイティブHTTP(CORS制約なし)
+  - **GitHub 実データ**: Fine-grained PAT(読み取り専用推奨)で open issues+PRs 件数・最新コミットを
+    取得し、**Mission Control の GitHub Development に「実データ」カード表示**
+- **外部連携コネクタページ**: 「無料コネクタ(実接続・オプトイン)」セクション新設
+  (設定・テスト通知送信・GitHub接続テスト)
+- capabilities: discord.com/api/webhooks / hooks.slack.com/services / api.github.com を許可リストへ
+- メール送信・カレンダー連携は認証情報の保管設計(Secret Center)確定後の後続と明記
+
+### テスト結果
+- E2E(ローカル偽Webhook/偽GitHub APIへの**実HTTP**): 設定UI表示・テスト通知が実受信
+  (content検証)・GitHub接続OK(件数/コミット表示)・Mission Control実データカード **4/4 pass**
+- 回帰: エージェント実行 7/7・定例実行 7/7。すべて 0エラー / build ✅ / 秘密情報スキャン ✅
+
+---
+
 ## 2026-07-12 — 無課金本番化 A3+A5: 音声読み上げ(実TTS)+画像OCR(実文字認識)
 
 ### 実装内容(「無課金で本番実装」第3弾)

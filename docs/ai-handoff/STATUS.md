@@ -4,7 +4,13 @@
 **Updated:** 2026-07-12
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(無課金本番化 A3+A5: 実TTS+実OCR)
+## 直近の完了内容(無課金本番化 B: 無料外部連携・オプトイン)
+lib/freeConnectors.ts: Discord/Slack Webhook 実通知(エージェント完了時)+GitHub実データ
+(Mission Control に実カード表示)。URL/トークンは端末内のみ・未設定なら外部送信ゼロ。
+コネクタページに設定/テストUI。E2E 4/4(実HTTP受信検証)+回帰2本 0エラー。
+メール/カレンダーは Secret Center 設計後の後続。**無課金本番化 A1〜B すべて完了**。
+
+## それ以前の完了内容(無課金本番化 A3+A5: 実TTS+実OCR)
 lib/voice.ts: SpeechSynthesis(Windows内蔵・オフライン)で日本語読み上げ(チャット返答🔊/
 エージェント最終報告)。lib/ocr.ts+Visionページ: tesseract WASM 実OCR(日本語+英語・
 エンジン/言語データ同梱・オフライン・Brain記録)。E2E 5/5(実画像認識 信頼度90%)0エラー。
