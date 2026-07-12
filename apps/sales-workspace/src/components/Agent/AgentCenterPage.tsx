@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AgentRuntime,
+  defaultTools,
   detectBrain,
   WORKFLOW_TEMPLATES,
   type AgentRunState,
@@ -10,6 +11,7 @@ import {
 import { loadLlmSettings, saveLlmSettings } from "../../lib/llmSettings";
 import { resolveLlmFetch } from "../../lib/llmFetch";
 import { recordMemory } from "../../lib/memoryStorage";
+import { searchBrain } from "../../lib/brainRag";
 
 // エージェント実行センター — Musasabi を「本物のエージェント」として動かす画面。
 // 頭脳: ローカルLLM(Ollama・無料・localhost・外部送信なし)を自動検出。
@@ -67,7 +69,21 @@ export function AgentCenterPage() {
 
   async function startGoal(goal: AgentGoal): Promise<void> {
     const b = brain ?? (await probe());
-    const rt = new AgentRuntime({ provider: b.provider });
+    // research_snapshot を実RAG(Company Brain 意味検索)へ差し替え(ヒットなしは従来Mock)
+    const tools = defaultTools().map((t) =>
+      t.name === "research_snapshot"
+        ? {
+            ...t,
+            run: async (input: string) => {
+              const { hits, state } = await searchBrain(input, 3);
+              if (hits.length === 0) return `社内データに関連記録なし(索引 ${state.indexedCount} 件)。市場スナップショット(Mock): 対象セグメントの需要は中〜高。`;
+              const lines = hits.map((h) => `・${h.doc.text}(関連度 ${(h.score * 100).toFixed(0)}%)`).join("\n");
+              return `社内データ検索(${state.providerName}・索引 ${state.indexedCount} 件):\n${lines}`;
+            },
+          }
+        : t,
+    );
+    const rt = new AgentRuntime({ provider: b.provider, tools });
     runtimeRef.current = rt;
     setRunning(true);
     setSavedNote(null);

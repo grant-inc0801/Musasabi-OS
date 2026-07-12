@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { MEMORY_CATEGORIES, MEMORY_CATEGORY_LABEL_JA, MemoryEngine } from "@musasabi/memory";
 import type { MemoryCategory } from "@musasabi/memory";
 import { loadMemoryRecords, promoteMemoriesNow } from "../../lib/memoryStorage";
+import { searchBrain } from "../../lib/brainRag";
+import type { SearchHit } from "@musasabi/brain-rag";
 import { saveBinaryFile } from "../../lib/saveFile";
 
 // Company Brain ページ(Development Bible 第9章 Brain Memory Engine)。
@@ -37,6 +39,26 @@ export function CompanyBrainPage() {
   const [period, setPeriod] = useState<Period>("all");
   const [promotedNote, setPromotedNote] = useState<string | null>(null);
   const [exportNote, setExportNote] = useState<string | null>(null);
+  const [semQuery, setSemQuery] = useState("");
+  const [semHits, setSemHits] = useState<SearchHit[] | null>(null);
+  const [semNote, setSemNote] = useState<string | null>(null);
+  const [semBusy, setSemBusy] = useState(false);
+
+  async function handleSemanticSearch(): Promise<void> {
+    const q = semQuery.trim();
+    if (q === "" || semBusy) return;
+    setSemBusy(true);
+    setSemNote(null);
+    try {
+      const { hits, state } = await searchBrain(q, 5);
+      setSemHits(hits);
+      setSemNote(`${state.providerName} / 索引 ${state.indexedCount} 件${state.source === "fallback" ? "(Ollama で nomic-embed-text を取得すると実埋め込みに切替)" : ""}`);
+    } catch (e) {
+      setSemNote(`検索に失敗しました: ${String(e)}`);
+    } finally {
+      setSemBusy(false);
+    }
+  }
 
   function handlePromote(): void {
     const count = promoteMemoriesNow();
@@ -98,6 +120,43 @@ export function CompanyBrainPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section aria-label="意味検索">
+        <h3 style={{ marginTop: 0 }}>意味検索(ローカルRAG)</h3>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "44rem" }}>
+          社内の行動記録をローカル埋め込みで意味検索します(無課金・外部送信なし)。
+          アシスタントチャットとエージェントの市場調査ツールもこの検索結果を利用します。
+        </p>
+        <div style={{ display: "flex", gap: "0.5rem", maxWidth: "36rem" }}>
+          <input
+            value={semQuery}
+            onChange={(e) => setSemQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") void handleSemanticSearch(); }}
+            placeholder="例: 営業の架電リスト / 経理のExcel出力"
+            style={{ flex: 1, fontSize: "0.85rem", background: "var(--bg-card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, padding: "0.4rem 0.6rem" }}
+          />
+          <button type="button" onClick={() => void handleSemanticSearch()} disabled={semBusy}>
+            {semBusy ? "検索中…" : "意味検索"}
+          </button>
+        </div>
+        {semNote && <p style={{ color: "var(--text-muted)", fontSize: "0.75rem", margin: "0.4rem 0 0" }}>{semNote}</p>}
+        {semHits && (
+          <div style={{ marginTop: "0.5rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+            {semHits.length === 0 && <p style={{ fontSize: "0.85rem" }}>関連する記録は見つかりませんでした。</p>}
+            {semHits.map((h) => (
+              <div key={h.doc.id} className="card" style={{ padding: "0.45rem 0.7rem", fontSize: "0.8rem" }}>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <span className="badge" style={{ fontSize: "0.64rem" }}>関連度 {(h.score * 100).toFixed(0)}%</span>
+                  <span style={{ color: "var(--text-muted)", fontSize: "0.7rem" }}>
+                    {h.doc.meta["主体"]} / {h.doc.meta["日時"]}
+                  </span>
+                </div>
+                <div style={{ marginTop: "0.15rem" }}>{h.doc.text}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section aria-label="自己改善">
