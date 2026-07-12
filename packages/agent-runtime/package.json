@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "npm --prefix ../intelligence-layer run build && tsc -p tsconfig.json",
     "test": "npm run build && node --test dist/*.test.js"
   },
   "dependencies": {
