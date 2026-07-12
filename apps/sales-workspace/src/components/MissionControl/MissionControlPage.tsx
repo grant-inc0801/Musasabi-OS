@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { fetchGithubRealStatus, type GithubRealStatus } from "../../lib/freeConnectors";
 import {
   AI_CEO_STATUS,
   AI_PM_STATUS,
@@ -40,6 +41,10 @@ function useCountUp(target: number, durationMs = 900): number {
 }
 
 export function MissionControlPage({ onOpenPage }: { onOpenPage?: (page: string) => void }) {
+  const [ghReal, setGhReal] = useState<GithubRealStatus | null>(null);
+  useEffect(() => {
+    void fetchGithubRealStatus().then(setGhReal).catch(() => setGhReal(null));
+  }, []);
   const summary = useMemo(() => computeMissionSummary(), []);
   const util = useCountUp(summary.aiUtilization);
   const cylinders = useMemo(() => COMMAND_DEPARTMENTS.map((d) => ({ ...d })), []);
@@ -186,6 +191,13 @@ export function MissionControlPage({ onOpenPage }: { onOpenPage?: (page: string)
         {/* ⑧ GitHub Development */}
         <section className="card mc-panel" aria-label="GitHub 開発状況">
           <h3 className="mc-h">GitHub Development</h3>
+          {ghReal && (
+            <div className="card" style={{ padding: "0.4rem 0.6rem", margin: "0.3rem 0", fontSize: "0.78rem" }}>
+              <span className="badge" style={{ fontSize: "0.62rem" }}>実データ</span>{" "}
+              <strong>{ghReal.repo}</strong> — open issues+PRs {ghReal.openIssues} 件 / 最新:{" "}
+              <code>{ghReal.latestCommitSha}</code> {ghReal.latestCommitMessage}
+            </div>
+          )}
           <div className="mc-sub">実装中Issue</div>
           <ul className="mc-list">
             {GITHUB_STATUS.implementingIssues.map((i) => <li key={i}>{i}</li>)}

@@ -13,6 +13,7 @@ import { recordMemory } from "../../lib/memoryStorage";
 import { buildAgentTools } from "../../lib/agentTools";
 import { saveBinaryFile } from "../../lib/saveFile";
 import { isTtsAvailable, speakJa } from "../../lib/voice";
+import { sendAgentNotification } from "../../lib/freeConnectors";
 
 // エージェント実行センター — Musasabi を「本物のエージェント」として動かす画面。
 // 頭脳: ローカルLLM(Ollama・無料・localhost・外部送信なし)を自動検出。
@@ -106,6 +107,8 @@ export function AgentCenterPage() {
       recordMemory({ category: "work", actor: "agent", action: w.action, detail: w.detail, tags: ["agent-run"] });
     }
     setSavedNote(`Company Brain へ ${s.brainWrites.length} 件保存しました(監査ログ ${s.auditLog.length} 件)。`);
+    // 無料コネクタ(Webhook)設定時のみ実通知(未設定なら何も送らない)
+    void sendAgentNotification(`エージェント実行完了: ${s.goal.title}`, s.finalReport ?? "").catch(() => undefined);
   }
 
   const statusLabel = useMemo(() => {

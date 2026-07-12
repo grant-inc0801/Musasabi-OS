@@ -10,6 +10,7 @@ import {
   getConnector,
   type AuditEntry,
 } from "@musasabi/connectors";
+import { FreeConnectorsSection } from "./FreeConnectorsSection";
 
 // Phase 3: Real-World Integration(Directive D-20260708-004)デバッグ/確認画面。
 // コネクタ・フレームワークの一覧、Mock 読み取り/書き込みの実行、監査ログを表示する。
@@ -32,6 +33,7 @@ export function ConnectorsPage() {
 
   return (
     <>
+      <FreeConnectorsSection />
       <section aria-label="コネクタ概要">
         <h2>外部連携コネクタ(Phase 3・Mock)</h2>
         <p style={{ color: "var(--warn)", fontSize: "0.85rem", maxWidth: "48rem" }}>

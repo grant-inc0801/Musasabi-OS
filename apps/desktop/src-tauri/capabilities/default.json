@@ -29,6 +29,15 @@
         },
         {
           "url": "http://localhost:11434/*"
+        },
+        {
+          "url": "https://discord.com/api/webhooks/*"
+        },
+        {
+          "url": "https://hooks.slack.com/services/*"
+        },
+        {
+          "url": "https://api.github.com/*"
         }
       ]
     },
