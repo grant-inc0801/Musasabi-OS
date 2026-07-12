@@ -76,6 +76,7 @@ packages/
   ai-model-registry/  AI統合センター/モデルレジストリ(9プロバイダ・能力スコア14軸・タスク別ルーティング・モデル比較・アップグレード評価・AI秘書通知・Company Brain利用ナレッジ・Secret Centerルール。APIキー非保持=参照名のみ。本番接続は承認までロック。Mock)
   marketing-pdca/     マーケティングPDCAエンジン(投稿タイトル単位管理・数値分析12指標・PDCA・バージョン管理・Company Brainナレッジ化・AI秘書統一カード。テキストロック時は解析のみ。実SNS接続/本番投稿なし。Mock)
   intelligence-layer/ Musasabi Intelligence Layer(AI Policy Engine 13カテゴリ/優先度6段・Knowledge Graph 14種ノード・Workflow Composer 13種ノード+例示フロー・Explainability Center 13項目+スコア5軸。AI秘書/AI監査/CEO/Company Brain統合。実強制は承認までロック。Mock)
+  agent-runtime/      エージェント実行ループ(計画→行動→承認→観察→報告。頭脳=無料ローカルLLM(Ollama互換API)自動検出+ルールベースフォールバック。ポリシー検証・人間承認ゲート・監査ログ・Company Brain書き込み・maxStepsガード。ツールは全ローカル・外部送信なし)
   memory/             Brain Memory Engine(未実装、Epic β-001完了後)
   vision/             Vision Engine(未実装、Epic β-001完了後)
   automation/         Automation Engine(未実装、Epic β-001完了後)
@@ -116,6 +117,21 @@ npm install
 npm run build   # 全パッケージをビルド(依存順に自動でビルドされる)
 npm test        # 全パッケージのユニットテスト
 ```
+
+## ローカルLLM(無料)セットアップ — エージェント頭脳
+
+Musasabi のエージェント実行ループ(エージェント実行センター/アシスタントチャット)は、
+**無料のローカルLLM(Ollama)** を自動検出して頭脳として使う。APIキー不要・課金なし・
+推論は端末内で完結(データの外部送信なし)。**未検出でもルールベース頭脳で同じループが動く**
+ため、インストールは任意。
+
+1. https://ollama.com から Ollama をインストール(無料・Windows/Mac/Linux)
+2. モデルを取得: `ollama pull qwen2.5:0.5b`(軽量。性能重視なら `qwen2.5:7b` など)
+3. Musasabi を起動 → **Workflow → エージェント実行センター** が `http://127.0.0.1:11434`
+   を自動検出(🧠表示)。URL/モデル名は同画面で変更・接続テストできる
+
+エージェントの各行動は Intelligence Layer のポリシー検証を通過し、実外部変更・課金を伴う
+行動は遮断される。承認ノードでは人間承認まで停止し、実行は監査ログと Company Brain に残る。
 
 ## ステージング/Mock デプロイ(STAGING-001)
 
