@@ -1,11 +1,17 @@
 // エージェント用ツール構築(エージェント実行センター/定例実行スケジューラで共用)。
-// research_snapshot は実RAG(Company Brain 意味検索)へ差し替える(ヒットなしは従来Mock文言)。
+// research_snapshot は「外部実データ(RSS)+社内RAG」、summarize は添付資料がある場合に
+// 実ファイル内容の要約へ差し替える(本番動作。データはすべて端末内処理)。
 
 import { defaultTools, type AgentTool } from "@musasabi/agent-runtime";
 import { searchBrain } from "./brainRag";
 import { fetchAllHeadlines } from "./rssFeeds";
 
-export function buildAgentTools(): AgentTool[] {
+export interface AgentAttachment {
+  name: string;
+  text: string;
+}
+
+export function buildAgentTools(attachments: readonly AgentAttachment[] = []): AgentTool[] {
   return defaultTools().map((t) =>
     t.name === "research_snapshot"
       ? {
@@ -34,6 +40,17 @@ export function buildAgentTools(): AgentTool[] {
             return parts.join("\n");
           },
         }
-      : t,
+      : t.name === "summarize" && attachments.length > 0
+        ? {
+            ...t,
+            run: (input: string) => {
+              const parts = attachments.map((a) => {
+                const excerpt = a.text.replace(/\s+/g, " ").slice(0, 240);
+                return `■ ${a.name}(${a.text.length}文字)\n${excerpt}${a.text.length > 240 ? "…" : ""}`;
+              });
+              return `添付資料 ${attachments.length} 件を読み取り要約(実ファイル内容):\n${parts.join("\n")}\n対象: ${input.slice(0, 60)}`;
+            },
+          }
+        : t,
   );
 }

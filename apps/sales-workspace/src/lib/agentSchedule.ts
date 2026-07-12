@@ -12,6 +12,7 @@ import { resolveLlmFetch } from "./llmFetch";
 import { recordMemory } from "./memoryStorage";
 import { appLogger } from "./appLogger";
 import { sendAgentNotification } from "./freeConnectors";
+import { runBackupIfDue } from "./autoBackup";
 
 export interface ScheduleRunLog {
   atMs: number;
@@ -141,13 +142,18 @@ export async function runDueSchedules(nowMs = Date.now()): Promise<number> {
 let tickerStarted = false;
 
 /**
- * 定例実行の監視を開始する(アプリ起動中のみ・60秒間隔)。多重起動しない。
+ * 定例実行+自動バックアップの監視を開始する(アプリ起動中・60秒間隔)。多重起動しない。
+ * 起動5秒後に1回キャッチアップ実行(未起動中に期限が過ぎた分を回収)。
  * ※常駐はデスクトップアプリの起動に依存する(OSサービス化は本番ロードマップ)。
  */
 export function startAgentScheduler(): void {
   if (tickerStarted || typeof window === "undefined") return;
   tickerStarted = true;
-  window.setInterval(() => {
+  const tick = (): void => {
     void runDueSchedules().catch((e) => appLogger.warn("scheduler tick failed", { error: String(e) }));
-  }, 60 * 1000);
+    void runBackupIfDue().catch((e) => appLogger.warn("auto backup tick failed", { error: String(e) }));
+  };
+  // 起動キャッチアップ: 未起動中に期限が過ぎた定例・バックアップを起動直後に実行
+  window.setTimeout(tick, 5 * 1000);
+  window.setInterval(tick, 60 * 1000);
 }
