@@ -12,6 +12,7 @@ import { resolveLlmFetch } from "../../lib/llmFetch";
 import { recordMemory } from "../../lib/memoryStorage";
 import { buildAgentTools } from "../../lib/agentTools";
 import { saveBinaryFile } from "../../lib/saveFile";
+import { isTtsAvailable, speakJa } from "../../lib/voice";
 
 // エージェント実行センター — Musasabi を「本物のエージェント」として動かす画面。
 // 頭脳: ローカルLLM(Ollama・無料・localhost・外部送信なし)を自動検出。
@@ -247,6 +248,15 @@ export function AgentCenterPage() {
               >
                 📄 報告をファイル保存(実ファイル)
               </button>
+              {isTtsAvailable() && (
+                <button
+                  type="button"
+                  style={{ marginTop: "0.4rem", marginLeft: "0.4rem" }}
+                  onClick={() => speakJa(run.finalReport ?? "")}
+                >
+                  🔊 読み上げ(端末内TTS)
+                </button>
+              )}
             </div>
           )}
           {savedNote && <p style={{ color: "#22C55E", fontSize: "0.8rem" }}>✓ {savedNote}</p>}

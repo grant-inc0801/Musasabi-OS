@@ -3,6 +3,7 @@ import { analyzeUiSnapshot, UI_NODE_KIND_LABEL_JA } from "@musasabi/vision";
 import type { VisionAnalysis } from "@musasabi/vision";
 import { captureOwnUiSnapshot } from "../../lib/visionSnapshot";
 import { recordMemory } from "../../lib/memoryStorage";
+import { recognizeImage, type OcrResult } from "../../lib/ocr";
 
 // Vision ページ(Development Bible 第11章)。手動オプトインの画面解析。
 // 「この画面を解析する」を押した時のみ、自アプリのDOMからUI認識・ボタン検出・
@@ -11,6 +12,31 @@ import { recordMemory } from "../../lib/memoryStorage";
 
 export function VisionPage() {
   const [analysis, setAnalysis] = useState<VisionAnalysis | null>(null);
+  const [ocr, setOcr] = useState<OcrResult | null>(null);
+  const [ocrBusy, setOcrBusy] = useState(false);
+  const [ocrError, setOcrError] = useState<string | null>(null);
+
+  async function handleOcrFile(file: File | null): Promise<void> {
+    if (!file || ocrBusy) return;
+    setOcrBusy(true);
+    setOcrError(null);
+    setOcr(null);
+    try {
+      const result = await recognizeImage(file);
+      setOcr(result);
+      recordMemory({
+        category: "work",
+        actor: "vision-ocr",
+        action: "画像OCRを実行(実文字認識)",
+        detail: result.text.slice(0, 160),
+        tags: ["vision", "ocr"],
+      });
+    } catch (e) {
+      setOcrError(String(e));
+    } finally {
+      setOcrBusy(false);
+    }
+  }
 
   function handleAnalyze(): void {
     const result = analyzeUiSnapshot(captureOwnUiSnapshot(), Date.now());
@@ -47,6 +73,34 @@ export function VisionPage() {
               (実行は Company Brain に記録されます)
             </span>
           </p>
+        )}
+      </section>
+
+      <section aria-label="実OCR">
+        <h3 style={{ marginTop: 0 }}>画像OCR(実文字認識・ローカル)</h3>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "44rem" }}>
+          画像ファイルから文字を実際に認識します(tesseract・日本語+英語)。
+          認識エンジン・言語データはアプリに同梱済みで、<strong>画像はこの端末内でのみ処理</strong>
+          されます(無課金・オフライン動作・外部送信なし)。
+        </p>
+        <label className="attach-btn" style={{ display: "inline-block" }}>
+          🖼 画像を選んでOCR実行
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={(e) => void handleOcrFile(e.target.files?.[0] ?? null)}
+          />
+        </label>
+        {ocrBusy && <p style={{ fontSize: "0.85rem" }}>認識中…(初回は数秒かかります)</p>}
+        {ocrError && <p style={{ color: "#EF4444", fontSize: "0.82rem" }}>OCRに失敗しました: {ocrError}</p>}
+        {ocr && (
+          <div className="card" style={{ marginTop: "0.5rem" }}>
+            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+              信頼度 {ocr.confidence.toFixed(0)}% / 処理時間 {(ocr.elapsedMs / 1000).toFixed(1)}秒(結果は Company Brain に記録されます)
+            </div>
+            <pre style={{ whiteSpace: "pre-wrap", fontSize: "0.85rem", margin: "0.3rem 0 0" }}>{ocr.text || "(文字は検出されませんでした)"}</pre>
+          </div>
         )}
       </section>
 
