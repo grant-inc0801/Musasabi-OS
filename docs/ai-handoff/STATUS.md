@@ -1,10 +1,16 @@
 # Status
 
 **State:** waiting_for_chatgpt
-**Updated:** 2026-07-09
+**Updated:** 2026-07-12
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(UIフィードバック第11弾・チャット欄横長化)
+## 直近の完了内容(本物のエージェント転換: ローカルLLM+実行ループ)
+`packages/agent-runtime` 新規: 無料ローカルLLM(Ollama互換API・localhost)自動検出+ルールベース
+フォールバックの頭脳差し込み、計画→行動→承認→観察→報告の自律ループ(ポリシー検証・人間承認ゲート・
+監査ログ・Company Brain 書き込み・maxSteps ガード)。エージェント実行センター(Workflow)新設。
+アシスタントチャットもLLM頭脳化(未検出時は決定論応答)。単体8件 pass・E2E 2本(LLMあり/なし)0エラー。
+
+## それ以前の完了内容(UIフィードバック第11弾・チャット欄横長化)
 コマンドセンター右下のアシスタントチャットをサイドバー境目(180px)から右端まで横長化
 (left:196px/right:20px)。クイック質問を横並びへ・入力/履歴の高さ圧縮。build成功・E2E 0エラー。
 

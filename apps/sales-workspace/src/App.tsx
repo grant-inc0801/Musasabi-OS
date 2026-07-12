@@ -25,6 +25,7 @@ import { MusasabiWorldPage } from "./components/Enterprise/MusasabiWorldPage";
 import { ProductionRoadmapPage } from "./components/Enterprise/ProductionRoadmapPage";
 import { MissionControlPage } from "./components/MissionControl/MissionControlPage";
 import { WorkflowPage } from "./components/Workflow/WorkflowPage";
+import { AgentCenterPage } from "./components/Agent/AgentCenterPage";
 import { CollaborationPage } from "./components/Collaboration/CollaborationPage";
 import { WorkspacePage } from "./components/Workspace/WorkspacePage";
 import { OperationsPage } from "./components/Operations/OperationsPage";
@@ -102,6 +103,7 @@ type Page =
   | "musasabi_world"
   | "production_roadmap"
   | "workflow"
+  | "agent_center"
   | "company_brain"
   | "intelligence_layer"
   | "collaboration"
@@ -153,6 +155,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   musasabi_world: "Musasabi World",
   production_roadmap: "本番ロードマップ",
   workflow: "ワークフロー",
+  agent_center: "エージェント実行センター",
   company_brain: "Company Brain",
   intelligence_layer: "Intelligence Layer",
   collaboration: "コラボレーション",
@@ -230,6 +233,7 @@ const NAV_GROUPS: ReadonlyArray<{
     icon: "🔄",
     items: [
       { label: "ワークフロー", page: "workflow" },
+      { label: "エージェント実行センター", page: "agent_center" },
       { label: "オペレーション", page: "operations" },
       { label: "運用モニタリング", page: "ops_monitor" },
       { label: "スケジューラ", page: "scheduler" },
@@ -467,6 +471,8 @@ export function App() {
           <MusasabiWorldPage />
         ) : page === "production_roadmap" ? (
           <ProductionRoadmapPage />
+        ) : page === "agent_center" ? (
+          <AgentCenterPage />
         ) : page === "workflow" ? (
           <WorkflowPage onOpenPage={(target) => replayNavigate(target)} />
         ) : page === "company_brain" ? (

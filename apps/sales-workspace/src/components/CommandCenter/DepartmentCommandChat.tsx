@@ -1,10 +1,19 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CommandDepartment, DeptChatEntry } from "@musasabi/ai-company";
+import { chatOnce, detectBrain, type DetectedBrain } from "@musasabi/agent-runtime";
 import { VoiceInputButton } from "./VoiceInputButton";
 import { recordMemory } from "../../lib/memoryStorage";
 import { appendDeptChat, loadDeptChatHistory } from "../../lib/deptChatStorage";
 import { buildAssistantReply, HELP_SUGGESTIONS } from "../../lib/assistantHelp";
+import { loadLlmSettings } from "../../lib/llmSettings";
 import brandIcon from "../../assets/brand-icon.png";
+
+// アプリ構成の要約(LLM頭脳に渡す案内用コンテキスト)。
+const APP_CONTEXT =
+  "サイドバー: Dashboard(Mission Control/全社ダッシュボード/レポート/通知/ワークスペース)、" +
+  "Departments(営業/出版/企画/市場調査/開発/サポート/マーケ/経理/人事)、AI Assistant、" +
+  "Workflow(ワークフロー/エージェント実行センター/事業ファクトリー/本番ロードマップ)、" +
+  "Knowledge(Company Brain/Intelligence Layer)、Integrations(コネクタ/AI統合センター)、Settings。";
 
 // コマンドセンター右下: Musasabi アシスタントチャット(UIフィードバック第8弾)。
 // 部署プルダウンを廃止し、単一のアシスタントが指示・提案・操作方法・「何がどこにあるか」を案内する。
@@ -16,15 +25,33 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
   const [text, setText] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
   const [history, setHistory] = useState<DeptChatEntry[]>(() => loadDeptChatHistory());
+  const [pending, setPending] = useState(false);
+  const brainRef = useRef<DetectedBrain | null>(null);
 
-  function handleSend(): void {
+  // 起動時に頭脳を検出(ローカルLLM優先・未検出はルールベース)。
+  useEffect(() => {
+    void detectBrain(loadLlmSettings()).then((b) => { brainRef.current = b; });
+  }, []);
+
+  async function handleSend(): Promise<void> {
     const message = text.trim();
-    if (message === "") return;
+    if (message === "" || pending) return;
+    setPending(true);
+    let reply: string;
+    const brain = brainRef.current;
+    try {
+      reply = brain?.source === "ollama"
+        ? await chatOnce(brain.provider, message, APP_CONTEXT)
+        : buildAssistantReply(message);
+    } catch {
+      // LLM応答失敗時はルールベースへフォールバック(常に応答を返す)
+      reply = buildAssistantReply(message);
+    }
     const entry: DeptChatEntry = {
       deptId: "assistant",
       deptName: "アシスタント",
       message: message + (fileName ? `(添付: ${fileName})` : ""),
-      reply: buildAssistantReply(message),
+      reply,
       atMs: Date.now(),
     };
     setHistory(appendDeptChat(entry));
@@ -37,6 +64,7 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
     });
     setText("");
     setFileName(null);
+    setPending(false);
   }
 
   if (!open) {
@@ -86,7 +114,7 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              handleSend();
+              void handleSend();
             }
           }}
           placeholder="指示・質問を入力…(例: 全社ダッシュボードはどこ?)"
@@ -112,8 +140,8 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
         </label>
         <VoiceInputButton />
         {fileName && <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>添付: {fileName}</span>}
-        <button type="button" onClick={handleSend} className="send-btn">
-          送信
+        <button type="button" onClick={() => void handleSend()} className="send-btn" disabled={pending}>
+          {pending ? "…" : "送信"}
         </button>
       </div>
     </div>

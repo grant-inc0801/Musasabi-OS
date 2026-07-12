@@ -1,0 +1,129 @@
+// LLM プロバイダ抽象化(エージェントの「頭脳」差し込み口)。
+// 無料ローカルLLM(Ollama 互換API: http://localhost:11434)を第一候補として検出し、
+// 未検出時は決定論ルールベース頭脳へフォールバックする。
+// ローカル推論のみ: APIキー不要・課金なし・データの外部送信なし。
+
+export interface LlmMessage {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
+
+export interface LlmProvider {
+  /** 表示名(UI用)。 */
+  name: string;
+  kind: "ollama" | "rule_based";
+  chat(messages: readonly LlmMessage[]): Promise<string>;
+}
+
+export interface LlmSettings {
+  /** Ollama 互換エンドポイント(既定: http://127.0.0.1:11434)。 */
+  baseUrl: string;
+  /** 使用モデル名(既定: qwen2.5:0.5b — 無料・軽量)。 */
+  model: string;
+}
+
+export const DEFAULT_LLM_SETTINGS: LlmSettings = {
+  baseUrl: "http://127.0.0.1:11434",
+  model: "qwen2.5:0.5b",
+};
+
+type FetchLike = (url: string, init?: {
+  method?: string;
+  headers?: Record<string, string>;
+  body?: string;
+  signal?: AbortSignal;
+}) => Promise<{ ok: boolean; status: number; json(): Promise<unknown> }>;
+
+// 既定 fetch はアロー関数で包む(ブラウザの window.fetch は this 束縛が必要なため、
+// 未束縛のまま呼ぶと "Illegal invocation" になる)。
+const defaultFetch: FetchLike = (url, init) =>
+  (fetch as unknown as FetchLike)(url, init);
+
+/** Ollama 互換API(/api/tags・/api/chat)プロバイダ。 */
+export class OllamaProvider implements LlmProvider {
+  readonly kind = "ollama" as const;
+  readonly name: string;
+
+  constructor(
+    private readonly settings: LlmSettings = DEFAULT_LLM_SETTINGS,
+    private readonly fetchImpl: FetchLike = defaultFetch,
+    private readonly timeoutMs = 30000,
+  ) {
+    this.name = `ローカルLLM(Ollama: ${settings.model})`;
+  }
+
+  /** サーバ疎通+モデル一覧を確認する(短いタイムアウト)。 */
+  async isAvailable(probeTimeoutMs = 1500): Promise<boolean> {
+    try {
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), probeTimeoutMs);
+      const res = await this.fetchImpl(`${this.settings.baseUrl}/api/tags`, { signal: ctl.signal });
+      clearTimeout(timer);
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async chat(messages: readonly LlmMessage[]): Promise<string> {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), this.timeoutMs);
+    try {
+      const res = await this.fetchImpl(`${this.settings.baseUrl}/api/chat`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ model: this.settings.model, messages, stream: false }),
+        signal: ctl.signal,
+      });
+      if (!res.ok) throw new Error(`ollama http ${res.status}`);
+      const data = (await res.json()) as { message?: { content?: string } };
+      const content = data.message?.content ?? "";
+      if (content.trim() === "") throw new Error("ollama empty response");
+      return content;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+}
+
+/**
+ * 決定論ルールベース頭脳(フォールバック)。LLM未検出でも同じエージェントループが
+ * 動作するよう、プロンプト中のマーカーに応じて定型の思考結果を返す。
+ */
+export class RuleBasedProvider implements LlmProvider {
+  readonly kind = "rule_based" as const;
+  readonly name = "ルールベース頭脳(フォールバック・決定論)";
+
+  async chat(messages: readonly LlmMessage[]): Promise<string> {
+    const last = messages[messages.length - 1]?.content ?? "";
+    if (last.includes("[PLAN]")) {
+      return "1. 現状を確認する\n2. 必要な作業を実行する\n3. 結果を確認して報告する";
+    }
+    if (last.includes("[OBSERVE]")) {
+      return "出力は目的に沿っています。次のステップへ進みます。";
+    }
+    if (last.includes("[REPORT]")) {
+      return "目標に対する全ステップが完了しました。成果物と根拠は各ステップの出力を参照してください。";
+    }
+    // 汎用応答(チャット用)
+    const text = last.replace(/\s+/g, " ").slice(0, 60);
+    return `「${text}」について承知しました。サイドバーの各グループから該当機能へ移動できます(ルールベース応答)。`;
+  }
+}
+
+export interface DetectedBrain {
+  provider: LlmProvider;
+  source: "ollama" | "fallback";
+}
+
+/** 頭脳を検出する: Ollama が生きていればLLM、いなければルールベース。 */
+export async function detectBrain(
+  settings: LlmSettings = DEFAULT_LLM_SETTINGS,
+  fetchImpl?: FetchLike,
+): Promise<DetectedBrain> {
+  const ollama = new OllamaProvider(settings, fetchImpl);
+  if (await ollama.isAvailable()) {
+    return { provider: ollama, source: "ollama" };
+  }
+  return { provider: new RuleBasedProvider(), source: "fallback" };
+}
