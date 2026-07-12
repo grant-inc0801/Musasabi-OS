@@ -4,7 +4,12 @@
 **Updated:** 2026-07-12
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(LLM検出の診断表示)
+## 直近の完了内容(Ollama接続 HTTP 403 の根治=Rustプロキシ)
+実機診断で原因確定(Tauri WebView の Origin ヘッダを Ollama が拒否)。Rust コマンド
+local_llm_request(reqwest・Originなし・localhost限定・接続3s/全体120sタイムアウト)を新設し、
+llmFetch を invoke ベースへ切替。OLLAMA_ORIGINS 設定不要で接続可能に。独立クレートで実HTTP検証済み。
+
+## それ以前の完了内容(LLM検出の診断表示)
 未検出時に頭脳カードへ診断行(接続先URL/接続経路=ネイティブHTTP or ブラウザfetch/失敗理由+確認手順)
 を表示。probe() が失敗理由を返すよう拡張(タイムアウト3秒)。単体9件 pass・E2E 2本 0エラー。
 

@@ -1,9 +1,10 @@
 // ローカルLLM(Ollama)接続用の fetch 解決。
-// Tauri デスクトップ環境ではネイティブHTTP(@tauri-apps/plugin-http)を使う。
-// WebView の origin(http://tauri.localhost)は Ollama の CORS 既定で弾かれる
-// ことがあるため、Rust 経由の HTTP なら OLLAMA_ORIGINS の設定なしで接続できる。
+// Tauri デスクトップ環境では Rust 側のプロキシコマンド(local_llm_request)経由で
+// 接続する。WebView からの fetch(plugin-http 含む)は Origin ヘッダ
+// (http://tauri.localhost)が付与され、Ollama の許可リストに無いため HTTP 403 で
+// 拒否される。Rust から Origin なしで転送することで、OLLAMA_ORIGINS の設定なしに
+// 接続できる。接続先は Rust 側で localhost / 127.0.0.1 のみに制限(外部送信なし)。
 // ブラウザ実行時は undefined を返し、agent-runtime 側の既定(window.fetch)を使う。
-// 接続先は capabilities(127.0.0.1:11434 / localhost:11434)で制限される。
 
 type LlmFetchLike = (url: string, init?: {
   method?: string;
@@ -15,10 +16,22 @@ type LlmFetchLike = (url: string, init?: {
 export async function resolveLlmFetch(): Promise<LlmFetchLike | undefined> {
   if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
     try {
-      const { fetch: tauriFetch } = await import("@tauri-apps/plugin-http");
-      return tauriFetch as unknown as LlmFetchLike;
+      const { invoke } = await import("@tauri-apps/api/core");
+      const viaRust: LlmFetchLike = async (url, init) => {
+        const res = await invoke<{ status: number; body: string }>("local_llm_request", {
+          url,
+          method: init?.method ?? "GET",
+          body: init?.body ?? null,
+        });
+        return {
+          ok: res.status >= 200 && res.status < 300,
+          status: res.status,
+          json: async () => JSON.parse(res.body) as unknown,
+        };
+      };
+      return viaRust;
     } catch {
-      // プラグイン未登録などの場合はブラウザ fetch へフォールバック
+      // Tauri API 読み込み失敗時はブラウザ fetch へフォールバック
       return undefined;
     }
   }

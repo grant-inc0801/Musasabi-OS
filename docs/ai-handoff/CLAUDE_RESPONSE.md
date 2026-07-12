@@ -3,6 +3,27 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-12 — Ollama接続のHTTP 403を解消(RustプロキシでOriginヘッダ問題を根治)
+
+### 実装内容
+- 実機診断表示により原因確定: 経路=ネイティブHTTPで接続は届くが **HTTP 403**。
+  Tauri の plugin-http は WebView origin(http://tauri.localhost)を Origin ヘッダとして送り、
+  Ollama の許可リストに無いため拒否されていた
+- **Rust プロキシコマンド `local_llm_request` を新設**(src-tauri/lib.rs):
+  reqwest で Origin ヘッダなしに転送。**OLLAMA_ORIGINS の設定不要**で接続可能に。
+  接続先は `http://127.0.0.1:` / `http://localhost:` プレフィックスのみ許可(外部送信なし)。
+  タイムアウト: 接続3秒/全体120秒
+- `llmFetch.ts`: plugin-http fetch → `invoke("local_llm_request")` ベースに切替
+- 検証: 独立クレートで Rust ロジックをコンパイル+実HTTP検証
+  (GET /api/tags・POST /api/chat 成功、スコープ外URL拒否、接続拒否エラーの文字列化)
+
+### テスト結果
+- Rust: 独立クレートで tags/chat 実HTTP成功・スコープ制限動作を確認(サンドボックスに
+  GTK が無く本体 cargo check 不可 → Windows 実コンパイルは beta-build で検証)
+- E2E 2本(LLMあり 7/7・LLMなし 4/4)0エラー / vite build ✅ / 秘密情報スキャン ✅
+
+---
+
 ## 2026-07-12 — LLM検出の診断表示を追加(未検出の原因をその場で確認可能に)
 
 ### 実装内容
