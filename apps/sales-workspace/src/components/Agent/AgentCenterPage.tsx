@@ -8,6 +8,7 @@ import {
   type DetectedBrain,
 } from "@musasabi/agent-runtime";
 import { loadLlmSettings, saveLlmSettings } from "../../lib/llmSettings";
+import { resolveLlmFetch } from "../../lib/llmFetch";
 import { recordMemory } from "../../lib/memoryStorage";
 
 // エージェント実行センター — Musasabi を「本物のエージェント」として動かす画面。
@@ -48,7 +49,7 @@ export function AgentCenterPage() {
   async function probe(): Promise<DetectedBrain> {
     setProbing(true);
     try {
-      const b = await detectBrain(settings);
+      const b = await detectBrain(settings, await resolveLlmFetch());
       setBrain(b);
       return b;
     } finally {

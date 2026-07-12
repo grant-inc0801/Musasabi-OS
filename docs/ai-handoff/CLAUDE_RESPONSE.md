@@ -3,6 +3,23 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-12 — デスクトップ版のOllama接続をネイティブHTTP化(CORS設定不要に)
+
+### 実装内容
+- ユーザー環境に Ollama インストール済みの報告を受け、デスクトップ版(Tauri)からの接続を確実化
+- `lib/llmFetch.ts` 新規: Tauri 環境では `@tauri-apps/plugin-http`(Rust 経由・CORS 制約なし)で
+  Ollama に接続。WebView origin(http://tauri.localhost)が Ollama の CORS 既定で弾かれる問題を
+  **OLLAMA_ORIGINS の設定なし**で回避。ブラウザ実行時は従来どおり window.fetch
+- capabilities に `http://127.0.0.1:11434/*` / `http://localhost:11434/*` を追加(接続先を限定)
+- エージェント実行センター/アシスタントチャットの頭脳検出を resolveLlmFetch 経由に変更
+- README にトラブルシューティング(デスクトップはCORS不要・ブラウザは OLLAMA_ORIGINS・
+  `ollama list` でモデル確認)を追記
+
+### テスト結果
+- E2E 2本(LLMあり 7/7・LLMなし 4/4)ページエラー 0 / vite build 成功 / 秘密情報スキャン pass
+
+---
+
 ## 2026-07-12 — 本物のエージェント転換: ローカルLLM頭脳の差し込み+自律実行ループ
 
 ### 実装内容
