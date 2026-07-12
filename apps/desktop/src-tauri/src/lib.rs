@@ -13,6 +13,47 @@ use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 // 直接呼び出す(apps/sales-workspace/src/desktopBridge.ts)。Rust側の責務はネイティブな
 // ウィンドウ管理・トレイ・自動起動・アバターウィンドウ間のイベント中継のみ。
 
+
+#[derive(serde::Serialize)]
+struct LocalLlmResponse {
+  status: u16,
+  body: String,
+}
+
+// ローカルLLM(Ollama)専用プロキシコマンド。
+// WebView からの fetch(plugin-http 含む)は Origin ヘッダ(http://tauri.localhost)が
+// 付与され、Ollama の許可リストに無いため HTTP 403 で拒否される。Rust 側から
+// Origin なしで転送することで、OLLAMA_ORIGINS の設定なしに接続できるようにする。
+// 接続先は localhost / 127.0.0.1 のみ許可(外部送信なし・会社憲章準拠)。
+#[tauri::command]
+async fn local_llm_request(
+  url: String,
+  method: String,
+  body: Option<String>,
+) -> Result<LocalLlmResponse, String> {
+  let allowed = url.starts_with("http://127.0.0.1:") || url.starts_with("http://localhost:");
+  if !allowed {
+    return Err("ローカルLLM(localhost)以外への接続は許可されていません".into());
+  }
+  let client = reqwest::Client::builder()
+    .timeout(std::time::Duration::from_secs(120))
+    .connect_timeout(std::time::Duration::from_secs(3))
+    .build()
+    .map_err(|e| e.to_string())?;
+  let request = if method.eq_ignore_ascii_case("POST") {
+    client
+      .post(&url)
+      .header("content-type", "application/json")
+      .body(body.unwrap_or_default())
+  } else {
+    client.get(&url)
+  };
+  let response = request.send().await.map_err(|e| e.to_string())?;
+  let status = response.status().as_u16();
+  let text = response.text().await.map_err(|e| e.to_string())?;
+  Ok(LocalLlmResponse { status, body: text })
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
@@ -20,6 +61,7 @@ pub fn run() {
     .plugin(tauri_plugin_http::init())
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_fs::init())
+    .invoke_handler(tauri::generate_handler![local_llm_request])
     .setup(|app| {
       if cfg!(debug_assertions) {
         app.handle().plugin(
