@@ -54,6 +54,41 @@ async fn local_llm_request(
   Ok(LocalLlmResponse { status, body: text })
 }
 
+// ローカルSTT(whisper.cpp / OpenAI互換サーバ)専用プロキシコマンド。
+// WAV音声(base64)を multipart で localhost の音声認識サーバへ転送する。
+// 接続先は localhost / 127.0.0.1 のみ許可(外部送信なし)。
+#[tauri::command]
+async fn local_stt_request(
+  url: String,
+  audio_base64: String,
+  file_name: String,
+) -> Result<LocalLlmResponse, String> {
+  let allowed = url.starts_with("http://127.0.0.1:") || url.starts_with("http://localhost:");
+  if !allowed {
+    return Err("ローカルSTT(localhost)以外への接続は許可されていません".into());
+  }
+  use base64::Engine as _;
+  let bytes = base64::engine::general_purpose::STANDARD
+    .decode(audio_base64)
+    .map_err(|e| e.to_string())?;
+  let part = reqwest::multipart::Part::bytes(bytes)
+    .file_name(file_name)
+    .mime_str("audio/wav")
+    .map_err(|e| e.to_string())?;
+  let form = reqwest::multipart::Form::new()
+    .part("file", part)
+    .text("response_format", "json");
+  let client = reqwest::Client::builder()
+    .timeout(std::time::Duration::from_secs(120))
+    .connect_timeout(std::time::Duration::from_secs(3))
+    .build()
+    .map_err(|e| e.to_string())?;
+  let response = client.post(&url).multipart(form).send().await.map_err(|e| e.to_string())?;
+  let status = response.status().as_u16();
+  let text = response.text().await.map_err(|e| e.to_string())?;
+  Ok(LocalLlmResponse { status, body: text })
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
@@ -61,7 +96,7 @@ pub fn run() {
     .plugin(tauri_plugin_http::init())
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_fs::init())
-    .invoke_handler(tauri::generate_handler![local_llm_request])
+    .invoke_handler(tauri::generate_handler![local_llm_request, local_stt_request])
     .setup(|app| {
       if cfg!(debug_assertions) {
         app.handle().plugin(

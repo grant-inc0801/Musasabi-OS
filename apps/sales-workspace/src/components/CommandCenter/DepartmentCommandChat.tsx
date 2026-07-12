@@ -160,7 +160,7 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
             onChange={(e) => setFileName(e.target.files?.[0]?.name ?? null)}
           />
         </label>
-        <VoiceInputButton />
+        <VoiceInputButton onText={(t) => setText((prev) => (prev === "" ? t : `${prev} ${t}`))} />
         {fileName && <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>添付: {fileName}</span>}
         <button type="button" onClick={() => void handleSend()} className="send-btn" disabled={pending}>
           {pending ? "…" : "送信"}
