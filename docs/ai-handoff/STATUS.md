@@ -4,7 +4,12 @@
 **Updated:** 2026-07-12
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(本番実装第2弾②③: RSS実データ調査+VOICEVOX)
+## 直近の完了内容(本番実装第2弾④⑤⑥: 自動バックアップ+資料読み取り+キャッチアップ)
+④lib/autoBackup.ts(毎日自動・Tauri fs実書き込み・データ管理にUI)⑤エージェント資料添付
+(summarizeが実ファイル内容を要約)⑥起動5秒後のキャッチアップ実行。E2E 5/5・0エラー。
+**本番実装第2弾①〜⑥すべて完了**(①STT ②RSS ③VOICEVOX ④バックアップ ⑤資料 ⑥キャッチアップ)。
+
+## それ以前の完了内容(本番実装第2弾②③: RSS実データ調査+VOICEVOX)
 ② Rust fetch_rss(GET・1MB上限・rustls)+lib/rssFeeds.ts(RSS2/Atomパース)+市場調査部の
 実データソースUI+エージェントresearchにRSS見出し統合(E2E 3/3)。③ Rust local_tts_synthesis+
 speakJaBest(VOICEVOX自動検出・未検出はWindows内蔵音声)(E2E 1/1)。0エラー。

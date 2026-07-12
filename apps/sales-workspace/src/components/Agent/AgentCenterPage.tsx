@@ -10,7 +10,7 @@ import {
 import { loadLlmSettings, saveLlmSettings } from "../../lib/llmSettings";
 import { resolveLlmFetch } from "../../lib/llmFetch";
 import { recordMemory } from "../../lib/memoryStorage";
-import { buildAgentTools } from "../../lib/agentTools";
+import { buildAgentTools, type AgentAttachment } from "../../lib/agentTools";
 import { saveBinaryFile } from "../../lib/saveFile";
 import { isTtsAvailable, speakJaBest } from "../../lib/voice";
 import { sendAgentNotification } from "../../lib/freeConnectors";
@@ -48,6 +48,17 @@ export function AgentCenterPage() {
   const [run, setRun] = useState<AgentRunState | null>(null);
   const [running, setRunning] = useState(false);
   const [customGoal, setCustomGoal] = useState("");
+  const [attachments, setAttachments] = useState<AgentAttachment[]>([]);
+
+  async function handleAttach(files: FileList | null): Promise<void> {
+    if (!files) return;
+    const loaded: AgentAttachment[] = [];
+    for (const f of Array.from(files).slice(0, 5)) {
+      const text = await f.text();
+      loaded.push({ name: f.name, text: text.slice(0, 20000) });
+    }
+    setAttachments((prev) => [...prev, ...loaded].slice(0, 5));
+  }
   const [savedNote, setSavedNote] = useState<string | null>(null);
   const runtimeRef = useRef<AgentRuntime | null>(null);
 
@@ -71,7 +82,7 @@ export function AgentCenterPage() {
 
   async function startGoal(goal: AgentGoal): Promise<void> {
     const b = brain ?? (await probe());
-    const rt = new AgentRuntime({ provider: b.provider, tools: buildAgentTools() });
+    const rt = new AgentRuntime({ provider: b.provider, tools: buildAgentTools(attachments) });
     runtimeRef.current = rt;
     setRunning(true);
     setSavedNote(null);
@@ -188,8 +199,29 @@ export function AgentCenterPage() {
             実行
           </button>
         </div>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "0.4rem", flexWrap: "wrap" }}>
+          <label className="attach-btn" style={{ fontSize: "0.78rem" }}>
+            📎 資料を添付(txt/md/csv 最大5件)
+            <input
+              type="file"
+              multiple
+              accept=".txt,.md,.csv,.json,.log"
+              style={{ display: "none" }}
+              onChange={(e) => { void handleAttach(e.target.files); e.target.value = ""; }}
+            />
+          </label>
+          {attachments.map((a) => (
+            <span key={a.name} className="badge" style={{ fontSize: "0.68rem" }}>
+              {a.name}({a.text.length}文字)
+            </span>
+          ))}
+          {attachments.length > 0 && (
+            <button type="button" style={{ fontSize: "0.72rem" }} onClick={() => setAttachments([])}>添付をクリア</button>
+          )}
+        </div>
         <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.3rem" }}>
-          利用可能テンプレート: {WORKFLOW_TEMPLATES.map((t) => t.name).join(" / ")}(ツールはすべてローカルMock・外部送信なし)
+          利用可能テンプレート: {WORKFLOW_TEMPLATES.map((t) => t.name).join(" / ")}
+          (ツールは端末内処理・添付資料は実ファイル内容を要約に使用・外部送信なし)
         </p>
       </section>
 
