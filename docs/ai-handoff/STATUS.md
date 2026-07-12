@@ -4,7 +4,13 @@
 **Updated:** 2026-07-12
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(Ollama接続 HTTP 403 の根治=Rustプロキシ)
+## 直近の完了内容(無課金本番化 A1: Company Brain 意味検索+RAG)
+packages/brain-rag 新規(Ollama埋め込み nomic-embed-text + ハッシュ埋め込みフォールバック +
+コサイン類似ベクトル索引・増分・localStorage保存)。Company Brain に意味検索UI、チャットは
+関連社内記録をLLMへ注入(実RAG)、エージェントの research_snapshot を実RAG検索化。
+単体5件 pass・E2E 3本 0エラー。残: A2+A4(スケジューラ実実行+実ファイル出力)→A3+A5→B。
+
+## それ以前の完了内容(Ollama接続 HTTP 403 の根治=Rustプロキシ)
 実機診断で原因確定(Tauri WebView の Origin ヘッダを Ollama が拒否)。Rust コマンド
 local_llm_request(reqwest・Originなし・localhost限定・接続3s/全体120sタイムアウト)を新設し、
 llmFetch を invoke ベースへ切替。OLLAMA_ORIGINS 設定不要で接続可能に。独立クレートで実HTTP検証済み。

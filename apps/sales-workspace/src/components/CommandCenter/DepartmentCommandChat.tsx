@@ -6,6 +6,7 @@ import { recordMemory } from "../../lib/memoryStorage";
 import { appendDeptChat, loadDeptChatHistory } from "../../lib/deptChatStorage";
 import { buildAssistantReply, HELP_SUGGESTIONS } from "../../lib/assistantHelp";
 import { loadLlmSettings } from "../../lib/llmSettings";
+import { ragContextFor } from "../../lib/brainRag";
 import { resolveLlmFetch } from "../../lib/llmFetch";
 import brandIcon from "../../assets/brand-icon.png";
 
@@ -43,9 +44,14 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
     let reply: string;
     const brain = brainRef.current;
     try {
-      reply = brain?.source === "ollama"
-        ? await chatOnce(brain.provider, message, APP_CONTEXT)
-        : buildAssistantReply(message);
+      if (brain?.source === "ollama") {
+        // RAG: 社内データ(Company Brain)から関連記録を検索してLLMに渡す
+        const rag = await ragContextFor(message);
+        const context = rag === "" ? APP_CONTEXT : `${APP_CONTEXT}\n[社内データ(Company Brain)関連記録]\n${rag}`;
+        reply = await chatOnce(brain.provider, message, context);
+      } else {
+        reply = buildAssistantReply(message);
+      }
     } catch {
       // LLM応答失敗時はルールベースへフォールバック(常に応答を返す)
       reply = buildAssistantReply(message);
