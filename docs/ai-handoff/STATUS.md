@@ -4,7 +4,13 @@
 **Updated:** 2026-07-12
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(無課金本番化 A1: Company Brain 意味検索+RAG)
+## 直近の完了内容(無課金本番化 A2+A4: エージェント定例実行+実ファイル出力)
+lib/agentSchedule.ts: 登録目標を期限到来で実自律実行(毎時/毎日/毎週・承認ノードは事前承認
+フラグで自動続行+監査記録・完了時Brain保存・直近5件ログ)。スケジューラページに登録/今すぐ実行/
+実行ログUI。最終報告・定例報告のMarkdown実ファイル保存。agentTools共用化。E2E 7/7・0エラー。
+残: A3+A5(音声+OCR)→B(無料外部連携)。
+
+## それ以前の完了内容(無課金本番化 A1: Company Brain 意味検索+RAG)
 packages/brain-rag 新規(Ollama埋め込み nomic-embed-text + ハッシュ埋め込みフォールバック +
 コサイン類似ベクトル索引・増分・localStorage保存)。Company Brain に意味検索UI、チャットは
 関連社内記録をLLMへ注入(実RAG)、エージェントの research_snapshot を実RAG検索化。
