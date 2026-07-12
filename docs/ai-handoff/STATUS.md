@@ -4,7 +4,11 @@
 **Updated:** 2026-07-12
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(デスクトップ版Ollama接続のネイティブHTTP化)
+## 直近の完了内容(LLM検出の診断表示)
+未検出時に頭脳カードへ診断行(接続先URL/接続経路=ネイティブHTTP or ブラウザfetch/失敗理由+確認手順)
+を表示。probe() が失敗理由を返すよう拡張(タイムアウト3秒)。単体9件 pass・E2E 2本 0エラー。
+
+## それ以前の完了内容(デスクトップ版Ollama接続のネイティブHTTP化)
 Tauri環境では @tauri-apps/plugin-http(Rust経由・CORS制約なし)でOllamaへ接続する llmFetch を追加。
 capabilities に 127.0.0.1:11434 / localhost:11434 を許可。OLLAMA_ORIGINS 設定不要で接続可能に。
 READMEにトラブルシューティング追記。E2E 2本 0エラー。

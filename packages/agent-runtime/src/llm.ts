@@ -52,17 +52,22 @@ export class OllamaProvider implements LlmProvider {
     this.name = `ローカルLLM(Ollama: ${settings.model})`;
   }
 
-  /** サーバ疎通+モデル一覧を確認する(短いタイムアウト)。 */
-  async isAvailable(probeTimeoutMs = 1500): Promise<boolean> {
+  /** サーバ疎通+モデル一覧を確認する(短いタイムアウト)。失敗理由を返す。 */
+  async probe(probeTimeoutMs = 3000): Promise<{ ok: boolean; error?: string }> {
     try {
       const ctl = new AbortController();
       const timer = setTimeout(() => ctl.abort(), probeTimeoutMs);
       const res = await this.fetchImpl(`${this.settings.baseUrl}/api/tags`, { signal: ctl.signal });
       clearTimeout(timer);
-      return res.ok;
-    } catch {
-      return false;
+      return res.ok ? { ok: true } : { ok: false, error: `HTTP ${res.status}` };
+    } catch (e) {
+      const msg = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+      return { ok: false, error: msg.includes("Abort") ? `接続タイムアウト(${probeTimeoutMs}ms)` : msg };
     }
+  }
+
+  async isAvailable(probeTimeoutMs = 3000): Promise<boolean> {
+    return (await this.probe(probeTimeoutMs)).ok;
   }
 
   async chat(messages: readonly LlmMessage[]): Promise<string> {
@@ -114,6 +119,8 @@ export class RuleBasedProvider implements LlmProvider {
 export interface DetectedBrain {
   provider: LlmProvider;
   source: "ollama" | "fallback";
+  /** フォールバック時の検出失敗理由(診断表示用)。 */
+  probeError?: string;
 }
 
 /** 頭脳を検出する: Ollama が生きていればLLM、いなければルールベース。 */
@@ -122,8 +129,9 @@ export async function detectBrain(
   fetchImpl?: FetchLike,
 ): Promise<DetectedBrain> {
   const ollama = new OllamaProvider(settings, fetchImpl);
-  if (await ollama.isAvailable()) {
+  const probe = await ollama.probe();
+  if (probe.ok) {
     return { provider: ollama, source: "ollama" };
   }
-  return { provider: new RuleBasedProvider(), source: "fallback" };
+  return { provider: new RuleBasedProvider(), source: "fallback", probeError: probe.error };
 }

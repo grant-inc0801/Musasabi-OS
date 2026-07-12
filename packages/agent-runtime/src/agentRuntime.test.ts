@@ -155,3 +155,9 @@ test("既定設定は無料ローカル(localhost・軽量モデル)", () => {
   const p = new OllamaProvider();
   assert.ok(p.name.includes("ローカルLLM"));
 });
+
+test("検出失敗時は probeError に失敗理由が入る(診断表示用)", async () => {
+  const brain = await detectBrain({ baseUrl: "http://127.0.0.1:43198", model: "qwen2.5:0.5b" });
+  assert.equal(brain.source, "fallback");
+  assert.ok(typeof brain.probeError === "string" && brain.probeError.length > 0);
+});
