@@ -12,7 +12,7 @@ import { resolveLlmFetch } from "../../lib/llmFetch";
 import { recordMemory } from "../../lib/memoryStorage";
 import { buildAgentTools } from "../../lib/agentTools";
 import { saveBinaryFile } from "../../lib/saveFile";
-import { isTtsAvailable, speakJa } from "../../lib/voice";
+import { isTtsAvailable, speakJaBest } from "../../lib/voice";
 import { sendAgentNotification } from "../../lib/freeConnectors";
 
 // エージェント実行センター — Musasabi を「本物のエージェント」として動かす画面。
@@ -255,7 +255,7 @@ export function AgentCenterPage() {
                 <button
                   type="button"
                   style={{ marginTop: "0.4rem", marginLeft: "0.4rem" }}
-                  onClick={() => speakJa(run.finalReport ?? "")}
+                  onClick={() => void speakJaBest(run.finalReport ?? "")}
                 >
                   🔊 読み上げ(端末内TTS)
                 </button>

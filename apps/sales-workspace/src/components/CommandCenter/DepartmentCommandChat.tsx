@@ -7,7 +7,7 @@ import { appendDeptChat, loadDeptChatHistory } from "../../lib/deptChatStorage";
 import { buildAssistantReply, HELP_SUGGESTIONS } from "../../lib/assistantHelp";
 import { loadLlmSettings } from "../../lib/llmSettings";
 import { ragContextFor } from "../../lib/brainRag";
-import { isTtsAvailable, speakJa } from "../../lib/voice";
+import { isTtsAvailable, speakJaBest } from "../../lib/voice";
 import { resolveLlmFetch } from "../../lib/llmFetch";
 import brandIcon from "../../assets/brand-icon.png";
 
@@ -117,7 +117,7 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
                     type="button"
                     style={{ marginLeft: 6, fontSize: "0.68rem", padding: "0 0.3rem" }}
                     title="読み上げ(端末内TTS)"
-                    onClick={() => speakJa(m.reply)}
+                    onClick={() => void speakJaBest(m.reply)}
                   >
                     🔊
                   </button>

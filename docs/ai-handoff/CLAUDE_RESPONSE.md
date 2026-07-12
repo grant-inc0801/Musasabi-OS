@@ -3,6 +3,30 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-12 — 本番実装第2弾②③: RSS実データ調査+VOICEVOX高品質音声
+
+### ② 市場調査の実データ化(RSS/Atom)
+- **Rust `fetch_rss`**: 読み取り専用GET・応答1MB上限・rustls(https対応)。
+  ユーザーが登録した公開フィードのみ取得(認証不要・無料・未登録なら外部取得なし)
+- **`lib/rssFeeds.ts`**: フィード登録(localStorage)・RSS2.0/Atom 両対応パース(DOMParser)
+- **市場調査部ページ**: 「実データソース(RSS/Atom・本番)」セクション
+  (追加/削除・▶最新を取得→見出し表示→Company Brain 記録)
+- **エージェント `research_snapshot`**: 外部実データ(RSS見出し)+社内RAG の統合出力に強化
+
+### ③ VOICEVOX 高品質音声(キャラボイス)
+- **Rust `local_tts_synthesis`**: audio_query→synthesis を実行し WAV を base64 返却
+  (localhost限定・外部送信なし)
+- **`lib/voice.ts`**: VOICEVOX(http://127.0.0.1:50021)自動検出。`speakJaBest` =
+  検出時はキャラ音声・未検出/失敗時は Windows 内蔵音声へフォールバック。
+  チャット🔊/エージェント報告読み上げを speakJaBest 化。話者IDは設定可能(既定1)
+
+### テスト結果
+- E2E(RSS): 偽RSSサーバから実取得→見出し表示→**エージェント調査ステップに実RSS見出し** 3/3
+- E2E(VOICEVOX): 🔊クリック→偽エンジンへ audio_query/synthesis 実HTTP→WAV再生 1/1
+- Rust: 独立クレートで urlencode+rustls 検証 / build ✅ / 秘密情報スキャン ✅ / 0エラー
+
+---
+
 ## 2026-07-12 — 本番実装第2弾①: 実STT(音声入力の本物化・whisperローカル自動検出)
 
 ### 実装内容

@@ -89,6 +89,79 @@ async fn local_stt_request(
   Ok(LocalLlmResponse { status, body: text })
 }
 
+// RSSフィード取得コマンド(読み取り専用GET・応答1MB上限)。
+// ユーザーが市場調査ページに登録した公開フィードのみを取得する(認証情報なし・無料)。
+#[tauri::command]
+async fn fetch_rss(url: String) -> Result<LocalLlmResponse, String> {
+  if !(url.starts_with("http://") || url.starts_with("https://")) {
+    return Err("http/https のURLのみ取得できます".into());
+  }
+  let client = reqwest::Client::builder()
+    .timeout(std::time::Duration::from_secs(15))
+    .connect_timeout(std::time::Duration::from_secs(5))
+    .user_agent("MusasabiOS-RSS/1.0")
+    .build()
+    .map_err(|e| e.to_string())?;
+  let response = client.get(&url).send().await.map_err(|e| e.to_string())?;
+  let status = response.status().as_u16();
+  let bytes = response.bytes().await.map_err(|e| e.to_string())?;
+  if bytes.len() > 1_000_000 {
+    return Err("フィードが大きすぎます(1MB上限)".into());
+  }
+  Ok(LocalLlmResponse { status, body: String::from_utf8_lossy(&bytes).to_string() })
+}
+
+// ローカルTTS(VOICEVOX)合成コマンド。audio_query→synthesis を実行し、
+// WAV を base64 で返す。接続先は localhost / 127.0.0.1 のみ許可(外部送信なし)。
+#[tauri::command]
+async fn local_tts_synthesis(
+  base_url: String,
+  text: String,
+  speaker: u32,
+) -> Result<String, String> {
+  let allowed = base_url.starts_with("http://127.0.0.1:") || base_url.starts_with("http://localhost:");
+  if !allowed {
+    return Err("ローカルTTS(localhost)以外への接続は許可されていません".into());
+  }
+  let client = reqwest::Client::builder()
+    .timeout(std::time::Duration::from_secs(60))
+    .connect_timeout(std::time::Duration::from_secs(3))
+    .build()
+    .map_err(|e| e.to_string())?;
+  let query_url = format!("{base_url}/audio_query?speaker={speaker}&text={}", urlencoding_encode(&text));
+  let query_res = client.post(&query_url).send().await.map_err(|e| e.to_string())?;
+  if !query_res.status().is_success() {
+    return Err(format!("VOICEVOX audio_query HTTP {}", query_res.status().as_u16()));
+  }
+  let query_json = query_res.text().await.map_err(|e| e.to_string())?;
+  let synth_url = format!("{base_url}/synthesis?speaker={speaker}");
+  let synth_res = client
+    .post(&synth_url)
+    .header("content-type", "application/json")
+    .body(query_json)
+    .send()
+    .await
+    .map_err(|e| e.to_string())?;
+  if !synth_res.status().is_success() {
+    return Err(format!("VOICEVOX synthesis HTTP {}", synth_res.status().as_u16()));
+  }
+  let wav = synth_res.bytes().await.map_err(|e| e.to_string())?;
+  use base64::Engine as _;
+  Ok(base64::engine::general_purpose::STANDARD.encode(&wav))
+}
+
+// 依存を増やさない最小限の percent-encode(非予約文字以外をエンコード)
+fn urlencoding_encode(s: &str) -> String {
+  let mut out = String::with_capacity(s.len() * 3);
+  for b in s.as_bytes() {
+    match b {
+      b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => out.push(*b as char),
+      _ => out.push_str(&format!("%{:02X}", b)),
+    }
+  }
+  out
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
@@ -96,7 +169,7 @@ pub fn run() {
     .plugin(tauri_plugin_http::init())
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_fs::init())
-    .invoke_handler(tauri::generate_handler![local_llm_request, local_stt_request])
+    .invoke_handler(tauri::generate_handler![local_llm_request, local_stt_request, fetch_rss, local_tts_synthesis])
     .setup(|app| {
       if cfg!(debug_assertions) {
         app.handle().plugin(

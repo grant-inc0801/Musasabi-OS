@@ -4,7 +4,13 @@
 **Updated:** 2026-07-12
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(本番実装第2弾①: 実STT)
+## 直近の完了内容(本番実装第2弾②③: RSS実データ調査+VOICEVOX)
+② Rust fetch_rss(GET・1MB上限・rustls)+lib/rssFeeds.ts(RSS2/Atomパース)+市場調査部の
+実データソースUI+エージェントresearchにRSS見出し統合(E2E 3/3)。③ Rust local_tts_synthesis+
+speakJaBest(VOICEVOX自動検出・未検出はWindows内蔵音声)(E2E 1/1)。0エラー。
+次: ④定期自動バックアップ→⑤ファイル読み取りツール→⑥定例キャッチアップ。
+
+## それ以前の完了内容(本番実装第2弾①: 実STT)
 Rust local_stt_request(multipart・localhost限定)+lib/stt.ts(whisper自動検出・録音→WAV16k変換→
 /inference・OpenAI互換フォールバック)。音声入力ボタン本物化(未検出時はMock表示)。
 E2E 3/3(実録音→実HTTP文字起こし)0エラー。次: ②RSS実データ調査→③VOICEVOX→④自動バックアップ→
