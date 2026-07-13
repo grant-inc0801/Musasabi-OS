@@ -162,6 +162,81 @@ fn urlencoding_encode(s: &str) -> String {
   out
 }
 
+// ─────────────── Secret Center(OS資格情報ストア)───────────────
+// 秘密情報(SMTPパスワード等)を Windows 資格情報マネージャー / macOS Keychain /
+// Linux Secret Service に暗号化保管する。値は保存・削除・存在確認のみ可能で、
+// フロントエンド(WebView)へ値そのものは決して返さない。リポジトリにも保存されない。
+
+const SECRET_SERVICE: &str = "musasabi-os";
+
+#[tauri::command]
+fn secret_set(key: String, value: String) -> Result<(), String> {
+  let entry = keyring::Entry::new(SECRET_SERVICE, &key).map_err(|e| e.to_string())?;
+  entry.set_password(&value).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn secret_exists(key: String) -> Result<bool, String> {
+  let entry = keyring::Entry::new(SECRET_SERVICE, &key).map_err(|e| e.to_string())?;
+  match entry.get_password() {
+    Ok(_) => Ok(true),
+    Err(keyring::Error::NoEntry) => Ok(false),
+    Err(e) => Err(e.to_string()),
+  }
+}
+
+#[tauri::command]
+fn secret_delete(key: String) -> Result<(), String> {
+  let entry = keyring::Entry::new(SECRET_SERVICE, &key).map_err(|e| e.to_string())?;
+  match entry.delete_credential() {
+    Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
+    Err(e) => Err(e.to_string()),
+  }
+}
+
+// ─────────────── メール送信(SMTP・無料枠)───────────────
+// パスワードは Secret Center(OS資格情報ストア)から内部で読む。
+// use_tls=true は STARTTLS(Gmail:587 等)、false は平文(ローカルテスト用途のみ)。
+#[tauri::command]
+async fn send_mail(
+  host: String,
+  port: u16,
+  user: String,
+  from: String,
+  to: String,
+  subject: String,
+  body: String,
+  use_tls: bool,
+  secret_key: String,
+) -> Result<(), String> {
+  use lettre::{
+    message::header::ContentType, transport::smtp::authentication::Credentials,
+    AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor,
+  };
+  let password = {
+    let entry = keyring::Entry::new(SECRET_SERVICE, &secret_key).map_err(|e| e.to_string())?;
+    entry.get_password().map_err(|e| format!("パスワードが未保存です: {e}"))?
+  };
+  let email = Message::builder()
+    .from(from.parse().map_err(|e| format!("from が不正: {e}"))?)
+    .to(to.parse().map_err(|e| format!("to が不正: {e}"))?)
+    .subject(subject)
+    .header(ContentType::TEXT_PLAIN)
+    .body(body)
+    .map_err(|e| e.to_string())?;
+  let builder = if use_tls {
+    AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(&host)
+      .map_err(|e| e.to_string())?
+      .credentials(Credentials::new(user, password))
+  } else {
+    // 平文SMTP(ローカルテスト用途のみ)
+    AsyncSmtpTransport::<Tokio1Executor>::builder_dangerous(&host)
+  };
+  let mailer = builder.port(port).build();
+  mailer.send(email).await.map_err(|e| e.to_string())?;
+  Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
@@ -170,7 +245,7 @@ pub fn run() {
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_fs::init())
     .plugin(tauri_plugin_notification::init())
-    .invoke_handler(tauri::generate_handler![local_llm_request, local_stt_request, fetch_rss, local_tts_synthesis])
+    .invoke_handler(tauri::generate_handler![local_llm_request, local_stt_request, fetch_rss, local_tts_synthesis, secret_set, secret_exists, secret_delete, send_mail])
     .setup(|app| {
       if cfg!(debug_assertions) {
         app.handle().plugin(
