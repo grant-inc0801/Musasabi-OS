@@ -4,7 +4,12 @@
 **Updated:** 2026-07-13
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(第3弾②③: 部署AI会議+モデルルーティング)
+## 直近の完了内容(第3弾⑤⑥⑦: ICS+チャット履歴RAG+ローカル画像生成)
+⑤icsExport(.ics書き出し・RRULE対応・スケジューラに📅)⑥意味検索にチャット履歴100件を索引追加
+⑦imageGen(SD WebUI自動検出・txt2img実生成・PNG保存・マーケ部UI)。E2E 4/4・0エラー。
+**本番実装第3弾①〜⑦すべて完了**。
+
+## それ以前の完了内容(第3弾②③: 部署AI会議+モデルルーティング)
 runDiscussion(3人格×2ラウンド+AI CEO結論・Brain保存・議事録保存)を実行センターに搭載。
 AgentRuntime に reportProvider(計画/報告=高品質・行動/観察=高速)を追加し全実行経路に適用。
 単体13件・E2E 10/10・0エラー。残: ⑤ICS ⑥保管庫RAG ⑦SD検出。

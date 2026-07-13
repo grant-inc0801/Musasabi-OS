@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ImageGenSection } from "./ImageGenSection";
 import {
   MARKETING_CAMPAIGNS,
   MARKETING_STAFF,
@@ -48,6 +49,7 @@ export function MarketingPage() {
   ];
   return (
     <>
+      <ImageGenSection />
       <section aria-label="マーケティングKPI">
         <h3 style={{ marginTop: 0 }}>KPI(Mock)</h3>
         <p style={{ color: "var(--warn)", fontSize: "0.9rem" }}>

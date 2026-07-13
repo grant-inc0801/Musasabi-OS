@@ -11,6 +11,7 @@ import {
   type SearchHit,
 } from "@musasabi/brain-rag";
 import { loadMemoryRecords } from "./memoryStorage";
+import { loadDeptChatHistory } from "./deptChatStorage";
 import { loadLlmSettings } from "./llmSettings";
 import { resolveLlmFetch } from "./llmFetch";
 
@@ -71,6 +72,19 @@ export async function ensureBrainIndex(): Promise<BrainRagState> {
       日時: new Date(r.timestampMs).toLocaleDateString("ja-JP"),
     },
   }));
+  // チャット履歴(過去の相談・指示と回答)も索引対象にする — アシスタントが過去の会話を思い出せる
+  const chats = loadDeptChatHistory().slice(0, 100);
+  for (const c of chats) {
+    docs.push({
+      id: `chat-${c.atMs}`,
+      text: `相談: ${c.message} / 回答: ${c.reply}`.slice(0, 400),
+      meta: {
+        分類: "chat",
+        主体: c.deptName,
+        日時: new Date(c.atMs).toLocaleDateString("ja-JP"),
+      },
+    });
+  }
   const added = await indexDocuments(index, detected.provider, docs);
   if (added > 0) saveIndex(index);
   return { providerName: detected.provider.name, source: detected.source, indexedCount: index.size };
