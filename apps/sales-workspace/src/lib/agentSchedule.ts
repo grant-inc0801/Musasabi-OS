@@ -7,6 +7,7 @@
 
 import { AgentRuntime, detectBrain } from "@musasabi/agent-runtime";
 import { buildAgentTools } from "./agentTools";
+import { buildReportProvider } from "./brainProviders";
 import { loadLlmSettings } from "./llmSettings";
 import { resolveLlmFetch } from "./llmFetch";
 import { recordMemory } from "./memoryStorage";
@@ -78,7 +79,7 @@ export async function runScheduleNow(schedule: AgentSchedule): Promise<AgentSche
   let log: ScheduleRunLog;
   try {
     const brain = await detectBrain(loadLlmSettings(), await resolveLlmFetch());
-    const rt = new AgentRuntime({ provider: brain.provider, tools: buildAgentTools() });
+    const rt = new AgentRuntime({ provider: brain.provider, reportProvider: await buildReportProvider(brain), tools: buildAgentTools() });
     let state = await rt.start({
       id: `${schedule.id}-${startedAt}`,
       title: schedule.title,

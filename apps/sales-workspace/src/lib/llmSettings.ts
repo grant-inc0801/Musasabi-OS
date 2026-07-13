@@ -5,6 +5,21 @@ import { DEFAULT_LLM_SETTINGS, type LlmSettings } from "@musasabi/agent-runtime"
 
 const KEY = "musasabi.llmSettings";
 
+/** タスク別ルーティング: 報告・計画に使う高品質モデル(空なら通常モデルと同じ)。 */
+const REPORT_MODEL_KEY = "musasabi.reportModel";
+
+export function loadReportModel(): string {
+  try {
+    return localStorage.getItem(REPORT_MODEL_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+export function saveReportModel(model: string): void {
+  localStorage.setItem(REPORT_MODEL_KEY, model.trim());
+}
+
 export function loadLlmSettings(): LlmSettings {
   try {
     const raw = localStorage.getItem(KEY);

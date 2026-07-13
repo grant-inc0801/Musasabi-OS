@@ -4,7 +4,12 @@
 **Updated:** 2026-07-13
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(第3弾①④: 会話メモリ+OSトースト)
+## 直近の完了内容(第3弾②③: 部署AI会議+モデルルーティング)
+runDiscussion(3人格×2ラウンド+AI CEO結論・Brain保存・議事録保存)を実行センターに搭載。
+AgentRuntime に reportProvider(計画/報告=高品質・行動/観察=高速)を追加し全実行経路に適用。
+単体13件・E2E 10/10・0エラー。残: ⑤ICS ⑥保管庫RAG ⑦SD検出。
+
+## それ以前の完了内容(第3弾①④: 会話メモリ+OSトースト)
 chatWithHistory(直近8ターンの文脈保持・単体10件)でチャットが継続会話対応。lib/osNotify.ts
 (tauri-plugin-notification/Web Notification)でエージェント完了・承認待ちをOS通知。
 E2E 2/2(2通目で文脈伝搬)0エラー。残: ②マルチエージェント協調 ③モデルルーティング

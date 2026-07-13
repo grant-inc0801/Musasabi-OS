@@ -11,6 +11,7 @@ import { validateDecision, WORKFLOW_TEMPLATES, type WorkflowTemplate } from "@mu
 import type { LlmMessage, LlmProvider } from "./llm";
 
 export * from "./llm";
+export * from "./discussion";
 export { WORKFLOW_TEMPLATES };
 
 // ─────────────────────────── 型 ───────────────────────────
@@ -107,6 +108,8 @@ export function defaultTools(): AgentTool[] {
 
 export interface AgentRuntimeOptions {
   provider: LlmProvider;
+  /** 報告・計画に使う高品質モデル(タスク別ルーティング・省略時は provider と同じ)。 */
+  reportProvider?: LlmProvider;
   tools?: AgentTool[];
   maxSteps?: number;
   now?: () => number;
@@ -118,12 +121,14 @@ const SYSTEM_PROMPT =
 
 export class AgentRuntime {
   private readonly provider: LlmProvider;
+  private readonly reportProvider: LlmProvider;
   private readonly tools: Map<string, AgentTool>;
   private readonly maxSteps: number;
   private readonly now: () => number;
 
   constructor(opts: AgentRuntimeOptions) {
     this.provider = opts.provider;
+    this.reportProvider = opts.reportProvider ?? opts.provider;
     this.tools = new Map((opts.tools ?? defaultTools()).map((t) => [t.name, t]));
     this.maxSteps = opts.maxSteps ?? 16;
     this.now = opts.now ?? (() => Date.now());
@@ -148,7 +153,7 @@ export class AgentRuntime {
       : undefined;
     const planText = template
       ? template.nodes.map((n, i) => `${i + 1}. ${n.label}`).join("\n")
-      : await this.provider.chat([
+      : await this.reportProvider.chat([
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: `[PLAN] 次の目標を3〜5ステップの実行計画にしてください: ${goal.description}` },
         ]);
@@ -274,8 +279,8 @@ export class AgentRuntime {
       return state;
     }
 
-    // report
-    const summary = await this.provider.chat([
+    // report(タスク別ルーティング: 報告は高品質モデル)
+    const summary = await this.reportProvider.chat([
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: `[REPORT] 目標「${state.goal.title}」の実行結果を1〜2文で総括してください。` },
     ]);
