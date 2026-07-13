@@ -14,6 +14,7 @@ import { deptAssignedEmployees, deptBlockedItems, deptAuditNotes } from "@musasa
 import { MarketResearchDetail } from "./MarketResearchDetail";
 import { recordMemory } from "../../lib/memoryStorage";
 import { loadDeptChatHistory } from "../../lib/deptChatStorage";
+import { savePlanningGuideToVault } from "../../lib/vaultStorage";
 
 // 右側: 部署詳細パネル(D-20260706-007)。部署パネルのクリックで表示。
 // 営業部はコールシステム関連のMock情報を表示する(実架電なし)。
@@ -147,20 +148,31 @@ function PublishingCleanBlock() {
 
 /**
  * 企画部の資料作成・保管庫連携(D-20260706-010)。マニュアル・提案資料を作成し
- * 保管庫へ保存するMockフロー。実ファイル保存はしない。
+ * 保管庫(Knowledge Vault)へ実保存する(本番実装・RAG索引対象)。
  */
 function PlanningDocsBlock() {
   const [savedNote, setSavedNote] = useState<string | null>(null);
 
   function handleSaveToVault(): void {
-    setSavedNote("「保管庫操作ガイド v1.0」を保管庫へ保存しました(Mock)。");
-    recordMemory({
-      category: "work",
-      actor: "AIドキュメントライター",
-      action: "企画部: 資料を保管庫へ保存",
-      detail: "保管庫操作ガイド v1.0(Mock)",
-      tags: ["planning", "vault"],
-    });
+    try {
+      const { doc, created } = savePlanningGuideToVault();
+      setSavedNote(
+        created
+          ? `「${doc.title}」を保管庫へ実保存しました(RAG索引対象)。`
+          : `「${doc.title}」は既に保管庫にあります(重複保存なし)。`,
+      );
+      if (created) {
+        recordMemory({
+          category: "work",
+          actor: "AIドキュメントライター",
+          action: "企画部: 資料を保管庫へ保存",
+          detail: doc.title,
+          tags: ["planning", "vault"],
+        });
+      }
+    } catch (e) {
+      setSavedNote(e instanceof Error ? e.message : String(e));
+    }
   }
 
   return (
@@ -180,7 +192,7 @@ function PlanningDocsBlock() {
         </div>
       ))}
       <button type="button" onClick={handleSaveToVault} style={{ marginTop: "0.4rem" }}>
-        保存待ち資料を保管庫へ保存(Mock)
+        保存待ち資料を保管庫へ保存
       </button>
       {savedNote && <p style={{ color: "var(--ok)", fontSize: "0.8rem", margin: "0.4rem 0 0" }}>{savedNote}</p>}
     </div>

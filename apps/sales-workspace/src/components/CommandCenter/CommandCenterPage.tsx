@@ -12,7 +12,7 @@ import { countByStatus } from "@musasabi/sales-list";
 import { loadCallLog } from "../../lib/callLogStorage";
 import { loadLeads } from "../../lib/salesListStorage";
 import { loadMemoryRecords } from "../../lib/memoryStorage";
-import { VAULT_ITEMS, VAULT_STATUS_COLOR, computeVaultSummary } from "@musasabi/ai-company";
+import { VAULT_CAPACITY_CHARS, loadVaultDocs, vaultUsageChars } from "../../lib/vaultStorage";
 import { DepartmentCylinder } from "./DepartmentCylinder";
 import { VaultDetailPanel } from "./VaultDetailPanel";
 import { DepartmentDetailPanel } from "./DepartmentDetailPanel";
@@ -160,10 +160,13 @@ export function CommandCenterPage({
   );
 }
 
-/** 保管庫パネル(名称・保管件数・使用容量・容量ステータス)。D-20260706-010。 */
+/** 保管庫パネル(名称・保管件数・使用容量・容量ステータス)。実文書ストアの実データ表示。 */
 function VaultCard({ selected, onSelect }: { selected: boolean; onSelect: () => void }) {
-  const summary = computeVaultSummary(VAULT_ITEMS);
-  const color = VAULT_STATUS_COLOR[summary.status];
+  const docs = loadVaultDocs();
+  const usage = vaultUsageChars(docs);
+  const usagePercent = Math.min(100, Math.round((usage / VAULT_CAPACITY_CHARS) * 100));
+  const status = usagePercent >= 90 ? "危険" : usagePercent >= 70 ? "注意" : "正常";
+  const color = usagePercent >= 90 ? "#EF4444" : usagePercent >= 70 ? "#F59E0B" : "#22C55E";
   return (
     <button
       type="button"
@@ -180,11 +183,11 @@ function VaultCard({ selected, onSelect }: { selected: boolean; onSelect: () => 
         <div className="dept-card-name">保管庫</div>
       </div>
       <div className="dept-card-members">
-        {summary.itemCount}件 / {(summary.totalKb / 1024).toFixed(1)}MB
+        {docs.length}件 / {(usage / 1000).toFixed(1)}千文字
       </div>
       <div className="dept-card-status">
         <span className="dept-lamp" style={{ background: color, boxShadow: `0 0 8px ${color}` }} />
-        {summary.status}(使用率{summary.usagePercent}%)
+        {status}(使用率{usagePercent}%)
       </div>
     </button>
   );

@@ -1,40 +1,61 @@
+import { useState } from "react";
 import {
   PLANNING_DOC_STATUSES,
   PLANNING_DOC_TASKS,
   VAULT_FLOW_JA,
-  VAULT_ITEMS,
-  VAULT_STATUS_COLOR,
-  computeVaultSummary,
-  filterVaultItems,
 } from "@musasabi/ai-company";
 import { recordMemory } from "../../lib/memoryStorage";
+import {
+  VAULT_CAPACITY_CHARS,
+  loadVaultDocs,
+  savePlanningGuideToVault,
+  vaultUsageChars,
+} from "../../lib/vaultStorage";
 
 // 企画部ページ(従来画面)。資料作成業務と保管庫連携(D-20260706-010)。
-// すべてMock(実ファイル操作なし)。
+// 保管庫保存は本番実装: 実文書を保管庫(Knowledge Vault)へ保存し RAG 索引される。
 
-function formatKb(kb: number): string {
-  return kb >= 1024 ? `${(kb / 1024).toFixed(1)}MB` : `${kb}KB`;
+function formatChars(n: number): string {
+  return n >= 1000 ? `${(n / 1000).toFixed(1)}千文字` : `${n}文字`;
 }
 
 export function PlanningPage() {
-  const summary = computeVaultSummary(VAULT_ITEMS);
-  const planningDocs = filterVaultItems(VAULT_ITEMS, { dept: "企画部" });
+  const [docs, setDocs] = useState(() => loadVaultDocs());
+  const [savedNote, setSavedNote] = useState<string | null>(null);
+
+  const usage = vaultUsageChars(docs);
+  const usagePercent = Math.min(100, Math.round((usage / VAULT_CAPACITY_CHARS) * 100));
+  const status = usagePercent >= 90 ? "危険" : usagePercent >= 70 ? "注意" : "正常";
+  const statusColor = usagePercent >= 90 ? "#EF4444" : usagePercent >= 70 ? "#F59E0B" : "#22C55E";
+  const planningDocs = docs.filter((d) => d.source === "planning");
 
   function handleSaveToVault(): void {
-    alert("「保管庫操作ガイド v1.0」を保管庫へ保存しました(Mock)。");
-    recordMemory({
-      category: "work",
-      actor: "AIドキュメントライター",
-      action: "企画部: 資料を保管庫へ保存",
-      detail: "保管庫操作ガイド v1.0(Mock)",
-      tags: ["planning", "vault"],
-    });
+    try {
+      const { doc, created } = savePlanningGuideToVault();
+      setSavedNote(
+        created
+          ? `「${doc.title}」を保管庫へ実保存しました(RAG索引対象)。`
+          : `「${doc.title}」は既に保管庫にあります(重複保存なし)。`,
+      );
+      if (created) {
+        recordMemory({
+          category: "work",
+          actor: "AIドキュメントライター",
+          action: "企画部: 資料を保管庫へ保存",
+          detail: doc.title,
+          tags: ["planning", "vault"],
+        });
+        setDocs(loadVaultDocs());
+      }
+    } catch (e) {
+      setSavedNote(e instanceof Error ? e.message : String(e));
+    }
   }
 
   return (
     <>
       <section aria-label="企画部の業務">
-        <h3 style={{ marginTop: 0 }}>資料作成業務(Mock)</h3>
+        <h3 style={{ marginTop: 0 }}>資料作成業務</h3>
         <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "44rem" }}>
           開発した自動化・新ツール・新サービスのマニュアルや提案資料を作成し、
           保管庫へ保存します。フロー: {VAULT_FLOW_JA}
@@ -61,52 +82,54 @@ export function PlanningPage() {
           ))}
         </div>
         <button type="button" onClick={handleSaveToVault} style={{ marginTop: "0.75rem" }}>
-          保存待ち資料を保管庫へ保存(Mock)
+          保存待ち資料を保管庫へ保存
         </button>
+        {savedNote && <p style={{ color: "var(--ok)", fontSize: "0.82rem" }}>{savedNote}</p>}
       </section>
 
       <section aria-label="保管庫の状態">
-        <h3 style={{ marginTop: 0 }}>保管庫の状態</h3>
+        <h3 style={{ marginTop: 0 }}>保管庫の状態(実データ)</h3>
         <p style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span
             className="dept-lamp"
             style={{
-              background: VAULT_STATUS_COLOR[summary.status],
-              boxShadow: `0 0 8px ${VAULT_STATUS_COLOR[summary.status]}`,
+              background: statusColor,
+              boxShadow: `0 0 8px ${statusColor}`,
             }}
           />
-          {summary.status} — {formatKb(summary.totalKb)} / {formatKb(summary.capacityKb)}
-          (使用率{summary.usagePercent}%)・保管{summary.itemCount}件
+          {status} — {formatChars(usage)} / {formatChars(VAULT_CAPACITY_CHARS)}
+          (使用率{usagePercent}%)・保管{docs.length}件
         </p>
         <h4>企画部の保管資料({planningDocs.length}件)</h4>
-        <table style={{ borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              {["タイトル", "種類", "バージョン", "更新日", "サイズ", "ステータス"].map((h) => (
-                <th key={h} style={cellStyle}>
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {planningDocs.map((d) => (
-              <tr key={d.id}>
-                <td style={cellStyle}>
-                  {d.isProtected ? "🔒 " : ""}
-                  {d.title}
-                </td>
-                <td style={cellStyle}>{d.category}</td>
-                <td style={cellStyle}>{d.version}</td>
-                <td style={cellStyle}>{new Date(d.updatedAtMs).toLocaleDateString("ja-JP")}</td>
-                <td style={cellStyle}>{formatKb(d.sizeKb)}</td>
-                <td style={cellStyle}>{d.status}</td>
+        {planningDocs.length === 0 ? (
+          <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+            企画部の保管資料はまだありません。「保存待ち資料を保管庫へ保存」で追加できます。
+          </p>
+        ) : (
+          <table style={{ borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                {["タイトル", "出所", "サイズ", "保存日"].map((h) => (
+                  <th key={h} style={cellStyle}>
+                    {h}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {planningDocs.map((d) => (
+                <tr key={d.id}>
+                  <td style={cellStyle}>{d.title}</td>
+                  <td style={cellStyle}>企画部</td>
+                  <td style={cellStyle}>{formatChars(d.text.length)}</td>
+                  <td style={cellStyle}>{new Date(d.createdAtMs).toLocaleDateString("ja-JP")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
         <p style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
-          全資料の閲覧・容量管理はコマンドセンターの「保管庫」パネルから行えます。
+          全資料の閲覧・削除・容量管理はサイドバー Knowledge の「保管庫(Knowledge Vault)」ページから行えます。
         </p>
       </section>
     </>

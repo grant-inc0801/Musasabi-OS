@@ -1,0 +1,207 @@
+import { useRef, useState } from "react";
+import {
+  VAULT_CAPACITY_CHARS,
+  addVaultDocument,
+  loadVaultDocs,
+  removeVaultDocument,
+  vaultUsageChars,
+  type VaultDocument,
+} from "../../lib/vaultStorage";
+import { recordMemory } from "../../lib/memoryStorage";
+
+// 保管庫(Knowledge Vault)ページ(本番・完全ローカル)。
+// テキスト資料(txt/md/csv 等)を実保存し、Company Brain の RAG 索引へ統合する。
+// 保存した文書はチャット・エージェント・未来予測から意味検索で参照できる。
+
+const SOURCE_JA: Record<VaultDocument["source"], string> = {
+  upload: "ファイル取込",
+  planning: "企画部",
+  agent: "エージェント",
+};
+
+const ACCEPTED = [".txt", ".md", ".csv", ".json", ".log", ".tsv"];
+
+function formatChars(n: number): string {
+  return n >= 1000 ? `${(n / 1000).toFixed(1)}千文字` : `${n}文字`;
+}
+
+export function VaultPage() {
+  const [docs, setDocs] = useState<VaultDocument[]>(() => loadVaultDocs());
+  const [note, setNote] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const usage = vaultUsageChars(docs);
+  const usagePercent = Math.min(100, Math.round((usage / VAULT_CAPACITY_CHARS) * 100));
+
+  async function handleFiles(files: FileList | null): Promise<void> {
+    if (!files || files.length === 0) return;
+    setError(null);
+    const added: string[] = [];
+    for (const file of Array.from(files)) {
+      try {
+        const text = await file.text();
+        if (text.trim() === "") {
+          setError(`「${file.name}」は空のファイルのため取り込めませんでした。`);
+          continue;
+        }
+        const doc = addVaultDocument({
+          title: file.name.replace(/\.[^.]+$/, ""),
+          text,
+          source: "upload",
+          tags: ["upload"],
+        });
+        added.push(doc.title);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e));
+        break;
+      }
+    }
+    if (added.length > 0) {
+      setDocs(loadVaultDocs());
+      setNote(`${added.length}件の資料を保管庫へ保存しました: ${added.join(" / ")}`);
+      recordMemory({
+        category: "company",
+        actor: "保管庫",
+        action: "資料を保管庫へ取込",
+        detail: added.join(" / ").slice(0, 200),
+        tags: ["vault", "upload"],
+      });
+    }
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
+  function handleRemove(doc: VaultDocument): void {
+    setDocs(removeVaultDocument(doc.id));
+    setNote(`「${doc.title}」を保管庫から削除しました。`);
+  }
+
+  const filtered = query.trim()
+    ? docs.filter(
+        (d) =>
+          d.title.includes(query.trim()) ||
+          d.text.includes(query.trim()) ||
+          d.tags.some((t) => t.includes(query.trim())),
+      )
+    : docs;
+
+  return (
+    <>
+      <section aria-label="保管庫の説明" className="card" style={{ maxWidth: "46rem" }}>
+        <strong>🗄 保管庫(Knowledge Vault)— 本番実装</strong>
+        <p style={{ margin: "0.4rem 0 0", fontSize: "0.85rem", color: "var(--text-muted)" }}>
+          会社の資料(txt / md / csv などのテキスト文書)をこの端末内に実保存します。
+          保存した資料は Company Brain の意味検索(RAG)へ自動で索引され、
+          AIアシスタントへの相談・エージェント実行・未来予測が内容を参照できます。
+          外部送信はありません(完全ローカル)。
+        </p>
+      </section>
+
+      <section aria-label="容量" style={{ marginTop: "1rem", maxWidth: "46rem" }}>
+        <h3 style={{ margin: "0 0 0.4rem" }}>使用容量</h3>
+        <div
+          role="progressbar"
+          aria-valuenow={usagePercent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          style={{
+            height: 10,
+            borderRadius: 6,
+            background: "var(--border)",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              width: `${usagePercent}%`,
+              height: "100%",
+              background: usagePercent >= 90 ? "#EF4444" : usagePercent >= 70 ? "#F59E0B" : "#22C55E",
+            }}
+          />
+        </div>
+        <p style={{ margin: "0.35rem 0 0", fontSize: "0.82rem", color: "var(--text-muted)" }}>
+          {formatChars(usage)} / {formatChars(VAULT_CAPACITY_CHARS)}(使用率{usagePercent}%)・保管{docs.length}件
+        </p>
+      </section>
+
+      <section aria-label="資料の取込" style={{ marginTop: "1rem" }}>
+        <h3 style={{ margin: "0 0 0.4rem" }}>資料の取込</h3>
+        <input
+          ref={fileRef}
+          type="file"
+          multiple
+          accept={ACCEPTED.join(",")}
+          aria-label="保管庫へ取り込むファイル"
+          onChange={(e) => void handleFiles(e.target.files)}
+        />
+        <p style={{ margin: "0.35rem 0 0", fontSize: "0.78rem", color: "var(--text-muted)" }}>
+          対応形式: {ACCEPTED.join(" ")}(テキスト文書)。複数選択可。1文書あたり4万文字まで保存します。
+        </p>
+        {note && <p style={{ color: "var(--ok)", fontSize: "0.82rem" }}>{note}</p>}
+        {error && <p style={{ color: "#EF4444", fontSize: "0.82rem" }}>{error}</p>}
+      </section>
+
+      <section aria-label="保管資料一覧" style={{ marginTop: "1rem" }}>
+        <h3 style={{ margin: "0 0 0.4rem" }}>保管資料({filtered.length}件)</h3>
+        <input
+          type="search"
+          placeholder="タイトル・本文・タグで絞り込み"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          style={{ marginBottom: "0.5rem", minWidth: "18rem" }}
+        />
+        {filtered.length === 0 ? (
+          <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+            {docs.length === 0
+              ? "保管資料はまだありません。上の「資料の取込」からファイルを追加してください。"
+              : "絞り込みに一致する資料はありません。"}
+          </p>
+        ) : (
+          <table style={{ borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                {["タイトル", "出所", "サイズ", "保存日", "冒頭", "操作"].map((h) => (
+                  <th key={h} style={cellStyle}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((d) => (
+                <tr key={d.id}>
+                  <td style={cellStyle}>{d.title}</td>
+                  <td style={cellStyle}>{SOURCE_JA[d.source]}</td>
+                  <td style={cellStyle}>{formatChars(d.text.length)}</td>
+                  <td style={cellStyle}>{new Date(d.createdAtMs).toLocaleDateString("ja-JP")}</td>
+                  <td style={{ ...cellStyle, maxWidth: "22rem" }}>
+                    <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
+                      {d.text.replace(/\s+/g, " ").slice(0, 80)}
+                      {d.text.length > 80 ? "…" : ""}
+                    </span>
+                  </td>
+                  <td style={cellStyle}>
+                    <button type="button" onClick={() => handleRemove(d)}>
+                      削除
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        <p style={{ marginTop: "0.5rem", fontSize: "0.78rem", color: "var(--text-muted)" }}>
+          保存した資料は Company Brain の意味検索へ自動索引されます(分類: vault)。
+        </p>
+      </section>
+    </>
+  );
+}
+
+const cellStyle: React.CSSProperties = {
+  border: "1px solid var(--border)",
+  padding: "0.35rem 0.6rem",
+  textAlign: "left",
+  verticalAlign: "top",
+};

@@ -49,6 +49,7 @@ import { SupportPage } from "./components/Support/SupportPage";
 import { DevelopmentPage } from "./components/Development/DevelopmentPage";
 import { PluginsPage } from "./components/Plugins/PluginsPage";
 import { CompanyBrainPage } from "./components/Memory/CompanyBrainPage";
+import { VaultPage } from "./components/Vault/VaultPage";
 import { IntelligenceLayerPage } from "./components/Enterprise/IntelligenceLayerPage";
 import { VisionPage } from "./components/Vision/VisionPage";
 import { AutomationPage } from "./components/Automation/AutomationPage";
@@ -106,6 +107,7 @@ type Page =
   | "workflow"
   | "agent_center"
   | "company_brain"
+  | "vault"
   | "intelligence_layer"
   | "collaboration"
   | "vision"
@@ -158,6 +160,7 @@ const PAGE_TITLE_JA: Record<Page, string> = {
   workflow: "ワークフロー",
   agent_center: "エージェント実行センター",
   company_brain: "Company Brain",
+  vault: "保管庫(Knowledge Vault)",
   intelligence_layer: "Intelligence Layer",
   collaboration: "コラボレーション",
   vision: "Vision(画面解析)",
@@ -251,6 +254,7 @@ const NAV_GROUPS: ReadonlyArray<{
     icon: "📚",
     items: [
       { label: "Company Brain", page: "company_brain" },
+      { label: "保管庫(Knowledge Vault)", page: "vault" },
       { label: "Intelligence Layer", page: "intelligence_layer" },
       { label: "AI組織構造", page: "org_structure" },
       { label: "プロダクト / テナント", page: "product" },
@@ -483,6 +487,8 @@ export function App() {
           <WorkflowPage onOpenPage={(target) => replayNavigate(target)} />
         ) : page === "company_brain" ? (
           <CompanyBrainPage />
+        ) : page === "vault" ? (
+          <VaultPage />
         ) : page === "intelligence_layer" ? (
           <IntelligenceLayerPage />
         ) : page === "collaboration" ? (

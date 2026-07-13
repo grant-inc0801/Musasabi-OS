@@ -1,65 +1,60 @@
-import { useMemo, useState } from "react";
-import {
-  VAULT_ITEMS,
-  VAULT_STATUS_COLOR,
-  VAULT_STORAGE_POLICIES,
-  computeVaultSummary,
-  filterVaultItems,
-} from "@musasabi/ai-company";
-import type { KnowledgeVaultItem } from "@musasabi/ai-company";
+import { useState } from "react";
+import { VAULT_STORAGE_POLICIES } from "@musasabi/ai-company";
 import { recordMemory } from "../../lib/memoryStorage";
+import {
+  VAULT_CAPACITY_CHARS,
+  loadVaultDocs,
+  removeVaultDocument,
+  vaultUsageChars,
+  type VaultDocument,
+} from "../../lib/vaultStorage";
 
-// 保管庫(Knowledge Vault)の詳細パネル(D-20260706-010)。
-// βはMockデータのみ: プレビュー/ダウンロード/アーカイブ/削除候補はUI上の
-// Mock操作で、実ファイルの読取・削除・アップロード・クラウド接続は行わない。
+// 保管庫(Knowledge Vault)の詳細パネル(本番実装)。
+// 実文書ストア(vaultStorage)の内容を表示し、プレビュー・削除を実行できる。
+// 保存文書は Company Brain の RAG 索引対象(分類: vault)。
 
-function formatKb(kb: number): string {
-  return kb >= 1024 ? `${(kb / 1024).toFixed(1)}MB` : `${kb}KB`;
+const SOURCE_JA: Record<VaultDocument["source"], string> = {
+  upload: "ファイル取込",
+  planning: "企画部",
+  agent: "エージェント",
+};
+
+function formatChars(n: number): string {
+  return n >= 1000 ? `${(n / 1000).toFixed(1)}千文字` : `${n}文字`;
 }
 
 export function VaultDetailPanel({ onClose }: { onClose: () => void }) {
-  // Mock操作(アーカイブ/削除候補)をセッション内で反映するローカル状態
-  const [items, setItems] = useState<KnowledgeVaultItem[]>(() => [...VAULT_ITEMS]);
+  const [docs, setDocs] = useState<VaultDocument[]>(() => loadVaultDocs());
   const [keyword, setKeyword] = useState("");
-  const [category, setCategory] = useState("");
-  const [dept, setDept] = useState("");
-  const [sort, setSort] = useState<"updated" | "size">("updated");
+  const [source, setSource] = useState("");
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
 
-  const summary = useMemo(() => computeVaultSummary(items), [items]);
-  const visible = filterVaultItems(items, {
-    keyword,
-    category: category || undefined,
-    dept: dept || undefined,
-    sort,
-  });
-  const categories = [...new Set(items.map((i) => i.category))];
-  const depts = [...new Set(items.map((i) => i.dept))];
+  const usage = vaultUsageChars(docs);
+  const usagePercent = Math.min(100, Math.round((usage / VAULT_CAPACITY_CHARS) * 100));
+  const status = usagePercent >= 90 ? "危険" : usagePercent >= 70 ? "注意" : "正常";
+  const statusColor = usagePercent >= 90 ? "#EF4444" : usagePercent >= 70 ? "#F59E0B" : "#22C55E";
 
-  function setStatus(id: string, status: KnowledgeVaultItem["status"], label: string): void {
-    const target = items.find((i) => i.id === id);
-    if (!target) return;
-    if (target.isProtected && status === "削除候補") {
-      alert("保護フラグ付きの重要資料は削除候補にできません。");
-      return;
+  const visible = docs.filter((d) => {
+    if (source && d.source !== source) return false;
+    const kw = keyword.trim();
+    if (kw && !d.title.includes(kw) && !d.text.includes(kw) && !d.tags.some((t) => t.includes(kw))) {
+      return false;
     }
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, status } : i)));
-    setNote(`「${target.title}」を${label}にしました(Mock)。`);
+    return true;
+  });
+
+  function handleRemove(doc: VaultDocument): void {
+    setDocs(removeVaultDocument(doc.id));
+    setNote(`「${doc.title}」を保管庫から削除しました(次回の索引更新で検索対象からも外れます)。`);
     recordMemory({
       category: "work",
       actor: "user",
-      action: `保管庫: ${label}`,
-      detail: target.title,
+      action: "保管庫: 文書を削除",
+      detail: doc.title,
       tags: ["vault"],
     });
   }
-
-  function handleDownload(target: KnowledgeVaultItem): void {
-    setNote(`「${target.title}」のダウンロードはMockです(実ファイル保存は後続フェーズ・承認後)。`);
-  }
-
-  const preview = items.find((i) => i.id === previewId) ?? null;
 
   return (
     <aside className="dept-detail" aria-label="保管庫詳細">
@@ -70,55 +65,43 @@ export function VaultDetailPanel({ onClose }: { onClose: () => void }) {
         </button>
       </div>
       <p style={{ margin: "0.4rem 0 0.8rem", fontSize: "0.8rem", color: "var(--text-muted)" }}>
-        重要資料のメタデータを一元管理します(Mock。実ファイル操作・クラウド接続なし)。
+        会社の資料を端末内に実保存し、Company Brain の意味検索(RAG)へ索引します。
+        資料の取込はサイドバー Knowledge の「保管庫(Knowledge Vault)」ページから行えます。
       </p>
 
       <div className="detail-block">
-        <strong>容量管理</strong>
+        <strong>容量管理(実データ)</strong>
         <p style={{ margin: "0.35rem 0", display: "flex", alignItems: "center", gap: 6 }}>
           <span
             className="dept-lamp"
-            style={{
-              background: VAULT_STATUS_COLOR[summary.status],
-              boxShadow: `0 0 8px ${VAULT_STATUS_COLOR[summary.status]}`,
-            }}
+            style={{ background: statusColor, boxShadow: `0 0 8px ${statusColor}` }}
           />
-          {summary.status} — {formatKb(summary.totalKb)} / {formatKb(summary.capacityKb)}
-          (使用率{summary.usagePercent}%)
+          {status} — {formatChars(usage)} / {formatChars(VAULT_CAPACITY_CHARS)}(使用率{usagePercent}%)
         </p>
         <div className="progress-track">
           <div
             className="progress-fill"
-            style={{
-              width: `${Math.min(summary.usagePercent, 100)}%`,
-              background: VAULT_STATUS_COLOR[summary.status],
-            }}
+            style={{ width: `${usagePercent}%`, background: statusColor }}
           />
         </div>
         <div className="detail-stats" style={{ marginTop: "0.5rem" }}>
           <div>
-            <span>大容量ファイル</span>
-            <b>{summary.largeFileCount}件</b>
+            <span>保管文書</span>
+            <b>{docs.length}件</b>
           </div>
           <div>
-            <span>重複候補</span>
-            <b>{summary.duplicateCount}件</b>
+            <span>ファイル取込</span>
+            <b>{docs.filter((d) => d.source === "upload").length}件</b>
           </div>
           <div>
-            <span>アーカイブ候補</span>
-            <b>{summary.archiveCandidateCount}件</b>
+            <span>企画部</span>
+            <b>{docs.filter((d) => d.source === "planning").length}件</b>
           </div>
           <div>
-            <span>削除候補</span>
-            <b>{summary.deleteCandidateCount}件</b>
+            <span>エージェント</span>
+            <b>{docs.filter((d) => d.source === "agent").length}件</b>
           </div>
         </div>
-        <p style={{ margin: "0.5rem 0 0", fontSize: "0.78rem", color: "var(--text-muted)" }}>
-          部署別: {summary.byDept.map((d) => `${d.dept} ${formatKb(d.totalKb)}`).join(" / ")}
-        </p>
-        <p style={{ margin: "0.2rem 0 0", fontSize: "0.78rem", color: "var(--text-muted)" }}>
-          種別上位: {summary.byCategory.slice(0, 3).map((c) => `${c.category} ${formatKb(c.totalKb)}`).join(" / ")}
-        </p>
       </div>
 
       <div className="detail-block">
@@ -128,30 +111,14 @@ export function VaultDetailPanel({ onClose }: { onClose: () => void }) {
             type="text"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            placeholder="キーワード(タイトル/タグ/AI社員)"
+            placeholder="キーワード(タイトル/本文/タグ)"
           />
-          <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
-            <select value={category} onChange={(e) => setCategory(e.target.value)} aria-label="種類">
-              <option value="">全種類</option>
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-            <select value={dept} onChange={(e) => setDept(e.target.value)} aria-label="部署">
-              <option value="">全部署</option>
-              {depts.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-            <select value={sort} onChange={(e) => setSort(e.target.value as "updated" | "size")} aria-label="並び順">
-              <option value="updated">更新日順</option>
-              <option value="size">サイズ順</option>
-            </select>
-          </div>
+          <select value={source} onChange={(e) => setSource(e.target.value)} aria-label="出所">
+            <option value="">全出所</option>
+            <option value="upload">ファイル取込</option>
+            <option value="planning">企画部</option>
+            <option value="agent">エージェント</option>
+          </select>
         </div>
       </div>
 
@@ -159,6 +126,13 @@ export function VaultDetailPanel({ onClose }: { onClose: () => void }) {
 
       <div className="detail-block">
         <strong>保管データ({visible.length}件)</strong>
+        {visible.length === 0 && (
+          <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+            {docs.length === 0
+              ? "保管文書はまだありません。保管庫ページの「資料の取込」から追加できます。"
+              : "絞り込みに一致する文書はありません。"}
+          </p>
+        )}
         {visible.map((it) => (
           <div
             key={it.id}
@@ -168,27 +142,18 @@ export function VaultDetailPanel({ onClose }: { onClose: () => void }) {
               fontSize: "0.8rem",
             }}
           >
-            <div style={{ fontWeight: 600 }}>
-              {it.isProtected ? "🔒 " : ""}
-              {it.title} <span style={{ color: "var(--text-muted)" }}>{it.version}</span>
-            </div>
+            <div style={{ fontWeight: 600 }}>{it.title}</div>
             <div style={{ color: "var(--text-muted)" }}>
-              {it.category} / {it.dept} / {it.author} / {formatKb(it.sizeKb)} /
-              更新 {new Date(it.updatedAtMs).toLocaleDateString("ja-JP")} / {it.status}
+              {SOURCE_JA[it.source]} / {formatChars(it.text.length)} / 保存{" "}
+              {new Date(it.createdAtMs).toLocaleDateString("ja-JP")}
             </div>
             <div style={{ color: "var(--text-muted)" }}>タグ: {it.tags.join("、") || "—"}</div>
             <div style={{ display: "flex", gap: "0.3rem", marginTop: "0.25rem", flexWrap: "wrap" }}>
               <button type="button" style={miniBtn} onClick={() => setPreviewId(previewId === it.id ? null : it.id)}>
                 プレビュー
               </button>
-              <button type="button" style={miniBtn} onClick={() => handleDownload(it)}>
-                ダウンロード(Mock)
-              </button>
-              <button type="button" style={miniBtn} onClick={() => setStatus(it.id, "アーカイブ候補", "アーカイブ候補")}>
-                アーカイブ
-              </button>
-              <button type="button" style={miniBtn} onClick={() => setStatus(it.id, "削除候補", "削除候補")}>
-                削除候補に追加
+              <button type="button" style={miniBtn} onClick={() => handleRemove(it)}>
+                削除
               </button>
             </div>
             {previewId === it.id && (
@@ -201,16 +166,11 @@ export function VaultDetailPanel({ onClose }: { onClose: () => void }) {
                   background: "rgba(255,255,255,0.5)",
                 }}
               >
-                <strong style={{ fontSize: "0.78rem" }}>プレビュー(Mockサムネイル)</strong>
-                <p style={{ margin: "0.25rem 0 0", fontSize: "0.78rem" }}>
-                  📄 {it.title} — {it.category}の概要をここに表示します(実体ファイルは
-                  読み込みません。メタデータと分離管理)。
+                <strong style={{ fontSize: "0.78rem" }}>本文プレビュー(冒頭400文字)</strong>
+                <p style={{ margin: "0.25rem 0 0", fontSize: "0.78rem", whiteSpace: "pre-wrap" }}>
+                  {it.text.slice(0, 400)}
+                  {it.text.length > 400 ? "…" : ""}
                 </p>
-                {it.versions.length > 0 && (
-                  <p style={{ margin: "0.25rem 0 0", fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                    履歴: {it.versions.map((v) => `${v.version}(${v.note})`).join(" → ")}
-                  </p>
-                )}
               </div>
             )}
           </div>
