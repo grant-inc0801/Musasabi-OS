@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AgentRuntime,
+  defaultPersonas,
   detectBrain,
+  runDiscussion,
+  type DiscussionResult,
   WORKFLOW_TEMPLATES,
   type AgentRunState,
   type AgentGoal,
   type DetectedBrain,
 } from "@musasabi/agent-runtime";
-import { loadLlmSettings, saveLlmSettings } from "../../lib/llmSettings";
+import { loadLlmSettings, loadReportModel, saveLlmSettings, saveReportModel } from "../../lib/llmSettings";
+import { buildReportProvider } from "../../lib/brainProviders";
 import { resolveLlmFetch } from "../../lib/llmFetch";
 import { recordMemory } from "../../lib/memoryStorage";
 import { buildAgentTools, type AgentAttachment } from "../../lib/agentTools";
@@ -43,6 +47,7 @@ const GOAL_PRESETS: AgentGoal[] = [
 
 export function AgentCenterPage() {
   const [settings, setSettings] = useState(() => loadLlmSettings());
+  const [reportModel, setReportModel] = useState(() => loadReportModel());
   const [brain, setBrain] = useState<DetectedBrain | null>(null);
   const [probing, setProbing] = useState(false);
   const [transport, setTransport] = useState<string>("");
@@ -61,6 +66,30 @@ export function AgentCenterPage() {
     setAttachments((prev) => [...prev, ...loaded].slice(0, 5));
   }
   const [savedNote, setSavedNote] = useState<string | null>(null);
+  const [meetingTopic, setMeetingTopic] = useState("");
+  const [meeting, setMeeting] = useState<DiscussionResult | null>(null);
+  const [meetingBusy, setMeetingBusy] = useState(false);
+
+  async function holdMeeting(): Promise<void> {
+    const topic = meetingTopic.trim();
+    if (topic === "" || meetingBusy) return;
+    setMeetingBusy(true);
+    setMeeting(null);
+    try {
+      const b = brain ?? (await probe());
+      const result = await runDiscussion(b.provider, topic, defaultPersonas(), 2);
+      setMeeting(result);
+      recordMemory({
+        category: "company",
+        actor: "ai-meeting",
+        action: `部署AI会議: ${topic}`,
+        detail: result.conclusion.slice(0, 200),
+        tags: ["ai-meeting"],
+      });
+    } finally {
+      setMeetingBusy(false);
+    }
+  }
   const runtimeRef = useRef<AgentRuntime | null>(null);
 
   async function probe(): Promise<DetectedBrain> {
@@ -83,7 +112,11 @@ export function AgentCenterPage() {
 
   async function startGoal(goal: AgentGoal): Promise<void> {
     const b = brain ?? (await probe());
-    const rt = new AgentRuntime({ provider: b.provider, tools: buildAgentTools(attachments) });
+    const rt = new AgentRuntime({
+      provider: b.provider,
+      reportProvider: await buildReportProvider(b),
+      tools: buildAgentTools(attachments),
+    });
     runtimeRef.current = rt;
     setRunning(true);
     setSavedNote(null);
@@ -170,7 +203,15 @@ export function AgentCenterPage() {
               onChange={(e) => setSettings({ ...settings, model: e.target.value })}
               style={{ width: "9rem", fontSize: "0.76rem", background: "var(--bg-card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, padding: "0.3rem 0.5rem" }}
             />
-            <button type="button" onClick={() => { saveLlmSettings(settings); void probe(); }} disabled={probing}>
+            <input
+              aria-label="報告用モデル(任意)"
+              value={reportModel}
+              onChange={(e) => setReportModel(e.target.value)}
+              placeholder="報告用モデル(任意・例: qwen2.5:7b)"
+              title="タスク別ルーティング: 計画・報告のみ高品質モデルを使う(空なら同一モデル)"
+              style={{ width: "13rem", fontSize: "0.76rem", background: "var(--bg-card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, padding: "0.3rem 0.5rem" }}
+            />
+            <button type="button" onClick={() => { saveLlmSettings(settings); saveReportModel(reportModel); void probe(); }} disabled={probing}>
               保存して接続テスト
             </button>
           </div>
@@ -225,6 +266,70 @@ export function AgentCenterPage() {
           利用可能テンプレート: {WORKFLOW_TEMPLATES.map((t) => t.name).join(" / ")}
           (ツールは端末内処理・添付資料は実ファイル内容を要約に使用・外部送信なし)
         </p>
+      </section>
+
+      <section aria-label="部署AI会議">
+        <h3>部署AI会議(マルチエージェント協調)</h3>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "52rem" }}>
+          営業部長AI・市場調査部長AI・マーケティング部長AIが<strong>別人格のエージェント</strong>として
+          同じ議題を2ラウンド議論し、AI CEO が結論をまとめます(頭脳は共有・すべて端末内・無課金)。
+          結論は Company Brain に意思決定として保存されます。
+        </p>
+        <div style={{ display: "flex", gap: "0.5rem", maxWidth: "44rem" }}>
+          <input
+            aria-label="会議の議題"
+            value={meetingTopic}
+            onChange={(e) => setMeetingTopic(e.target.value)}
+            placeholder="議題(例: 新商品の価格を月額いくらにするか)"
+            style={{ flex: 1, fontSize: "0.8rem", background: "var(--bg-card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, padding: "0.4rem 0.6rem" }}
+          />
+          <button type="button" onClick={() => void holdMeeting()} disabled={meetingBusy || meetingTopic.trim() === ""}>
+            {meetingBusy ? "会議中…(7回の発言を生成)" : "🏛 会議を開催"}
+          </button>
+        </div>
+        {meeting && (
+          <div style={{ marginTop: "0.6rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+              {meeting.turns.map((t, i) => (
+                <div key={i} className="card" style={{ padding: "0.45rem 0.7rem", fontSize: "0.8rem" }}>
+                  <span className="badge" style={{ fontSize: "0.62rem" }}>R{t.round}</span>{" "}
+                  <strong>{t.personaName}</strong>
+                  <div style={{ whiteSpace: "pre-wrap", marginTop: "0.15rem" }}>{t.content}</div>
+                </div>
+              ))}
+            </div>
+            <div className="card" style={{ marginTop: "0.5rem", borderColor: "#22C55E" }}>
+              <strong>🏁 AI CEO 結論(Company Brain 保存済み)</strong>
+              <pre style={{ whiteSpace: "pre-wrap", fontSize: "0.8rem", margin: "0.3rem 0 0" }}>{meeting.conclusion}</pre>
+              <div style={{ display: "flex", gap: "0.4rem", marginTop: "0.4rem" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const md = [
+                      `# 部署AI会議 議事録 — ${meeting.topic}`,
+                      `頭脳: ${meeting.brainName}`,
+                      "",
+                      ...meeting.turns.map((t) => `## R${t.round} ${t.personaName}\n${t.content}`),
+                      "",
+                      `## AI CEO 結論\n${meeting.conclusion}`,
+                    ].join("\n");
+                    void saveBinaryFile(
+                      `ai-meeting-${new Date().toISOString().slice(0, 10)}.md`,
+                      new TextEncoder().encode(md),
+                      "Markdown",
+                      ["md"],
+                    );
+                  }}
+                >
+                  📄 議事録をファイル保存
+                </button>
+                {isTtsAvailable() && (
+                  <button type="button" onClick={() => void speakJaBest(meeting.conclusion)}>🔊 結論を読み上げ</button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {run && (

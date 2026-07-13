@@ -16,6 +16,7 @@ import { ragContextFor } from "../../lib/brainRag";
 import { isTtsAvailable, speakJaBest } from "../../lib/voice";
 import { resolveLlmFetch } from "../../lib/llmFetch";
 import { buildAgentTools } from "../../lib/agentTools";
+import { buildReportProvider } from "../../lib/brainProviders";
 import { sendAgentNotification } from "../../lib/freeConnectors";
 import { notifyOs } from "../../lib/osNotify";
 import brandIcon from "../../assets/brand-icon.png";
@@ -92,7 +93,7 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
   async function runInstruction(instruction: string): Promise<string> {
     const brain = brainRef.current ?? (await detectBrain(loadLlmSettings(), await resolveLlmFetch()));
     brainRef.current = brain;
-    const rt = new AgentRuntime({ provider: brain.provider, tools: buildAgentTools() });
+    const rt = new AgentRuntime({ provider: brain.provider, reportProvider: await buildReportProvider(brain), tools: buildAgentTools() });
     let state = await rt.start({
       id: `chat-${Date.now()}`,
       title: instruction.slice(0, 48),

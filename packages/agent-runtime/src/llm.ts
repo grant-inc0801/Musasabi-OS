@@ -110,6 +110,12 @@ export class RuleBasedProvider implements LlmProvider {
     if (last.includes("[REPORT]")) {
       return "目標に対する全ステップが完了しました。成果物と根拠は各ステップの出力を参照してください。";
     }
+    if (last.includes("[DISCUSS]")) {
+      return "この議題は進める価値があると考えます。担当領域の観点では大きな支障はありません(ルールベース発言)。";
+    }
+    if (last.includes("[CONCLUDE]")) {
+      return "結論: 各部の意見に大きな対立はなく、提案どおり進めます。次のアクションは担当部署の実行計画作成です。";
+    }
     // 汎用応答(チャット用)
     const text = last.replace(/\s+/g, " ").slice(0, 60);
     return `「${text}」について承知しました。サイドバーの各グループから該当機能へ移動できます(ルールベース応答)。`;
