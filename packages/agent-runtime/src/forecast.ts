@@ -8,6 +8,7 @@
 // 選出根拠・除外理由を必ず明示する(説明可能性)。
 
 import type { LlmProvider } from "./llm";
+import { checkAgainstConstitution, type AgiProposal } from "@musasabi/agi";
 
 export type ForecastHorizon = "6m" | "12m";
 
@@ -157,5 +158,204 @@ export async function runForecast(
     proposals,
     brainName: provider.name,
     generatedAtMs: Date.now(),
+  };
+}
+
+
+// ─────────────── AGI 深層予測(精度・粒度の向上)───────────────
+// AGI 的な多段推論で予測を強化する:
+//  粒度: 各主分岐を2本のサブ分岐へ展開(2階層のシナリオツリー)
+//  精度: (a) 自己批評(critic)が各葉の根拠を検証し確率を較正
+//        (b) 過去の予測(履歴)と最新データの差分から学習ノートを生成し、次回に活かす
+//  統制: 提案は Musasabi 憲章(packages/agi)への適合チェックを通す
+// すべて端末内処理。倫理フィルタは主分岐・サブ分岐の両方に適用する。
+
+export interface ForecastSubBranch {
+  id: string;
+  title: string;
+  at6Months: string;
+  at12Months: string;
+  /** 生成時の実現性(0〜100)。 */
+  plausibility: number;
+  /** 自己批評による較正後の実現性。 */
+  calibratedPlausibility: number;
+  /** 批評ノート(根拠の弱点・補正理由)。 */
+  critiqueNote?: string;
+  ethical: boolean;
+  ethicsNote?: string;
+}
+
+export interface DeepForecastResult extends ForecastResult {
+  /** 各主分岐のサブ分岐(scenario.id → サブ分岐)。 */
+  subBranches: Record<string, ForecastSubBranch[]>;
+  /** 選出された葉(主分岐+サブ分岐)。 */
+  selectedLeaf: { main: ForecastScenario; sub: ForecastSubBranch } | null;
+  /** 過去予測との差分から得た学習ノート(履歴がある場合)。 */
+  learningNote?: string;
+  /** 提案の憲章チェック結果。 */
+  constitutionNotes: string[];
+}
+
+const SUB_SEEDS = ["加速側(この分岐がさらに速く進んだ場合)", "堅実側(この分岐が慎重に進んだ場合)"];
+
+async function generateSubBranch(
+  provider: LlmProvider,
+  main: ForecastScenario,
+  seed: string,
+  index: number,
+): Promise<ForecastSubBranch> {
+  const text = await provider.chat([
+    {
+      role: "system",
+      content: "あなたは Musasabi OS の未来予測AIです。親シナリオを前提に、より細かい粒度で予測します。倫理に反する発展は選択肢にしません。",
+    },
+    {
+      role: "user",
+      content:
+        `[SUBFORECAST] 親シナリオ: ${main.title}\n半年後: ${main.at6Months}\n1年後: ${main.at12Months}\n\n` +
+        `サブ分岐: ${seed}\n` +
+        "このサブ分岐を予測してください。必ず次の形式で:\nタイトル: (1行)\n半年後: (2文以内)\n1年後: (2文以内)\n確率: NN%",
+    },
+  ]);
+  const titleMatch = text.match(/タイトル[::]\s*(.+)/);
+  const m6 = text.match(/半年後[::]\s*([\s\S]*?)(?=\n1年後|$)/);
+  const m12 = text.match(/1年後[::]\s*([\s\S]*?)(?=\n確率|$)/);
+  const ethicsIssue = screenEthics(text);
+  const plausibility = parsePlausibility(text);
+  return {
+    id: `${main.id}-sub-${index + 1}`,
+    title: (titleMatch?.[1] ?? seed).trim().slice(0, 80),
+    at6Months: (m6?.[1] ?? text).trim().slice(0, 300),
+    at12Months: (m12?.[1] ?? "").trim().slice(0, 300),
+    plausibility,
+    calibratedPlausibility: plausibility,
+    ethical: ethicsIssue === null,
+    ethicsNote: ethicsIssue ?? undefined,
+  };
+}
+
+/** 自己批評: 葉の根拠を検証し、補正確率と批評ノートを返す。 */
+async function critiqueLeaf(
+  provider: LlmProvider,
+  main: ForecastScenario,
+  sub: ForecastSubBranch,
+): Promise<{ calibrated: number; note: string }> {
+  const text = await provider.chat([
+    {
+      role: "system",
+      content: "あなたは Musasabi OS の批評AI(critic)です。予測の根拠の弱点を具体的に指摘し、確率を過大評価から補正します。",
+    },
+    {
+      role: "user",
+      content:
+        `[CRITIQUE] 予測: ${main.title} → ${sub.title}\n半年後: ${sub.at6Months}\n1年後: ${sub.at12Months}\n提示確率: ${sub.plausibility}%\n\n` +
+        "根拠の弱点を1文で指摘し、最後に必ず「補正確率: NN%」の形式で示してください。",
+    },
+  ]);
+  const corrected = parsePlausibility(text.match(/補正確率[::]?\s*\d{1,3}\s*%?/)?.[0] ?? "");
+  const calibrated = Math.round((sub.plausibility + (corrected === 50 && !/補正確率/.test(text) ? sub.plausibility : corrected)) / 2);
+  return { calibrated, note: text.split("\n")[0].trim().slice(0, 160) };
+}
+
+/**
+ * AGI 深層予測: 主分岐→サブ分岐展開→自己批評による較正→履歴学習→葉レベルで選出→提案+憲章チェック。
+ * pastDigest には前回予測の要約(選出タイトル・確率など)を渡すと学習ノートを生成する。
+ */
+export async function runForecastDeep(
+  provider: LlmProvider,
+  marketInputs: string,
+  pastDigest?: string,
+): Promise<DeepForecastResult> {
+  const base = await runForecast(provider, marketInputs, 3);
+
+  // 粒度: 倫理を通過した主分岐をサブ分岐に展開
+  const subBranches: Record<string, ForecastSubBranch[]> = {};
+  for (const main of base.scenarios) {
+    if (!main.ethical) continue;
+    const subs: ForecastSubBranch[] = [];
+    for (let i = 0; i < SUB_SEEDS.length; i++) {
+      subs.push(await generateSubBranch(provider, main, SUB_SEEDS[i], i));
+    }
+    subBranches[main.id] = subs;
+  }
+
+  // 精度: 自己批評で各葉の確率を較正
+  for (const main of base.scenarios) {
+    for (const sub of subBranches[main.id] ?? []) {
+      if (!sub.ethical) continue;
+      const { calibrated, note } = await critiqueLeaf(provider, main, sub);
+      sub.calibratedPlausibility = Math.max(0, Math.min(100, calibrated));
+      sub.critiqueNote = note;
+    }
+  }
+
+  // 履歴学習: 前回予測との差分を評価(履歴があるときのみ)
+  let learningNote: string | undefined;
+  if (pastDigest && pastDigest.trim() !== "") {
+    learningNote = (
+      await provider.chat([
+        { role: "system", content: "あなたは Musasabi OS の較正AIです。過去の予測と最新データを比べ、次回の予測精度を上げるための学習ノートを作ります。" },
+        {
+          role: "user",
+          content: `[CALIBRATE] 前回の予測:\n${pastDigest.slice(0, 500)}\n\n最新の市場データ:\n${marketInputs.slice(0, 500)}\n\n前回予測と現状の差分を評価し、次回に活かす学習ノートを2文以内で。`,
+        },
+      ])
+    ).trim().slice(0, 300);
+  }
+
+  // 選出: 葉レベル(倫理通過のサブ分岐)で較正後確率が最大のもの
+  let selectedLeaf: DeepForecastResult["selectedLeaf"] = null;
+  for (const main of base.scenarios) {
+    if (!main.ethical) continue;
+    for (const sub of subBranches[main.id] ?? []) {
+      if (!sub.ethical) continue;
+      if (!selectedLeaf || sub.calibratedPlausibility > selectedLeaf.sub.calibratedPlausibility) {
+        selectedLeaf = { main, sub };
+      }
+    }
+  }
+
+  // 提案: 選出した葉から生成し、Musasabi 憲章チェックを通す
+  let proposals = base.proposals;
+  const constitutionNotes: string[] = [];
+  if (selectedLeaf) {
+    const text = await provider.chat([
+      { role: "system", content: "あなたは Musasabi OS の企画部AIです。実行は人間の承認後に行われます。端末内で完結できる準備作業を優先して提案してください。" },
+      {
+        role: "user",
+        content:
+          `[PROPOSE] 選出された未来シナリオ(深層):\n${selectedLeaf.main.title} → ${selectedLeaf.sub.title}\n` +
+          `半年後: ${selectedLeaf.sub.at6Months}\n1年後: ${selectedLeaf.sub.at12Months}\n\n` +
+          "このシナリオに備えて『今すぐ取り組める内容』を2件、次の形式で:\n提案1: (タイトル) — (1文の説明)\n提案2: (タイトル) — (1文の説明)",
+      },
+    ]);
+    const parsed: ForecastProposal[] = [];
+    for (const m of text.matchAll(/提案\d[::]\s*(.+?)\s*[—ー-]\s*(.+)/g)) {
+      parsed.push({ title: m[1].trim().slice(0, 60), detail: m[2].trim().slice(0, 200) });
+    }
+    if (parsed.length > 0) proposals = parsed;
+    for (const [i, prop] of proposals.entries()) {
+      const agiProposal: AgiProposal = {
+        id: `forecast-prop-${i + 1}`,
+        kind: "strategy",
+        title: prop.title,
+        rationale: prop.detail,
+        impact: "moderate",
+        expectedBenefit: 4,
+      };
+      const check = checkAgainstConstitution(agiProposal);
+      constitutionNotes.push(
+        `${prop.title}: 憲章適合=${check.compliant ? "OK" : "NG"} / 承認${check.requiresApproval ? "必須" : "任意"} / ${check.notes[0] ?? ""}`,
+      );
+    }
+  }
+
+  return {
+    ...base,
+    proposals,
+    subBranches,
+    selectedLeaf,
+    learningNote,
+    constitutionNotes,
   };
 }

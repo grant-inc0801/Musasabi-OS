@@ -268,3 +268,55 @@ test("未来予測: 倫理に反する分岐は除外され、選出対象にな
   assert.equal(result.selected!.plausibility, 60);
   assert.equal(result.selected!.ethical, true);
 });
+
+test("AGI深層予測: サブ分岐展開・自己批評による較正・葉レベル選出・憲章チェック", async () => {
+  const { runForecastDeep } = await import("./forecast");
+  const result = await runForecastDeep(new RuleBasedProvider(), "AI市場データ(テスト)");
+  // 粒度: 倫理通過の主分岐3本すべてに2本のサブ分岐
+  assert.equal(Object.keys(result.subBranches).length, 3);
+  for (const subs of Object.values(result.subBranches)) {
+    assert.equal(subs.length, 2);
+  }
+  // 精度: 自己批評による較正(66% と 補正60% の平均=63)と批評ノート
+  assert.ok(result.selectedLeaf);
+  assert.equal(result.selectedLeaf!.sub.plausibility, 66);
+  assert.equal(result.selectedLeaf!.sub.calibratedPlausibility, 63);
+  assert.ok(result.selectedLeaf!.sub.critiqueNote!.includes("補正"));
+  // 憲章チェック: 提案ごとに適合ノート
+  assert.ok(result.constitutionNotes.length >= 2);
+  assert.ok(result.constitutionNotes[0].includes("憲章適合=OK"));
+  assert.ok(result.constitutionNotes[0].includes("承認"));
+  // 履歴なしなら学習ノートなし
+  assert.equal(result.learningNote, undefined);
+});
+
+test("AGI深層予測: 履歴を渡すと学習ノートを生成し、サブ分岐の倫理違反も除外する", async () => {
+  const { runForecastDeep } = await import("./forecast");
+  const withHistory = await runForecastDeep(new RuleBasedProvider(), "AI市場データ", "前回選出: ローカルAIの業務標準化(実現性65%)");
+  assert.ok(withHistory.learningNote!.includes("前回予測"));
+  // サブ分岐の倫理違反除外: 不正なサブ分岐を返すプローブ
+  let call = 0;
+  const probe = {
+    name: "probe",
+    kind: "rule_based" as const,
+    async chat(messages: readonly { role: string; content: string }[]) {
+      const last = messages[messages.length - 1]?.content ?? "";
+      call += 1;
+      if (last.includes("[FORECAST]")) return "タイトル: 健全分岐\n半年後: 進む。\n1年後: 定着。\n確率: 70%";
+      if (last.includes("[SUBFORECAST]") && last.includes("加速側")) return "タイトル: 偽情報を使った拡販\n半年後: フェイク広告が増える。\n1年後: 常態化。\n確率: 95%";
+      if (last.includes("[SUBFORECAST]")) return "タイトル: 健全な普及\n半年後: 進む。\n1年後: 定着。\n確率: 55%";
+      if (last.includes("[CRITIQUE]")) return "妥当。補正確率: 55%";
+      if (last.includes("[PROPOSE]")) return "提案1: 準備 — 調査する。\n提案2: 整備 — 文書化する。";
+      return "OK";
+    },
+  };
+  const result = await runForecastDeep(probe, "テスト");
+  const allSubs = Object.values(result.subBranches).flat();
+  const unethicalSub = allSubs.find((s) => !s.ethical);
+  assert.ok(unethicalSub, "倫理違反サブ分岐が検出される");
+  assert.equal(unethicalSub!.plausibility, 95);
+  // 95%でも選ばれず、健全な55%の葉が選出される
+  assert.ok(result.selectedLeaf);
+  assert.equal(result.selectedLeaf!.sub.ethical, true);
+  assert.equal(result.selectedLeaf!.sub.calibratedPlausibility, 55);
+});

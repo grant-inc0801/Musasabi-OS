@@ -2,10 +2,10 @@ import { useRef, useState } from "react";
 import {
   AgentRuntime,
   detectBrain,
-  runForecast,
+  runForecastDeep,
   type AgentRunState,
+  type DeepForecastResult,
   type ForecastProposal,
-  type ForecastResult,
 } from "@musasabi/agent-runtime";
 import { fetchAllHeadlines } from "../../lib/rssFeeds";
 import { searchBrain } from "../../lib/brainRag";
@@ -25,7 +25,7 @@ import { notifyOs } from "../../lib/osNotify";
 
 export function ForecastSection() {
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<ForecastResult | null>(null);
+  const [result, setResult] = useState<DeepForecastResult | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [execRun, setExecRun] = useState<AgentRunState | null>(null);
   const [execBusy, setExecBusy] = useState(false);
@@ -53,14 +53,22 @@ export function ForecastSection() {
     try {
       const brain = await detectBrain(loadLlmSettings(), await resolveLlmFetch());
       const inputs = await gatherInputs();
-      const forecast = await runForecast(brain.provider, inputs, 3);
+      // AGI深層予測: 過去の予測履歴を渡して較正(学習ノート生成)
+      const pastDigest = localStorage.getItem("musasabi.forecastHistory") ?? "";
+      const forecast = await runForecastDeep(brain.provider, inputs, pastDigest);
       setResult(forecast);
+      // 履歴を保存(次回の較正に使う・直近3件)
+      if (forecast.selectedLeaf) {
+        const entry = `${new Date().toLocaleDateString("ja-JP")} 選出: ${forecast.selectedLeaf.main.title} → ${forecast.selectedLeaf.sub.title}(較正後実現性${forecast.selectedLeaf.sub.calibratedPlausibility}%)`;
+        const prev = pastDigest.split("\n").filter((l) => l.trim() !== "").slice(0, 2);
+        localStorage.setItem("musasabi.forecastHistory", [entry, ...prev].join("\n"));
+      }
       recordMemory({
         category: "company",
         actor: "市場調査部",
         action: "未来予測を実行(半年〜1年・シナリオ分岐)",
-        detail: forecast.selected
-          ? `選出: ${forecast.selected.title}(実現性${forecast.selected.plausibility}%)`
+        detail: forecast.selectedLeaf
+          ? `選出: ${forecast.selectedLeaf.main.title} → ${forecast.selectedLeaf.sub.title}(較正後${forecast.selectedLeaf.sub.calibratedPlausibility}%)${forecast.learningNote ? " / 学習: " + forecast.learningNote.slice(0, 80) : ""}`
           : "倫理フィルタにより全分岐が除外",
         tags: ["forecast"],
       });
@@ -119,14 +127,24 @@ export function ForecastSection() {
       "## 入力(市場データ)",
       result.inputsDigest,
       "",
+      ...(result.learningNote ? ["## 🧠 前回予測からの学習", result.learningNote, ""] : []),
       ...result.scenarios.flatMap((s) => [
         `## ${s.ethical ? "" : "【倫理フィルタで除外】"}${s.title}(実現性 ${s.plausibility}%)`,
         `- 半年後: ${s.at6Months}`,
         `- 1年後: ${s.at12Months}`,
         ...(s.ethicsNote ? [`- 除外理由: ${s.ethicsNote}`] : []),
+        ...(result.subBranches[s.id] ?? []).flatMap((sub) => [
+          `### └ ${sub.ethical ? "" : "【倫理除外】"}${sub.title}(較正後 ${sub.calibratedPlausibility}% / 生成時 ${sub.plausibility}%)`,
+          `- 半年後: ${sub.at6Months}`,
+          `- 1年後: ${sub.at12Months}`,
+          ...(sub.critiqueNote ? [`- 批評AI: ${sub.critiqueNote}`] : []),
+          ...(sub.ethicsNote ? [`- 除外理由: ${sub.ethicsNote}`] : []),
+        ]),
         "",
       ]),
-      result.selected ? `## ✅ 選出シナリオ: ${result.selected.title}` : "## 選出なし(全分岐が倫理フィルタで除外)",
+      result.selectedLeaf
+        ? `## ✅ 選出シナリオ: ${result.selectedLeaf.main.title} → ${result.selectedLeaf.sub.title}`
+        : "## 選出なし(全分岐が倫理フィルタで除外)",
       "",
       "## 現在取り組める内容(提案)",
       ...result.proposals.map((p, i) => `${i + 1}. ${p.title} — ${p.detail}`),
@@ -144,19 +162,24 @@ export function ForecastSection() {
       <h3>未来予測(半年〜1年・シナリオ分岐)</h3>
       <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "52rem" }}>
         市場実データ(RSS)と社内調査記録から、AIの発展を<strong>複数に枝分かれしたシナリオ</strong>として予測します。
-        倫理に反する分岐は<strong>倫理フィルタで除外</strong>し、残りから実現性の最も高いシナリオを選出。
+        各分岐は<strong>サブ分岐へ展開(2階層)</strong>し、批評AIの自己批評で実現性を較正、前回予測からの学習で精度を高めます。倫理に反する分岐は<strong>倫理フィルタで除外</strong>し、残りから較正後の実現性が最も高い葉を選出。
         そこから「現在取り組める内容」を提案し、<strong>承認ボタンを押した場合のみ</strong>エージェントが構築・実行します。
       </p>
       <button type="button" onClick={() => void handleForecast()} disabled={busy}>
-        {busy ? "予測中…(3分岐+提案を生成)" : "🔮 半年〜1年先を予測"}
+        {busy ? "AGI深層予測中…(主分岐→サブ分岐→自己批評→較正)" : "🔮 AGI深層予測(半年〜1年・2階層)"}
       </button>
       {note && <p style={{ color: "#EF4444", fontSize: "0.8rem", marginTop: "0.4rem" }}>{note}</p>}
 
       {result && (
         <div style={{ marginTop: "0.6rem" }}>
+          {result.learningNote && (
+            <div className="card" style={{ marginBottom: "0.4rem", fontSize: "0.78rem" }}>
+              🧠 <strong>前回予測からの学習(較正)</strong>: {result.learningNote}
+            </div>
+          )}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
             {result.scenarios.map((s) => {
-              const isSelected = result.selected?.id === s.id;
+              const subs = result.subBranches[s.id] ?? [];
               return (
                 <div
                   key={s.id}
@@ -164,12 +187,11 @@ export function ForecastSection() {
                   style={{
                     padding: "0.5rem 0.75rem",
                     fontSize: "0.8rem",
-                    borderColor: isSelected ? "#22C55E" : !s.ethical ? "#EF4444" : undefined,
+                    borderColor: !s.ethical ? "#EF4444" : undefined,
                     opacity: s.ethical ? 1 : 0.65,
                   }}
                 >
                   <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
-                    {isSelected && <span className="badge" style={{ fontSize: "0.64rem", background: "#22C55E22" }}>✅ 選出(最も現実性が高い)</span>}
                     {!s.ethical && <span className="badge" style={{ fontSize: "0.64rem", background: "#EF444422" }}>🚫 倫理フィルタで除外</span>}
                     <strong>{s.title}</strong>
                     <span style={{ marginLeft: "auto", fontSize: "0.72rem", color: "var(--text-muted)" }}>実現性 {s.plausibility}%</span>
@@ -177,6 +199,39 @@ export function ForecastSection() {
                   <div style={{ marginTop: "0.2rem" }}>半年後: {s.at6Months}</div>
                   {s.at12Months && <div>1年後: {s.at12Months}</div>}
                   {s.ethicsNote && <div style={{ color: "#EF4444", fontSize: "0.74rem" }}>除外理由: {s.ethicsNote}</div>}
+                  {subs.map((sub) => {
+                    const isLeafSelected = result.selectedLeaf?.sub.id === sub.id;
+                    return (
+                      <div
+                        key={sub.id}
+                        className="card"
+                        style={{
+                          marginTop: "0.35rem",
+                          marginLeft: "1.2rem",
+                          padding: "0.4rem 0.6rem",
+                          fontSize: "0.76rem",
+                          borderColor: isLeafSelected ? "#22C55E" : !sub.ethical ? "#EF4444" : undefined,
+                          opacity: sub.ethical ? 1 : 0.65,
+                        }}
+                      >
+                        <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap" }}>
+                          <span aria-hidden>└</span>
+                          {isLeafSelected && <span className="badge" style={{ fontSize: "0.62rem", background: "#22C55E22" }}>✅ 選出(最も現実性が高い)</span>}
+                          {!sub.ethical && <span className="badge" style={{ fontSize: "0.62rem", background: "#EF444422" }}>🚫 倫理除外</span>}
+                          <strong>{sub.title}</strong>
+                          <span style={{ marginLeft: "auto", fontSize: "0.68rem", color: "var(--text-muted)" }}>
+                            較正後 {sub.calibratedPlausibility}%(生成時 {sub.plausibility}%)
+                          </span>
+                        </div>
+                        <div>半年後: {sub.at6Months}</div>
+                        {sub.at12Months && <div>1年後: {sub.at12Months}</div>}
+                        {sub.critiqueNote && (
+                          <div style={{ color: "var(--text-muted)", fontSize: "0.68rem" }}>批評AI: {sub.critiqueNote}</div>
+                        )}
+                        {sub.ethicsNote && <div style={{ color: "#EF4444", fontSize: "0.7rem" }}>除外理由: {sub.ethicsNote}</div>}
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
@@ -185,6 +240,11 @@ export function ForecastSection() {
           {result.proposals.length > 0 && (
             <div className="card" style={{ marginTop: "0.5rem" }}>
               <strong>💡 現在取り組める内容(選出シナリオへの備え)</strong>
+              {result.constitutionNotes.length > 0 && (
+                <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
+                  🏛 Musasabi憲章チェック: {result.constitutionNotes.join(" / ")}
+                </div>
+              )}
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem", marginTop: "0.35rem" }}>
                 {result.proposals.map((p, i) => (
                   <div key={i} style={{ display: "flex", gap: "0.6rem", alignItems: "center", fontSize: "0.82rem", flexWrap: "wrap" }}>
