@@ -12,6 +12,7 @@ import {
 } from "@musasabi/brain-rag";
 import { loadMemoryRecords } from "./memoryStorage";
 import { loadDeptChatHistory } from "./deptChatStorage";
+import { vaultChunksForIndex } from "./vaultStorage";
 import { loadLlmSettings } from "./llmSettings";
 import { resolveLlmFetch } from "./llmFetch";
 
@@ -85,8 +86,22 @@ export async function ensureBrainIndex(): Promise<BrainRagState> {
       },
     });
   }
+  // 保管庫(Knowledge Vault)の実文書もチャンク単位で索引する — 会社の全資料を頭脳が引ける
+  const vaultChunks = vaultChunksForIndex();
+  docs.push(...vaultChunks);
+  // 削除済み文書の古いチャンクを索引から掃除する(保管庫で削除→検索にも出さない)
+  const liveVaultIds = new Set(vaultChunks.map((c) => c.id));
+  let pruned = 0;
+  for (const d of index.toJSON()) {
+    // 索引IDは「<埋め込み種別>:<チャンクID>」形式のため、接頭辞を外して照合する
+    const rawId = d.id.replace(/^[^:]+:/, "");
+    if (d.meta?.分類 === "vault" && !liveVaultIds.has(rawId)) {
+      index.remove(d.id);
+      pruned++;
+    }
+  }
   const added = await indexDocuments(index, detected.provider, docs);
-  if (added > 0) saveIndex(index);
+  if (added > 0 || pruned > 0) saveIndex(index);
   return { providerName: detected.provider.name, source: detected.source, indexedCount: index.size };
 }
 
