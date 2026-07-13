@@ -6,6 +6,7 @@ import {
   defaultTools,
   detectBrain,
   chatOnce,
+  chatWithHistory,
   OllamaProvider,
   RuleBasedProvider,
   DEFAULT_LLM_SETTINGS,
@@ -160,4 +161,30 @@ test("検出失敗時は probeError に失敗理由が入る(診断表示用)", 
   const brain = await detectBrain({ baseUrl: "http://127.0.0.1:43198", model: "qwen2.5:0.5b" });
   assert.equal(brain.source, "fallback");
   assert.ok(typeof brain.probeError === "string" && brain.probeError.length > 0);
+});
+
+test("chatWithHistory は直近の会話を文脈としてプロバイダへ渡す", async () => {
+  const seen: Array<{ role: string; content: string }[]> = [];
+  const probe = {
+    name: "probe",
+    kind: "rule_based" as const,
+    async chat(messages: readonly { role: string; content: string }[]) {
+      seen.push([...messages]);
+      return "ok";
+    },
+  };
+  await chatWithHistory(
+    probe,
+    [
+      { role: "user", content: "週次レポートの件どうなってる?" },
+      { role: "assistant", content: "本日分は作成済みです。" },
+    ],
+    "それを実行して",
+    "アプリ構成テスト",
+  );
+  const msgs = seen[0];
+  assert.equal(msgs.length, 4); // system + user + assistant + user
+  assert.equal(msgs[1].content.includes("週次レポート"), true);
+  assert.equal(msgs[2].role, "assistant");
+  assert.equal(msgs[3].content, "それを実行して");
 });

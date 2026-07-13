@@ -335,3 +335,22 @@ export async function chatOnce(
   ];
   return provider.chat(messages);
 }
+
+/**
+ * 会話メモリつきチャット: 直近のやり取り(user/assistant交互)を文脈として渡し、
+ * 「さっきの件」のような継続会話を可能にする。turns は古い順。
+ */
+export async function chatWithHistory(
+  provider: LlmProvider,
+  turns: ReadonlyArray<{ role: "user" | "assistant"; content: string }>,
+  userText: string,
+  appContext: string,
+  maxTurns = 8,
+): Promise<string> {
+  const messages: LlmMessage[] = [
+    { role: "system", content: `${SYSTEM_PROMPT}\n以下はアプリの画面構成です。案内に使ってください:\n${appContext}` },
+    ...turns.slice(-maxTurns).map((t) => ({ role: t.role, content: t.content.slice(0, 600) })),
+    { role: "user", content: userText },
+  ];
+  return provider.chat(messages);
+}

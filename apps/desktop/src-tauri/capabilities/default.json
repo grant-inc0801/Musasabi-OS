@@ -49,6 +49,7 @@
           "path": "**"
         }
       ]
-    }
+    },
+    "notification:default"
   ]
 }
