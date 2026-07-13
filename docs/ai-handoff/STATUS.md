@@ -4,7 +4,12 @@
 **Updated:** 2026-07-13
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(第3弾⑤⑥⑦: ICS+チャット履歴RAG+ローカル画像生成)
+## 直近の完了内容(第4弾: Secret Center+メール通知)
+Rust keyring で OS資格情報ストアへ暗号化保管(secret_set/exists/delete・値はJSへ返さない)。
+lettre で send_mail(STARTTLS・パスワードはRust内部で取得・偽SMTPで実送信検証)。
+無料コネクタにメール通知UI(第3チャネル)。設計書 SECRET_CENTER_DESIGN.md。E2E 3/3・0エラー。
+
+## それ以前の完了内容(第3弾⑤⑥⑦: ICS+チャット履歴RAG+ローカル画像生成)
 ⑤icsExport(.ics書き出し・RRULE対応・スケジューラに📅)⑥意味検索にチャット履歴100件を索引追加
 ⑦imageGen(SD WebUI自動検出・txt2img実生成・PNG保存・マーケ部UI)。E2E 4/4・0エラー。
 **本番実装第3弾①〜⑦すべて完了**。

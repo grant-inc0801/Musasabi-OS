@@ -3,11 +3,12 @@
 // - Discord / Slack Webhook: エージェント実行完了などの通知を実送信(無料)
 // - GitHub 実データ: Fine-grained PAT(読み取り専用推奨)で Mission Control に実状況を表示
 // URL・トークンは端末内のみに保存し、リポジトリ・外部サーバへは保存しない。
-// 未設定なら一切の外部送信は発生しない。メール/カレンダー連携は認証情報の保管設計
-// (Secret Center)確定後の後続フェーズ。
+// 未設定なら一切の外部送信は発生しない。メール通知は Secret Center(OS資格情報ストア)
+// にパスワードを保管して送信する(mailNotify.ts)。
 
 import { recordMemory } from "./memoryStorage";
 import { appLogger } from "./appLogger";
+import { sendMailNotification } from "./mailNotify";
 
 export interface FreeConnectorSettings {
   /** Discord Webhook URL(https://discord.com/api/webhooks/…)。空なら無効。 */
@@ -102,11 +103,15 @@ export async function sendAgentNotification(title: string, detail: string): Prom
       appLogger.warn("slack webhook failed", { error: String(e) });
     }
   }
+  // メール通知(Secret Center 設定時のみ・失敗は静かにスキップ)
+  if (await sendMailNotification(`Musasabi OS — ${title}`, detail)) {
+    sent += 1;
+  }
   if (sent > 0) {
     recordMemory({
       category: "work",
       actor: "system",
-      action: "外部通知を送信(Webhook)",
+      action: "外部通知を送信(Webhook/メール)",
       detail: `${title}(送信先 ${sent} 件)`,
       tags: ["free-connector", "webhook"],
     });

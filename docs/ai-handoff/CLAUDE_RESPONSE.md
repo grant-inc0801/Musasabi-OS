@@ -3,6 +3,29 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-13 — 本番実装第4弾: Secret Center(OS資格情報保管)+メール通知(SMTP)
+
+### Secret Center(docs/ai-handoff/SECRET_CENTER_DESIGN.md)
+- 秘密情報を **OSの資格情報ストア**へ暗号化保管(Windows資格情報マネージャー/Keychain/
+  Secret Service。Rust `keyring`・サービス名 `musasabi-os`)
+- 公開コマンドは `secret_set` / `secret_exists`(存在確認のみ)/ `secret_delete` —
+  **値はフロントエンドへ決して返さない**。localStorage・リポジトリ・バックアップにも含まれない
+
+### メール通知(SMTP・無料枠)
+- Rust `send_mail`(lettre・STARTTLS/rustls): パスワードは Rust 内部で Secret Center から読む。
+  独立クレート+偽SMTPサーバで**実送信検証済み**(件名含むメッセージ受信を確認)
+- `lib/mailNotify.ts` + 無料コネクタに「✉ メール通知(SMTP・Secret Center)」ブロック
+  (ホスト/ポート/STARTTLS/ユーザー/From/To・パスワードは保存後に二度と表示されない・
+  テストメール送信・保存済みパスワード削除)
+- エージェント完了通知の第3チャネル(Discord/Slack/メール)。未設定なら送信ゼロ
+
+### テスト結果
+- Rust: 偽SMTPサーバへの実送信 1/1・keyring コンパイル検証(OSストアはWindows実機で動作)
+- E2E: メール通知ブロック表示・ブラウザでは非対応案内・Secret Center 説明表示 3/3・0エラー
+- build ✅ / 秘密情報スキャン ✅
+
+---
+
 ## 2026-07-13 — 本番実装第3弾⑤⑥⑦: ICSカレンダー書き出し+チャット履歴RAG+ローカル画像生成
 
 ### ⑤ カレンダー書き出し(`lib/icsExport.ts`)
