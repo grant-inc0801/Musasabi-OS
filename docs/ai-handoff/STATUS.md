@@ -4,7 +4,12 @@
 **Updated:** 2026-07-13
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(第4弾: Secret Center+メール通知)
+## 直近の完了内容(第5弾: 未来予測機能)
+forecast.ts: 市場実データ+社内RAG→3分岐シナリオ(半年後/1年後/実現性%)→倫理フィルタで
+除外理由つき排除→実現性最大を選出→「今取り組める提案」生成→市場調査部UIで承認後に
+エージェントが構築・実行(承認は監査記録)。単体15件・E2E 8/8・0エラー。
+
+## それ以前の完了内容(第4弾: Secret Center+メール通知)
 Rust keyring で OS資格情報ストアへ暗号化保管(secret_set/exists/delete・値はJSへ返さない)。
 lettre で send_mail(STARTTLS・パスワードはRust内部で取得・偽SMTPで実送信検証)。
 無料コネクタにメール通知UI(第3チャネル)。設計書 SECRET_CENTER_DESIGN.md。E2E 3/3・0エラー。

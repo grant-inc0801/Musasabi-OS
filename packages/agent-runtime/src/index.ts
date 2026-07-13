@@ -12,6 +12,7 @@ import type { LlmMessage, LlmProvider } from "./llm";
 
 export * from "./llm";
 export * from "./discussion";
+export * from "./forecast";
 export { WORKFLOW_TEMPLATES };
 
 // ─────────────────────────── 型 ───────────────────────────
