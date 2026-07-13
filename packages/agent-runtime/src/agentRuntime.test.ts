@@ -231,3 +231,40 @@ test("タスク別ルーティング: 報告は reportProvider、観察は provi
   assert.ok(calls.includes("quality:report"));
   assert.ok(!calls.includes("fast:report"));
 });
+
+test("未来予測: 複数分岐→実現性で選出→提案生成(ルールベース)", async () => {
+  const { runForecast } = await import("./forecast");
+  const result = await runForecast(new RuleBasedProvider(), "AI市場が前年比40%成長。小型モデルの性能向上が続く。", 3);
+  assert.equal(result.scenarios.length, 3);
+  assert.ok(result.selected);
+  // 主流分岐(確率65%)が選出される
+  assert.equal(result.selected!.plausibility, 65);
+  assert.ok(result.scenarios.every((s) => s.ethical));
+  assert.ok(result.proposals.length >= 2);
+  assert.ok(result.proposals[0].title.length > 0);
+});
+
+test("未来予測: 倫理に反する分岐は除外され、選出対象にならない", async () => {
+  const { runForecast, screenEthics } = await import("./forecast");
+  assert.equal(screenEthics("世論操作ツールが普及する未来"), "人の意思決定の不当な操作");
+  assert.equal(screenEthics("業務効率が改善する未来"), null);
+  let call = 0;
+  const provider = {
+    name: "probe",
+    kind: "rule_based" as const,
+    async chat() {
+      call += 1;
+      if (call === 1) return "タイトル: 偽情報生成の産業化\n半年後: フェイク動画が氾濫する。\n1年後: 世論操作が常態化する。\n確率: 90%";
+      if (call <= 3) return `タイトル: 健全な自動化の進展\n半年後: 業務効率が改善する。\n1年後: 定着する。\n確率: ${call === 2 ? 60 : 45}%`;
+      return "提案1: 準備調査 — 現状の棚卸しを行う。\n提案2: 体制整備 — 運用ルールを文書化する。";
+    },
+  };
+  const result = await runForecast(provider, "テスト入力", 3);
+  const excluded = result.scenarios.find((s) => !s.ethical);
+  assert.ok(excluded, "倫理除外された分岐が存在する");
+  assert.equal(excluded!.plausibility, 90);
+  // 確率90%でも倫理除外なら選ばれず、倫理通過の60%が選出される
+  assert.ok(result.selected);
+  assert.equal(result.selected!.plausibility, 60);
+  assert.equal(result.selected!.ethical, true);
+});
