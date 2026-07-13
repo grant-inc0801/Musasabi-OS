@@ -5,11 +5,12 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "npm --prefix ../intelligence-layer run build && tsc -p tsconfig.json",
+    "build": "npm --prefix ../agi run build && npm --prefix ../intelligence-layer run build && tsc -p tsconfig.json",
     "test": "npm run build && node --test dist/*.test.js"
   },
   "dependencies": {
-    "@musasabi/intelligence-layer": "*"
+    "@musasabi/intelligence-layer": "*",
+    "@musasabi/agi": "*"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
