@@ -8,6 +8,7 @@ import {
   type AgentSchedule,
 } from "../../lib/agentSchedule";
 import { saveBinaryFile } from "../../lib/saveFile";
+import { buildIcs } from "../../lib/icsExport";
 import {
   SCHEDULED_ROUTINES,
   SCHEDULE_FREQUENCIES,
@@ -120,6 +121,20 @@ export function SchedulerPage({ onOpenAutomation }: { onOpenAutomation: () => vo
             承認ノードを事前承認(自動続行)
           </label>
           <button type="button" onClick={handleAddSchedule}>+ 定例実行を登録</button>
+          {schedules.length > 0 && (
+            <button
+              type="button"
+              title="Outlook / Google カレンダーへ取り込める .ics を書き出します(完全ローカル)"
+              onClick={() => void saveBinaryFile(
+                "musasabi-schedules.ics",
+                new TextEncoder().encode(buildIcs(schedules)),
+                "iCalendar",
+                ["ics"],
+              )}
+            >
+              📅 カレンダー書き出し(.ics)
+            </button>
+          )}
         </div>
 
         {schedules.length === 0 ? (
