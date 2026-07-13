@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CommandDepartment, DeptChatEntry } from "@musasabi/ai-company";
 import {
   AgentRuntime,
-  chatOnce,
+  chatWithHistory,
   detectBrain,
   type AgentRunState,
   type DetectedBrain,
@@ -17,6 +17,7 @@ import { isTtsAvailable, speakJaBest } from "../../lib/voice";
 import { resolveLlmFetch } from "../../lib/llmFetch";
 import { buildAgentTools } from "../../lib/agentTools";
 import { sendAgentNotification } from "../../lib/freeConnectors";
+import { notifyOs } from "../../lib/osNotify";
 import brandIcon from "../../assets/brand-icon.png";
 
 // アプリ構成の要約(LLM頭脳に渡す案内用コンテキスト)。
@@ -82,6 +83,7 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
       recordMemory({ category: "work", actor: "agent-chat", action: w.action, detail: w.detail, tags: ["agent-chat-run"] });
     }
     void sendAgentNotification(`実行完了: ${state.goal.title}`, state.finalReport ?? "").catch(() => undefined);
+    void notifyOs("Musasabi — 実行完了", state.goal.title).catch(() => undefined);
     agentRef.current = null;
     return `✅ 実行完了(頭脳: ${state.brainName})\n${state.finalReport ?? ""}\n— Company Brain へ ${state.brainWrites.length} 件保存・監査ログ ${state.auditLog.length} 件`;
   }
@@ -101,6 +103,7 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
     if (state.status === "waiting_approval") {
       agentRef.current = { rt, state };
       const waiting = state.steps.find((s) => s.status === "waiting_approval");
+      void notifyOs("Musasabi — 承認待ち", `${state.goal.title}(${waiting?.actor ?? "承認ノード"})`).catch(() => undefined);
       return `⏸ 承認待ちで停止中(${waiting?.actor ?? "承認ノード"})。「承認」と送信すると再開します。\nここまでのステップ:\n${stepsDigest(state)}`;
     }
     if (state.status === "completed") return finishRun(state);
@@ -139,10 +142,17 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
         recordMemory({ category: "work", actor: "user", action: "チャットから実行指示", detail: instruction, tags: ["agent-chat-run"] });
         reply = await runInstruction(instruction);
       } else if (brain?.source === "ollama") {
-        // RAG: 社内データ(Company Brain)から関連記録を検索してLLMに渡す
+        // RAG+会話メモリ: 社内データと直近のやり取りを文脈としてLLMに渡す
         const rag = await ragContextFor(message);
         const context = rag === "" ? APP_CONTEXT : `${APP_CONTEXT}\n[社内データ(Company Brain)関連記録]\n${rag}`;
-        reply = await chatOnce(brain.provider, message, context);
+        const turns = [...history]
+          .slice(0, 4)
+          .reverse()
+          .flatMap((h) => [
+            { role: "user" as const, content: h.message },
+            { role: "assistant" as const, content: h.reply },
+          ]);
+        reply = await chatWithHistory(brain.provider, turns, message, context);
       } else {
         reply = buildAssistantReply(message);
       }

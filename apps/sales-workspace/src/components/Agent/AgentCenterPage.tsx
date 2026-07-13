@@ -14,6 +14,7 @@ import { buildAgentTools, type AgentAttachment } from "../../lib/agentTools";
 import { saveBinaryFile } from "../../lib/saveFile";
 import { isTtsAvailable, speakJaBest } from "../../lib/voice";
 import { sendAgentNotification } from "../../lib/freeConnectors";
+import { notifyOs } from "../../lib/osNotify";
 
 // エージェント実行センター — Musasabi を「本物のエージェント」として動かす画面。
 // 頭脳: ローカルLLM(Ollama・無料・localhost・外部送信なし)を自動検出。
@@ -120,6 +121,7 @@ export function AgentCenterPage() {
     setSavedNote(`Company Brain へ ${s.brainWrites.length} 件保存しました(監査ログ ${s.auditLog.length} 件)。`);
     // 無料コネクタ(Webhook)設定時のみ実通知(未設定なら何も送らない)
     void sendAgentNotification(`エージェント実行完了: ${s.goal.title}`, s.finalReport ?? "").catch(() => undefined);
+    void notifyOs("Musasabi — 実行完了", s.goal.title).catch(() => undefined);
   }
 
   const statusLabel = useMemo(() => {

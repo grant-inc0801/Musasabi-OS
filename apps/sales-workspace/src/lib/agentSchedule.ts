@@ -13,6 +13,7 @@ import { recordMemory } from "./memoryStorage";
 import { appLogger } from "./appLogger";
 import { sendAgentNotification } from "./freeConnectors";
 import { runBackupIfDue } from "./autoBackup";
+import { notifyOs } from "./osNotify";
 
 export interface ScheduleRunLog {
   atMs: number;
@@ -107,6 +108,7 @@ export async function runScheduleNow(schedule: AgentSchedule): Promise<AgentSche
       });
       // 無料コネクタ(Webhook)設定時のみ実通知(未設定なら何も送らない)
       void sendAgentNotification(`定例実行完了: ${schedule.title}`, state.finalReport ?? "").catch(() => undefined);
+      void notifyOs("Musasabi — 定例実行完了", schedule.title).catch(() => undefined);
     }
     log = {
       atMs: startedAt,

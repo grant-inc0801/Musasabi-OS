@@ -4,7 +4,13 @@
 **Updated:** 2026-07-13
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(チャット指示実行=Claude Code方式)
+## 直近の完了内容(第3弾①④: 会話メモリ+OSトースト)
+chatWithHistory(直近8ターンの文脈保持・単体10件)でチャットが継続会話対応。lib/osNotify.ts
+(tauri-plugin-notification/Web Notification)でエージェント完了・承認待ちをOS通知。
+E2E 2/2(2通目で文脈伝搬)0エラー。残: ②マルチエージェント協調 ③モデルルーティング
+⑤ICSエクスポート ⑥保管庫RAG ⑦SD検出。
+
+## それ以前の完了内容(チャット指示実行=Claude Code方式)
 アシスタントチャットが指示実行IFに: 「実行 ◯◯」/▶実行でエージェント実自律実行、承認ノードは
 チャット内停止→「承認」で再開、完了で✅最終報告+Brain保存+Webhook通知。テンプレート推定
 (週次/新サービス/汎用)。通常質問(LLM+RAG案内)と共存。E2E 6/6・0エラー。
