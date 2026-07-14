@@ -5,7 +5,8 @@
   "scripts": {
     "build": "npm --prefix ../../packages/shared run build && npm --prefix ../../packages/ai-core run build && npm --prefix ../../packages/avatar-2d run build && npm --prefix ../../packages/integrations run build && npm --prefix ../../packages/voice-analysis run build && npm --prefix ../../packages/voice-engine run build && npm --prefix ../../packages/call-training run build && npm --prefix ../../packages/ai-company run build && npm --prefix ../../packages/avatar-3d run build && npm --prefix ../../packages/memory run build && npm --prefix ../../packages/vision run build && npm --prefix ../../packages/automation run build && npm --prefix ../../packages/self-improvement run build && npm --prefix ../../packages/call-list run build && npm --prefix ../../packages/sales-list run build && npm --prefix ../../packages/connectors run build && npm --prefix ../../packages/ai-pm run build && npm --prefix ../../packages/tenancy run build && npm --prefix ../../packages/ops-monitor run build && npm --prefix ../../packages/evolution run build && npm --prefix ../../packages/governance run build && npm --prefix ../../packages/audit run build && npm --prefix ../../packages/advanced-modules run build && npm --prefix ../../packages/ecosystem run build && npm --prefix ../../packages/agi run build && npm --prefix ../../packages/next-core-modules run build && npm --prefix ../../packages/ceo-dashboard run build && npm --prefix ../../packages/business-factory run build && npm --prefix ../../packages/evolution-modules run build && npm --prefix ../../packages/musasabi-world run build && npm --prefix ../../packages/production-roadmap run build && npm --prefix ../../packages/mission-control run build && npm --prefix ../../packages/ai-secretary run build && npm --prefix ../../packages/ai-model-registry run build && npm --prefix ../../packages/marketing-pdca run build && npm --prefix ../../packages/intelligence-layer run build && npm --prefix ../../packages/agent-runtime run build && npm --prefix ../../packages/brain-rag run build && npm --prefix ../../plugins/accounting-widget run build && vite build",
     "dev": "vite",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "e2e": "node e2e/run.mjs"
   },
   "dependencies": {
     "@musasabi/advanced-modules": "*",
@@ -64,6 +65,8 @@
     "@types/react-dom": "^18.3.0",
     "@types/three": "^0.185.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "playwright": "^1.61.1",
+    "playwright-core": "^1.61.1",
     "typescript": "^5.5.4",
     "vite": "^5.4.0"
   }
