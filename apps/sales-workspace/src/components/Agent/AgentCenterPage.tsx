@@ -347,6 +347,20 @@ export function AgentCenterPage() {
                 {isTtsAvailable() && (
                   <button type="button" onClick={() => void speakJaBest(meeting.conclusion)}>🔊 結論を読み上げ</button>
                 )}
+                <button
+                  type="button"
+                  disabled={running}
+                  title="会議の結論を目標にしてエージェントが自律実行します(承認ノードでは停止し、承認ボタンで再開)"
+                  onClick={() =>
+                    void startGoal({
+                      id: `meeting-${Date.now()}`,
+                      title: `会議結論の実行: ${meeting.topic}`.slice(0, 48),
+                      description: `部署AI会議「${meeting.topic}」のAI CEO結論を実行に移す。\n結論: ${meeting.conclusion}`,
+                    })
+                  }
+                >
+                  ▶ 結論を実行計画にする(承認フロー)
+                </button>
               </div>
             </div>
           </div>

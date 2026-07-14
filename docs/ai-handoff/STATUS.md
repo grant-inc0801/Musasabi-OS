@@ -4,7 +4,11 @@
 **Updated:** 2026-07-14
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(第27弾: E2EテストのCI収載)
+## 直近の完了内容(第28弾: 保管庫全文ビューア+会議結論の実行連携)
+保管庫「開く」で全文表示+MD保存。AI会議の結論から「▶結論を実行計画にする」で
+エージェント実行へ直結(承認フロー維持)。E2E 6/6・0エラー。
+
+## それ以前の完了内容(第27弾: E2EテストのCI収載)
 apps/sales-workspace/e2e/(helper+chat-commands/vault spec+runner)を新設し、CIの
 Build後に playwright chromium で毎PR実行。ローカル2/2成功。
 
