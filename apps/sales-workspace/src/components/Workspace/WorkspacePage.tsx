@@ -9,6 +9,8 @@ import { countByStatus } from "@musasabi/sales-list";
 import { loadCallLog } from "../../lib/callLogStorage";
 import { loadLeads } from "../../lib/salesListStorage";
 import { loadMemoryRecords } from "../../lib/memoryStorage";
+import { buildTodayDigest } from "../../lib/todayDigest";
+import { isTtsAvailable, speakJaBest } from "../../lib/voice";
 import brandIcon from "../../assets/brand-icon.png";
 
 // D-014 Desktop Assistant & Workspace: デスクトップアシスタントのワークスペース。
@@ -56,13 +58,43 @@ export function WorkspacePage({ onOpenPage }: { onOpenPage: (page: string) => vo
     { label: "連携中", value: `${digest.counts.collabInProgress}件` },
   ];
 
+  const today = useMemo(() => buildTodayDigest(), []);
+
   return (
     <>
-      <section aria-label="本日のダイジェスト">
+      <section aria-label="今日の実データダイジェスト">
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
           <img src={brandIcon} width={36} height={36} alt="" style={{ borderRadius: 8 }} />
-          <h3 style={{ margin: 0 }}>MUSAアシスタント — 本日のダイジェスト</h3>
+          <h3 style={{ margin: 0 }}>
+            MUSAアシスタント — 今日の動き <span className="badge" style={{ fontSize: "0.62rem" }}>実データ</span>
+          </h3>
+          {isTtsAvailable() && (
+            <button type="button" onClick={() => void speakJaBest(today.speech)}>
+              🔊 読み上げ
+            </button>
+          )}
         </div>
+        <div className="card" style={{ marginTop: "0.6rem", maxWidth: "48rem", lineHeight: 1.7 }}>
+          {today.lines.map((l, i) => (
+            <div key={i}>・{l}</div>
+          ))}
+          {today.attentionTitles.length > 0 && (
+            <div style={{ marginTop: "0.4rem", color: "#F59E0B", fontSize: "0.85rem" }}>
+              ⚠ 未読の要対応: {today.attentionTitles.join(" / ")}
+              <button
+                type="button"
+                style={{ marginLeft: "0.6rem", fontSize: "0.74rem", padding: "0.1rem 0.5rem" }}
+                onClick={() => onOpenPage("notifications")}
+              >
+                通知センターへ
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section aria-label="本日のダイジェスト">
+        <h3 style={{ marginTop: "1rem" }}>本日のダイジェスト(部署サマリー)</h3>
         <div
           className="card"
           style={{ marginTop: "0.6rem", maxWidth: "48rem", lineHeight: 1.7 }}
