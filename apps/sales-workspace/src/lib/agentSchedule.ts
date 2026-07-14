@@ -10,11 +10,13 @@ import { buildAgentTools } from "./agentTools";
 import { buildReportProvider } from "./brainProviders";
 import { loadLlmSettings } from "./llmSettings";
 import { resolveLlmFetch } from "./llmFetch";
-import { recordMemory } from "./memoryStorage";
+import { loadMemoryRecords, recordMemory } from "./memoryStorage";
 import { appLogger } from "./appLogger";
 import { sendAgentNotification } from "./freeConnectors";
 import { runBackupIfDue } from "./autoBackup";
 import { notifyOs } from "./osNotify";
+import { fetchAllHeadlines } from "./rssFeeds";
+import { autoVerifyForecastOutcomes, forecastAccuracyStats } from "./forecastTracking";
 
 export interface ScheduleRunLog {
   atMs: number;
@@ -27,6 +29,11 @@ export interface AgentSchedule {
   id: string;
   title: string;
   description: string;
+  /**
+   * 定例の種類(省略時 "agent" = エージェント自律実行)。
+   * "forecast_verify" は予測と実績の自動突合(的中率の定例更新・決定論)。
+   */
+  kind?: "agent" | "forecast_verify";
   workflowTemplateId?: string;
   /** 実行間隔(分)。例: 毎時=60 / 毎日=1440 / 毎週=10080。 */
   intervalMinutes: number;
@@ -73,10 +80,48 @@ export function nextRunMs(s: AgentSchedule): number {
   return s.lastRunMs + s.intervalMinutes * 60 * 1000;
 }
 
+/** 予測突合の定例実行: RSS実データ+社内記録と突合し的中率を更新する(決定論)。 */
+async function runForecastVerify(): Promise<string> {
+  const headlines = await fetchAllHeadlines(10).catch(() => []);
+  const memories = loadMemoryRecords().slice(0, 100).map((r) => `${r.action}: ${r.detail}`);
+  const evidence = [...headlines.map((h) => h.title), ...memories];
+  if (evidence.length === 0) return "突合できる実績データがありません(RSSソース・社内記録が空)。";
+  const { records, verifiedCount } = autoVerifyForecastOutcomes(evidence);
+  if (verifiedCount === 0) return "判定待ちの予測はありません(的中率は現状維持)。";
+  const stats = forecastAccuracyStats(records);
+  const summary = `${verifiedCount}件を突合 — 的中率${stats.hitRatePercent ?? 0}%(的中${stats.hit}・部分${stats.partial}・外れ${stats.miss})`;
+  recordMemory({
+    category: "company",
+    actor: "agent-scheduler",
+    action: "予測と実績の定例突合を実行",
+    detail: summary,
+    tags: ["forecast", "accuracy", "agent-schedule"],
+  });
+  void sendAgentNotification("予測の定例突合が完了", summary).catch(() => undefined);
+  void notifyOs("Musasabi — 予測の的中率を更新", summary).catch(() => undefined);
+  return `${summary}(RSS ${headlines.length}件+社内記録と照合。判定は市場調査部で手動上書きできます)`;
+}
+
 /** スケジュール1件を今すぐ実行する(手動/定時共通の実実行)。 */
 export async function runScheduleNow(schedule: AgentSchedule): Promise<AgentSchedule> {
   const startedAt = Date.now();
   let log: ScheduleRunLog;
+  if (schedule.kind === "forecast_verify") {
+    try {
+      const report = await runForecastVerify();
+      log = { atMs: startedAt, status: "completed", brainName: "決定論突合(LLM不使用)", report };
+    } catch (error) {
+      appLogger.warn("scheduled forecast verify failed", { error: String(error) });
+      log = { atMs: startedAt, status: "error", brainName: "-", report: String(error) };
+    }
+    const updated: AgentSchedule = {
+      ...schedule,
+      lastRunMs: startedAt,
+      runs: [log, ...schedule.runs].slice(0, MAX_RUN_LOGS),
+    };
+    upsertSchedule(updated);
+    return updated;
+  }
   try {
     const brain = await detectBrain(loadLlmSettings(), await resolveLlmFetch());
     const rt = new AgentRuntime({ provider: brain.provider, reportProvider: await buildReportProvider(brain), tools: buildAgentTools() });
