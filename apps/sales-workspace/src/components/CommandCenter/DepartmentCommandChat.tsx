@@ -9,6 +9,7 @@ import {
 } from "@musasabi/agent-runtime";
 import { VoiceInputButton } from "./VoiceInputButton";
 import { recordMemory } from "../../lib/memoryStorage";
+import { saveAgentDocToVault } from "../../lib/vaultStorage";
 import { appendDeptChat, loadDeptChatHistory } from "../../lib/deptChatStorage";
 import { buildAssistantReply, HELP_SUGGESTIONS } from "../../lib/assistantHelp";
 import { loadLlmSettings } from "../../lib/llmSettings";
@@ -78,15 +79,25 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
     setHistory(appendDeptChat(entry));
   }
 
-  /** 実行完了時の共通処理: Brain保存・通知・返信文の生成。 */
+  /** 実行完了時の共通処理: Brain保存・保管庫保存・通知・返信文の生成。 */
   function finishRun(state: AgentRunState): string {
     for (const w of state.brainWrites) {
       recordMemory({ category: "work", actor: "agent-chat", action: w.action, detail: w.detail, tags: ["agent-chat-run"] });
     }
+    // 成果物(最終報告)を保管庫へ自動保存(RAG索引され後から意味検索で引ける)
+    let vaultLine = "";
+    if (state.finalReport && state.finalReport.trim() !== "") {
+      const saved = saveAgentDocToVault({
+        title: `実行報告: ${state.goal.title}`,
+        text: `目標: ${state.goal.title}\n${state.goal.description}\n\n${state.finalReport}`,
+        tags: ["agent", "chat-run"],
+      });
+      vaultLine = saved.ok ? "・成果物を保管庫へ保存" : `・⚠ 保管庫保存に失敗(${saved.error})`;
+    }
     void sendAgentNotification(`実行完了: ${state.goal.title}`, state.finalReport ?? "").catch(() => undefined);
     void notifyOs("Musasabi — 実行完了", state.goal.title).catch(() => undefined);
     agentRef.current = null;
-    return `✅ 実行完了(頭脳: ${state.brainName})\n${state.finalReport ?? ""}\n— Company Brain へ ${state.brainWrites.length} 件保存・監査ログ ${state.auditLog.length} 件`;
+    return `✅ 実行完了(頭脳: ${state.brainName})\n${state.finalReport ?? ""}\n— Company Brain へ ${state.brainWrites.length} 件保存・監査ログ ${state.auditLog.length} 件${vaultLine}`;
   }
 
   /** チャットからの実行指示: エージェントを実際に自律実行する。 */
