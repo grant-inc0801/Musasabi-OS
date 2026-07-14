@@ -10,6 +10,7 @@ import {
 import { VoiceInputButton } from "./VoiceInputButton";
 import { recordMemory } from "../../lib/memoryStorage";
 import { saveAgentDocToVault } from "../../lib/vaultStorage";
+import { buildVaultSearchReply, parseVaultSearchQuery, searchVault } from "../../lib/vaultSearch";
 import { appendDeptChat, loadDeptChatHistory } from "../../lib/deptChatStorage";
 import { buildAssistantReply, HELP_SUGGESTIONS } from "../../lib/assistantHelp";
 import { loadLlmSettings } from "../../lib/llmSettings";
@@ -145,9 +146,13 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
     let reply: string;
     const brain = brainRef.current;
     try {
+      const vaultQuery = parseVaultSearchQuery(message);
       if (agentRef.current && APPROVE_WORDS.includes(message)) {
         // 承認 → 実行再開
         reply = await approveAndResume();
+      } else if (vaultQuery !== null) {
+        // 保管庫検索コマンド: 「保管庫で◯◯を探して」→ 実文書を直接検索し引用回答(LLM不要)
+        reply = buildVaultSearchReply(vaultQuery, await searchVault(vaultQuery));
       } else if (asRun || RUN_PREFIX.test(message)) {
         // 実行指示 → エージェント自律実行(Claude Code と同じ指示→実行→報告の流れ)
         const instruction = message.replace(RUN_PREFIX, "").trim() || message;
@@ -205,7 +210,7 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
       <div className="cc-chat-head">
         <img src={brandIcon} width={20} height={20} alt="" style={{ borderRadius: 5 }} />
         <strong>Musasabi アシスタント</strong>
-        <span className="cc-chat-hint">質問は案内・「実行 ◯◯」または ▶実行 でエージェントが実際に働きます</span>
+        <span className="cc-chat-hint">「実行 ◯◯」で実行・「保管庫で◯◯を探して」で資料検索</span>
         <button type="button" className="cc-chat-close" onClick={() => setOpen(false)} aria-label="閉じる">
           ×
         </button>
