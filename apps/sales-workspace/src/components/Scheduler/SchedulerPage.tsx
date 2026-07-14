@@ -32,13 +32,15 @@ export function SchedulerPage({ onOpenAutomation }: { onOpenAutomation: () => vo
   const [runningId, setRunningId] = useState<string | null>(null);
 
   function handleAddSchedule(): void {
-    const title = newTitle.trim();
+    const isVerify = newTemplate === "forecast_verify";
+    const title = isVerify ? "予測と実績の自動突合(的中率更新)" : newTitle.trim();
     if (title === "") return;
     const schedule: AgentSchedule = {
       id: `sch-${Date.now()}`,
       title,
       description: title,
-      workflowTemplateId: newTemplate === "custom" ? undefined : newTemplate,
+      kind: isVerify ? "forecast_verify" : "agent",
+      workflowTemplateId: isVerify || newTemplate === "custom" ? undefined : newTemplate,
       intervalMinutes: newInterval,
       autoApprove: newAutoApprove,
       enabled: true,
@@ -109,6 +111,7 @@ export function SchedulerPage({ onOpenAutomation }: { onOpenAutomation: () => vo
           <select aria-label="テンプレート" value={newTemplate} onChange={(e) => setNewTemplate(e.target.value)}>
             <option value="wf-weekly-report">週次レポートフロー</option>
             <option value="wf-new-service">新サービス例示フロー</option>
+            <option value="forecast_verify">予測突合(的中率の自動更新)</option>
             <option value="custom">テンプレートなし(汎用)</option>
           </select>
           <select aria-label="実行間隔" value={newInterval} onChange={(e) => setNewInterval(Number(e.target.value))}>
@@ -150,6 +153,9 @@ export function SchedulerPage({ onOpenAutomation }: { onOpenAutomation: () => vo
                   <span className="badge" style={{ fontSize: "0.64rem" }}>
                     {s.intervalMinutes === 60 ? "毎時" : s.intervalMinutes === 1440 ? "毎日" : "毎週"}
                   </span>
+                  {s.kind === "forecast_verify" && (
+                    <span className="badge" style={{ fontSize: "0.64rem", background: "#22C55E22" }}>⚖ 予測突合</span>
+                  )}
                   <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
                     次回: {new Date(nextRunMs(s)).toLocaleString("ja-JP")} / 事前承認: {s.autoApprove ? "有効" : "無効"}
                   </span>
