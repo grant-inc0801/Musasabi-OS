@@ -4,7 +4,11 @@
 **Updated:** 2026-07-14
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(第26弾: ワークフローページ実データ化)
+## 直近の完了内容(第27弾: E2EテストのCI収載)
+apps/sales-workspace/e2e/(helper+chat-commands/vault spec+runner)を新設し、CIの
+Build後に playwright chromium で毎PR実行。ローカル2/2成功。
+
+## それ以前の完了内容(第26弾: ワークフローページ実データ化)
 ワークフロー上段に「実行フロー(実データ)」— 実実行タイル・定例フローカード
 (種別/次回/前回結果)・実行履歴・成果物。Mockフロー図は参考図として下段維持。
 E2E 7/7・0エラー。

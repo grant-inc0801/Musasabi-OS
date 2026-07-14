@@ -3,6 +3,24 @@
 > 注記: 2026-07-04 の D-20260704-003(標準言語=日本語)以降のエントリは日本語で
 > 記述する。それ以前のエントリは英語のまま履歴として残す。
 
+## 2026-07-14 — 本番実装第27弾: E2EテストのCI収載
+
+### 実装内容(ユーザー指示「実行」・提案②)
+- **`apps/sales-workspace/e2e/` を新設**: これまでセッション内スクリプトだったE2Eを
+  リポジトリへ収載し、**毎PRのCIで実ブラウザ検証**が走るように
+  - `helper.mjs`: dist静的配信・chromium解決(CHROMIUM_PATH→playwright→/opt/pw-browsers)・
+    共通初期状態・チェック検証
+  - `chat-commands.spec.mjs`: ヘルプ/今日何した?/保管庫検索/接続診断(4チェック)
+  - `vault.spec.mjs`: 取込→編集→削除の往復(3チェック)
+  - `run.mjs`: spec を順次実行し1つでも失敗すれば非0終了
+- **CI(ci.yml)**: Build 後に `npx playwright install --with-deps chromium` → `npm run e2e`。
+  外部送信なし(ローカル静的配信のみ)。devDeps に playwright/playwright-core 追加
+### テスト結果
+- ローカルで `npm run e2e` 2/2 スペック成功(7チェック・0ページエラー)。
+  本PRのCI自体でE2Eステップが実行されることを確認 / 秘密情報スキャン ✅
+
+---
+
 ## 2026-07-14 — 本番実装第26弾: ワークフローページの実データ化
 
 ### 実装内容(ユーザー指示「実行」)

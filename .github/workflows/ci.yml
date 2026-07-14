@@ -39,3 +39,11 @@ jobs:
 
       - name: Build
         run: npm run build --if-present
+
+      # E2E: 代表シナリオ(チャットコマンド/保管庫)を実ブラウザで検証する。
+      # dist は直前の Build ステップで生成済み。外部送信なし(ローカル静的配信のみ)。
+      - name: Install chromium for E2E
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E
+        run: npm --prefix apps/sales-workspace run e2e
