@@ -11,6 +11,7 @@ import { loadCallLog } from "../../lib/callLogStorage";
 import { loadLeads } from "../../lib/salesListStorage";
 import { loadMemoryRecords } from "../../lib/memoryStorage";
 import { saveBinaryFile } from "../../lib/saveFile";
+import { collectRealDataReport, renderRealDataMarkdown } from "../../lib/reportRealData";
 
 // D-017 Reporting & Analytics: 全社レポートを生成し、Markdown プレビューと
 // Markdown/JSON エクスポートを提供する。すべてローカル(外部送信なし)。
@@ -33,7 +34,10 @@ export function ReportsPage() {
       recentLogs,
     });
     const rep = buildCompanyReport(departments);
-    return { report: rep, markdown: renderReportMarkdown(rep) };
+    // 実データサマリー(保管庫・的中率・実イベント・定例実行)をレポートへ統合
+    const realData = collectRealDataReport();
+    const md = `${renderReportMarkdown(rep)}\n\n${renderRealDataMarkdown(realData)}`;
+    return { report: { ...rep, realData }, markdown: md };
   }, []);
 
   async function exportMarkdown(): Promise<void> {
@@ -66,7 +70,8 @@ export function ReportsPage() {
         <h3 style={{ marginTop: 0 }}>全社レポート(Reporting & Analytics)</h3>
         <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", maxWidth: "48rem" }}>
           運営サマリー・部署別KPI・ワークフロー・コラボレーションを1つのレポートに集約します。
-          営業部はテストコール履歴・営業リストの実データを反映します(その他はMock・外部送信なし)。
+          営業部の実データに加え、<strong>実データサマリー(保管庫・予測的中率・実イベント・定例実行)</strong>を
+          統合して Markdown / JSON へ書き出せます(外部送信なし)。
         </p>
         <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", alignItems: "center" }}>
           <button type="button" onClick={() => void exportMarkdown()}>
