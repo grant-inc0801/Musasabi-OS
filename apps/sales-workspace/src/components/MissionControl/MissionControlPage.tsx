@@ -18,6 +18,10 @@ import {
 import { COMMAND_DEPARTMENTS, DEPT_STATUS_COLOR } from "@musasabi/ai-company";
 import { DepartmentCylinder } from "../CommandCenter/DepartmentCylinder";
 import brandIcon from "../../assets/brand-icon.png";
+import { VAULT_CAPACITY_CHARS, loadVaultDocs, vaultUsageChars } from "../../lib/vaultStorage";
+import { forecastAccuracyStats } from "../../lib/forecastTracking";
+import { loadSchedules, nextRunMs } from "../../lib/agentSchedule";
+import { loadMemoryRecords } from "../../lib/memoryStorage";
 
 // Musasabi OS Mission Control Dashboard(Phase 1)。AI企業全体の司令室ホーム。
 // すべてダミーデータ(@musasabi/mission-control)で動作。後から GitHub / Claude Code /
@@ -93,6 +97,9 @@ export function MissionControlPage({ onOpenPage }: { onOpenPage?: (page: string)
           ))}
         </div>
       </section>
+
+      {/* ②b AI自律ループ(実データ) */}
+      <RealLoopPanel onOpenPage={onOpenPage} />
 
       <div className="mc-row">
         {/* ③ AI PM */}
@@ -235,6 +242,82 @@ export function MissionControlPage({ onOpenPage }: { onOpenPage?: (page: string)
 
 function order(p: "high" | "medium" | "low"): number {
   return p === "high" ? 3 : p === "medium" ? 2 : 1;
+}
+
+/**
+ * AI自律ループ(実データ)パネル。予測(的中率)→定例実行→成果物(保管庫)→記憶(Brain)の
+ * ループ状態を localStorage の実データから集計して一望する。タイルは該当ページへ遷移。
+ */
+function RealLoopPanel({ onOpenPage }: { onOpenPage?: (page: string) => void }) {
+  const data = useMemo(() => {
+    const vaultDocs = loadVaultDocs();
+    const usage = vaultUsageChars(vaultDocs);
+    const stats = forecastAccuracyStats();
+    const schedules = loadSchedules().filter((s) => s.enabled);
+    const nextAt = schedules.length > 0 ? Math.min(...schedules.map((s) => nextRunMs(s))) : null;
+    const agentDocs = vaultDocs.filter((d) => d.source === "agent").slice(0, 3);
+    const recentMemories = loadMemoryRecords().slice(0, 3);
+    return { vaultDocs, usage, stats, schedules, nextAt, agentDocs, recentMemories };
+  }, []);
+  const usagePercent = Math.min(100, Math.round((data.usage / VAULT_CAPACITY_CHARS) * 100));
+
+  const tiles: Array<{ label: string; value: string; sub: string; page: string }> = [
+    {
+      label: "🗄 保管庫",
+      value: `${data.vaultDocs.length}件`,
+      sub: `使用率${usagePercent}%(RAG索引対象)`,
+      page: "vault",
+    },
+    {
+      label: "⚖ 予測的中率",
+      value: data.stats.hitRatePercent === null ? "—" : `${data.stats.hitRatePercent}%`,
+      sub: `的中${data.stats.hit}・部分${data.stats.partial}・外れ${data.stats.miss}・待ち${data.stats.pending}`,
+      page: "market_research",
+    },
+    {
+      label: "⏰ 定例実行",
+      value: `${data.schedules.length}件 有効`,
+      sub: data.nextAt === null ? "登録なし" : `次回 ${new Date(data.nextAt).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}`,
+      page: "scheduler",
+    },
+    {
+      label: "🧠 Brain 記録",
+      value: `${loadMemoryRecords().length}件`,
+      sub: data.recentMemories[0] ? data.recentMemories[0].action.slice(0, 22) : "記録なし",
+      page: "company_brain",
+    },
+  ];
+
+  return (
+    <section className="card" aria-label="AI自律ループ">
+      <h3 className="mc-h">
+        AI自律ループ <span className="badge" style={{ fontSize: "0.62rem" }}>実データ</span>
+      </h3>
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.35rem" }}>
+        {tiles.map((t) => (
+          <button
+            key={t.label}
+            type="button"
+            className="card"
+            style={{ minWidth: "11rem", flex: "1 1 11rem", textAlign: "left", cursor: "pointer", padding: "0.5rem 0.7rem" }}
+            onClick={() => onOpenPage?.(t.page)}
+          >
+            <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{t.label}</div>
+            <div style={{ fontSize: "1.15rem", fontWeight: 700 }}>{t.value}</div>
+            <div style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>{t.sub}</div>
+          </button>
+        ))}
+      </div>
+      {data.agentDocs.length > 0 && (
+        <div style={{ marginTop: "0.45rem", fontSize: "0.74rem", color: "var(--text-muted)" }}>
+          直近のAI成果物: {data.agentDocs.map((d) => d.title).join(" / ")}
+        </div>
+      )}
+      <p style={{ margin: "0.35rem 0 0", fontSize: "0.68rem", color: "var(--text-muted)" }}>
+        予測(市場調査部)→承認実行→成果物(保管庫・RAG索引)→定例突合(的中率)→次回予測の較正、が全て端末内で循環します。
+      </p>
+    </section>
+  );
 }
 
 function RosterCard({ dept, onOpen }: { dept: DepartmentSummary; onOpen: () => void }) {
