@@ -5,17 +5,43 @@ import {
   unreadNotifications,
 } from "@musasabi/ai-company";
 import { loadReadIds, saveReadIds } from "../../lib/notificationStorage";
+import {
+  clearAppEvents,
+  loadAppEvents,
+  markAllAppEventsRead,
+  markAppEventRead,
+  unreadAppEventCount,
+  type AppEvent,
+  type AppEventLevel,
+} from "../../lib/appEvents";
 
-// D-018 Notifications & Alerts: 全社の通知(承認待ち・エラー・注意)を一覧表示し、
-// 既読管理を行う。既読は localStorage に永続化(すべてローカル・外部送信なし)。
+// D-018 Notifications & Alerts: 全社の通知を一覧表示し既読管理を行う。
+// 上段は実イベント(エージェント完了・承認待ち・定例実行・的中率更新などの本番データ)、
+// 下段はMockのシステム通知。すべてローカル・外部送信なし。
+
+const EVENT_LEVEL_COLOR: Record<AppEventLevel, string> = {
+  info: "#22C55E",
+  warn: "#F59E0B",
+  error: "#EF4444",
+};
+
+const EVENT_LEVEL_JA: Record<AppEventLevel, string> = {
+  info: "情報",
+  warn: "要対応",
+  error: "エラー",
+};
 
 export function NotificationsPage() {
   const items = useMemo(() => buildNotifications(), []);
   const [readIds, setReadIds] = useState<Set<string>>(() => loadReadIds());
   const [showRead, setShowRead] = useState(false);
+  const [events, setEvents] = useState<AppEvent[]>(() => loadAppEvents());
+  const [showReadEvents, setShowReadEvents] = useState(false);
 
   const visible = showRead ? items : unreadNotifications(items, readIds);
   const unreadCount = unreadNotifications(items, readIds).length;
+  const visibleEvents = showReadEvents ? events : events.filter((e) => !e.read);
+  const unreadEvents = unreadAppEventCount(events);
 
   function markRead(id: string): void {
     const next = new Set(readIds);
@@ -32,9 +58,75 @@ export function NotificationsPage() {
 
   return (
     <>
+      <section aria-label="実イベント">
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+          <h3 style={{ margin: 0 }}>
+            実イベント <span className="badge" style={{ fontSize: "0.64rem" }}>実データ</span>
+          </h3>
+          <span className="card" style={{ padding: "0.2rem 0.7rem", fontWeight: 700 }} aria-label="実イベント未読件数">
+            未読 {unreadEvents}件
+          </span>
+          <button type="button" onClick={() => setEvents(markAllAppEventsRead())} disabled={unreadEvents === 0}>
+            すべて既読にする
+          </button>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.85rem" }}>
+            <input type="checkbox" checked={showReadEvents} onChange={(e) => setShowReadEvents(e.target.checked)} />
+            既読も表示
+          </label>
+          {events.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                clearAppEvents();
+                setEvents([]);
+              }}
+            >
+              履歴を消去
+            </button>
+          )}
+        </div>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+          エージェント完了・承認待ち・定例実行・的中率更新などの<strong>実イベント</strong>を記録します
+          (OSトーストと同じ発生源・見逃してもここで追える・外部送信なし)。
+        </p>
+        {visibleEvents.length === 0 ? (
+          <p style={{ color: "var(--text-muted)" }}>
+            {events.length === 0 ? "実イベントはまだありません。エージェント実行や定例実行で記録されます。" : "未読の実イベントはありません。"}
+          </p>
+        ) : (
+          <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+            {visibleEvents.map((e) => (
+              <li
+                key={e.id}
+                className="card"
+                style={{ margin: "0.4rem 0", display: "flex", alignItems: "center", gap: "0.6rem", opacity: e.read ? 0.6 : 1 }}
+              >
+                <span
+                  className="dept-lamp"
+                  style={{ background: EVENT_LEVEL_COLOR[e.level], boxShadow: `0 0 6px ${EVENT_LEVEL_COLOR[e.level]}` }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700 }}>
+                    [{EVENT_LEVEL_JA[e.level]}] {e.title}
+                  </div>
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>
+                    {e.detail} — {new Date(e.atMs).toLocaleString("ja-JP")}
+                  </div>
+                </div>
+                {!e.read && (
+                  <button type="button" onClick={() => setEvents(markAppEventRead(e.id))}>
+                    既読
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       <section aria-label="通知概要">
         <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
-          <h3 style={{ margin: 0 }}>通知センター(Notifications & Alerts)</h3>
+          <h3 style={{ margin: 0 }}>システム通知(Mock)</h3>
           <span
             className="card"
             style={{ padding: "0.2rem 0.7rem", fontWeight: 700 }}
@@ -51,7 +143,7 @@ export function NotificationsPage() {
           </label>
         </div>
         <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-          承認待ち・エラー・容量注意などを一元表示します(すべてMock・外部送信なし)。
+          承認待ち・エラー・容量注意などを一元表示します(このセクションはMock・外部送信なし)。
         </p>
       </section>
 

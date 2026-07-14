@@ -4,8 +4,16 @@
 // 権限が無い/拒否された場合は静かに何もしない(業務を止めない)。
 
 import { appLogger } from "./appLogger";
+import { pushAppEvent, type AppEventLevel } from "./appEvents";
 
-export async function notifyOs(title: string, body: string): Promise<boolean> {
+export async function notifyOs(title: string, body: string, level: AppEventLevel = "info"): Promise<boolean> {
+  // OS権限の有無に関わらず通知センター(実イベント)へは必ず記録する —
+  // トーストを見逃しても後から追える
+  try {
+    pushAppEvent({ level, title, detail: body });
+  } catch {
+    /* イベント記録失敗は通知自体を止めない */
+  }
   try {
     if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
       const { isPermissionGranted, requestPermission, sendNotification } = await import(
