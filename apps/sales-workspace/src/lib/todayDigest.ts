@@ -17,6 +17,25 @@ export interface TodayDigest {
   speech: string;
 }
 
+/** チャット文からの「今日の動き」コマンド判定(今日何した?/本日の動きは? など)。 */
+export function isTodayDigestQuery(message: string): boolean {
+  const normalized = message.replace(/[??!!。\s]/g, "");
+  return /^(今日|本日)(は|の)?(何|なに|動き|状況|サマリー?|ダイジェスト)(を|が|は)?(した|やった|あった|どう|教えて)?$/.test(
+    normalized,
+  );
+}
+
+/** チャット返信用の「今日の動き」文面(決定論・LLM不要)。 */
+export function buildTodayDigestReply(nowMs = Date.now()): string {
+  const digest = buildTodayDigest(nowMs);
+  const lines = digest.lines.map((l) => `・${l}`);
+  const attention =
+    digest.attentionTitles.length > 0
+      ? `\n⚠ 未読の要対応: ${digest.attentionTitles.join(" / ")}(通知センターで確認できます)`
+      : "\n要対応はありません。";
+  return `📋 今日の動き(実データ):\n${lines.join("\n")}${attention}`;
+}
+
 function startOfTodayMs(nowMs: number): number {
   const d = new Date(nowMs);
   d.setHours(0, 0, 0, 0);

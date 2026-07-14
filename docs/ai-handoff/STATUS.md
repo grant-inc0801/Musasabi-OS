@@ -4,7 +4,12 @@
 **Updated:** 2026-07-14
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(第17弾: 全社レポートへの実データ統合)
+## 直近の完了内容(第18弾: チャット「今日何した?」)
+todayDigest に isTodayDigestQuery/buildTodayDigestReply を追加し、チャットで
+「今日何した?」「本日の動きは?」に当日実データで即答(決定論・誤発火防止)。
+E2E 7/7・0エラー。
+
+## それ以前の完了内容(第17弾: 全社レポートへの実データ統合)
 reportRealData.ts(保管庫/的中率/実イベント/定例実行の決定論集計+Markdown整形)。
 レポートのプレビュー・Markdownエクスポートに実データサマリー統合、JSONに realData。
 E2E 8/8・0エラー。
