@@ -97,6 +97,77 @@ export function savePlanningGuideToVault(): { doc: VaultDocument; created: boole
   return { doc, created: true };
 }
 
+/** 保管庫エクスポートのスキーマバージョン。 */
+const EXPORT_VERSION = 1;
+
+/** 保管庫の全文書をエクスポート用JSONへ整形する(完全ローカル・値の変換なし)。 */
+export function exportVaultJson(): string {
+  return JSON.stringify(
+    { app: "musasabi-os", kind: "vault-export", version: EXPORT_VERSION, exportedAtMs: Date.now(), docs: loadVaultDocs() },
+    null,
+    2,
+  );
+}
+
+export interface VaultImportResult {
+  added: number;
+  /** 既存と同一ID(重複)でスキップした件数。 */
+  skippedDuplicates: number;
+  /** 容量上限でスキップした件数。 */
+  skippedCapacity: number;
+  error?: string;
+}
+
+/**
+ * エクスポートJSONを取り込む(マージ)。同一IDはスキップ、容量超過分もスキップして
+ * 件数を報告する。壊れたJSON・別種ファイルは error を返す(既存データは変更しない)。
+ */
+export function importVaultJson(raw: string): VaultImportResult {
+  let parsed: { kind?: string; docs?: unknown };
+  try {
+    parsed = JSON.parse(raw) as { kind?: string; docs?: unknown };
+  } catch {
+    return { added: 0, skippedDuplicates: 0, skippedCapacity: 0, error: "JSONとして読み取れませんでした。" };
+  }
+  if (parsed.kind !== "vault-export" || !Array.isArray(parsed.docs)) {
+    return { added: 0, skippedDuplicates: 0, skippedCapacity: 0, error: "保管庫エクスポートファイルではありません。" };
+  }
+  const existing = loadVaultDocs();
+  const existingIds = new Set(existing.map((d) => d.id));
+  let usage = vaultUsageChars(existing);
+  const merged = [...existing];
+  let added = 0;
+  let skippedDuplicates = 0;
+  let skippedCapacity = 0;
+  for (const item of parsed.docs as Array<Partial<VaultDocument>>) {
+    if (!item || typeof item.id !== "string" || typeof item.title !== "string" || typeof item.text !== "string") continue;
+    if (existingIds.has(item.id)) {
+      skippedDuplicates += 1;
+      continue;
+    }
+    const text = item.text.slice(0, MAX_DOC_CHARS);
+    if (usage + text.length > VAULT_CAPACITY_CHARS) {
+      skippedCapacity += 1;
+      continue;
+    }
+    const source: VaultDocument["source"] =
+      item.source === "planning" || item.source === "agent" ? item.source : "upload";
+    merged.unshift({
+      id: item.id,
+      title: item.title.slice(0, 80) || "無題の文書",
+      text,
+      source,
+      tags: Array.isArray(item.tags) ? item.tags.filter((t): t is string => typeof t === "string") : [],
+      createdAtMs: typeof item.createdAtMs === "number" ? item.createdAtMs : Date.now(),
+    });
+    existingIds.add(item.id);
+    usage += text.length;
+    added += 1;
+  }
+  if (added > 0) save(merged);
+  return { added, skippedDuplicates, skippedCapacity };
+}
+
 /**
  * エージェント成果物(実行報告・議事録)を保管庫へ自動保存する。
  * 容量超過などの失敗は握りつぶさず結果として返す(呼び出し側で通知に載せる)。

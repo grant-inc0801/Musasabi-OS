@@ -2,12 +2,15 @@ import { useRef, useState } from "react";
 import {
   VAULT_CAPACITY_CHARS,
   addVaultDocument,
+  exportVaultJson,
+  importVaultJson,
   loadVaultDocs,
   removeVaultDocument,
   vaultUsageChars,
   type VaultDocument,
 } from "../../lib/vaultStorage";
 import { recordMemory } from "../../lib/memoryStorage";
+import { saveBinaryFile } from "../../lib/saveFile";
 
 // 保管庫(Knowledge Vault)ページ(本番・完全ローカル)。
 // テキスト資料(txt/md/csv 等)を実保存し、Company Brain の RAG 索引へ統合する。
@@ -77,6 +80,47 @@ export function VaultPage() {
     setNote(`「${doc.title}」を保管庫から削除しました。`);
   }
 
+  async function handleExport(): Promise<void> {
+    const result = await saveBinaryFile(
+      `musasabi-vault-${new Date().toISOString().slice(0, 10)}.json`,
+      new TextEncoder().encode(exportVaultJson()),
+      "JSON",
+      ["json"],
+    );
+    if (result !== "cancelled") {
+      setNote(`保管庫の全文書(${docs.length}件)をエクスポートしました。`);
+    }
+  }
+
+  async function handleImport(files: FileList | null): Promise<void> {
+    if (!files || files.length === 0) return;
+    setError(null);
+    try {
+      const raw = await files[0].text();
+      const result = importVaultJson(raw);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      setDocs(loadVaultDocs());
+      const parts = [`${result.added}件を取り込みました`];
+      if (result.skippedDuplicates > 0) parts.push(`重複スキップ${result.skippedDuplicates}件`);
+      if (result.skippedCapacity > 0) parts.push(`容量上限スキップ${result.skippedCapacity}件`);
+      setNote(`インポート完了: ${parts.join("・")}。取り込んだ文書は次回の索引更新でRAG検索対象になります。`);
+      if (result.added > 0) {
+        recordMemory({
+          category: "company",
+          actor: "保管庫",
+          action: "保管庫エクスポートを取込",
+          detail: parts.join("・"),
+          tags: ["vault", "import"],
+        });
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }
+
   const filtered = query.trim()
     ? docs.filter(
         (d) =>
@@ -137,6 +181,23 @@ export function VaultPage() {
         />
         <p style={{ margin: "0.35rem 0 0", fontSize: "0.78rem", color: "var(--text-muted)" }}>
           対応形式: {ACCEPTED.join(" ")}(テキスト文書)。複数選択可。1文書あたり4万文字まで保存します。
+        </p>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap", marginTop: "0.5rem" }}>
+          <button type="button" onClick={() => void handleExport()} disabled={docs.length === 0}>
+            📦 全文書をエクスポート(JSON)
+          </button>
+          <label style={{ fontSize: "0.8rem", display: "flex", gap: "0.35rem", alignItems: "center" }}>
+            📥 エクスポートを取込:
+            <input
+              type="file"
+              accept=".json"
+              aria-label="保管庫エクスポートを取込"
+              onChange={(e) => void handleImport(e.target.files)}
+            />
+          </label>
+        </div>
+        <p style={{ margin: "0.3rem 0 0", fontSize: "0.74rem", color: "var(--text-muted)" }}>
+          エクスポート/インポートで別端末へ保管庫を持ち運べます(同一IDは重複スキップ・容量超過分はスキップ・完全ローカル)。
         </p>
         {note && <p style={{ color: "var(--ok)", fontSize: "0.82rem" }}>{note}</p>}
         {error && <p style={{ color: "#EF4444", fontSize: "0.82rem" }}>{error}</p>}
