@@ -11,6 +11,7 @@ import {
 } from "../../lib/vaultStorage";
 import { recordMemory } from "../../lib/memoryStorage";
 import { saveBinaryFile } from "../../lib/saveFile";
+import { proposeVaultCuration, summarizeAndRemove, type CurationCandidate } from "../../lib/vaultCuration";
 
 // 保管庫(Knowledge Vault)ページ(本番・完全ローカル)。
 // テキスト資料(txt/md/csv 等)を実保存し、Company Brain の RAG 索引へ統合する。
@@ -33,6 +34,7 @@ export function VaultPage() {
   const [note, setNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [candidates, setCandidates] = useState<CurationCandidate[] | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const usage = vaultUsageChars(docs);
@@ -201,6 +203,59 @@ export function VaultPage() {
         </p>
         {note && <p style={{ color: "var(--ok)", fontSize: "0.82rem" }}>{note}</p>}
         {error && <p style={{ color: "#EF4444", fontSize: "0.82rem" }}>{error}</p>}
+      </section>
+
+      <section aria-label="保管庫の整理" style={{ marginTop: "1rem" }}>
+        <h3 style={{ margin: "0 0 0.4rem" }}>保管庫の整理(AI司書・承認制)</h3>
+        <p style={{ margin: "0 0 0.4rem", fontSize: "0.78rem", color: "var(--text-muted)", maxWidth: "46rem" }}>
+          同名の旧版・30日より古いAI成果物を整理候補として提案します(決定論・提案のみ)。
+          実行は候補ごとの<strong>承認ボタンを押した場合のみ</strong>で、原本の冒頭要約を「要約:」として残します。
+        </p>
+        <button type="button" onClick={() => setCandidates(proposeVaultCuration())}>
+          🧹 整理候補を提案
+        </button>
+        {candidates !== null && (
+          candidates.length === 0 ? (
+            <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginTop: "0.4rem" }}>
+              整理候補はありません(保管庫は整っています)。
+            </p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem", marginTop: "0.5rem" }}>
+              {candidates.map((c) => (
+                <div key={c.doc.id} className="card" style={{ padding: "0.45rem 0.7rem", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+                  <div style={{ flex: 1, minWidth: "16rem" }}>
+                    <strong>{c.doc.title}</strong>{" "}
+                    <span style={{ color: "var(--text-muted)", fontSize: "0.72rem" }}>
+                      {SOURCE_JA[c.doc.source]} / {formatChars(c.doc.text.length)} / {new Date(c.doc.createdAtMs).toLocaleDateString("ja-JP")}
+                    </span>
+                    <div style={{ color: "#F59E0B", fontSize: "0.74rem" }}>理由: {c.reason}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const { summaryTitle } = summarizeAndRemove(c.doc);
+                      setDocs(loadVaultDocs());
+                      setCandidates((prev) => (prev ?? []).filter((x) => x.doc.id !== c.doc.id));
+                      setNote(
+                        summaryTitle
+                          ? `「${c.doc.title}」を整理しました(「${summaryTitle}」を保存・原本削除)。`
+                          : `「${c.doc.title}」を削除しました(本文が短いため要約なし)。`,
+                      );
+                    }}
+                  >
+                    ✔ 承認して要約・削除
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCandidates((prev) => (prev ?? []).filter((x) => x.doc.id !== c.doc.id))}
+                  >
+                    今回は残す
+                  </button>
+                </div>
+              ))}
+            </div>
+          )
+        )}
       </section>
 
       <section aria-label="保管資料一覧" style={{ marginTop: "1rem" }}>
