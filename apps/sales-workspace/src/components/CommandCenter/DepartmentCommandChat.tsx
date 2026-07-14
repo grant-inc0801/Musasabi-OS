@@ -115,7 +115,7 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
     if (state.status === "waiting_approval") {
       agentRef.current = { rt, state };
       const waiting = state.steps.find((s) => s.status === "waiting_approval");
-      void notifyOs("Musasabi — 承認待ち", `${state.goal.title}(${waiting?.actor ?? "承認ノード"})`).catch(() => undefined);
+      void notifyOs("Musasabi — 承認待ち", `${state.goal.title}(${waiting?.actor ?? "承認ノード"})`, "warn").catch(() => undefined);
       return `⏸ 承認待ちで停止中(${waiting?.actor ?? "承認ノード"})。「承認」と送信すると再開します。\nここまでのステップ:\n${stepsDigest(state)}`;
     }
     if (state.status === "completed") return finishRun(state);
