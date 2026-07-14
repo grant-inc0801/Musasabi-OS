@@ -12,6 +12,7 @@ import { recordMemory } from "../../lib/memoryStorage";
 import { saveAgentDocToVault } from "../../lib/vaultStorage";
 import { buildVaultSearchReply, parseVaultSearchQuery, searchVault } from "../../lib/vaultSearch";
 import { buildTodayDigestReply, isTodayDigestQuery } from "../../lib/todayDigest";
+import { buildDiagnosticsReply, isDiagnosticsQuery, probeLocalServices } from "../../lib/localDiagnostics";
 import { appendDeptChat, loadDeptChatHistory } from "../../lib/deptChatStorage";
 import { buildAssistantReply, HELP_SUGGESTIONS } from "../../lib/assistantHelp";
 import { loadLlmSettings } from "../../lib/llmSettings";
@@ -157,6 +158,9 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
       } else if (isTodayDigestQuery(message)) {
         // 「今日何した?」→ 当日の実データダイジェストで即答(LLM不要)
         reply = buildTodayDigestReply();
+      } else if (isDiagnosticsQuery(message)) {
+        // 「接続状況は?」→ ローカルAI連携を実診断して即答
+        reply = buildDiagnosticsReply(await probeLocalServices());
       } else if (asRun || RUN_PREFIX.test(message)) {
         // 実行指示 → エージェント自律実行(Claude Code と同じ指示→実行→報告の流れ)
         const instruction = message.replace(RUN_PREFIX, "").trim() || message;

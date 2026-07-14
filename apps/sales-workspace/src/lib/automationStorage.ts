@@ -117,6 +117,25 @@ export function replayRoutine(
         } catch {
           /* 通知用のみ */
         }
+        // 実行結果サマリーを保管庫へ自動保存+実イベント記録(成果物ループの完結)
+        void (async () => {
+          try {
+            const { saveAgentDocToVault } = await import("./vaultStorage");
+            const { pushAppEvent } = await import("./appEvents");
+            saveAgentDocToVault({
+              title: `自動化実行: ${routine.name}`,
+              text: [
+                `自動化ルーチン「${routine.name}」を再実行しました(${new Date().toLocaleString("ja-JP")})。`,
+                `手順: ${routine.steps.map((s, n) => `${n + 1}. ${s.label}`).join(" → ")}`,
+                `累計実行回数: ${routine.runCount + 1}回`,
+              ].join("\n"),
+              tags: ["agent", "automation"],
+            });
+            pushAppEvent({ level: "info", title: "自動化ルーチン実行完了", detail: routine.name });
+          } catch {
+            /* 保存失敗でも再実行自体は完了している */
+          }
+        })();
       }
     }, stepMs * (i + 1));
   });
