@@ -32,8 +32,9 @@ export interface AgentSchedule {
   /**
    * 定例の種類(省略時 "agent" = エージェント自律実行)。
    * "forecast_verify" は予測と実績の自動突合(的中率の定例更新・決定論)。
+   * "vault_curation" は保管庫の整理候補の定例提案(提案のみ・削除は人間の承認後)。
    */
-  kind?: "agent" | "forecast_verify";
+  kind?: "agent" | "forecast_verify" | "vault_curation";
   workflowTemplateId?: string;
   /** 実行間隔(分)。例: 毎時=60 / 毎日=1440 / 毎週=10080。 */
   intervalMinutes: number;
@@ -102,10 +103,49 @@ async function runForecastVerify(): Promise<string> {
   return `${summary}(RSS ${headlines.length}件+社内記録と照合。判定は市場調査部で手動上書きできます)`;
 }
 
+/**
+ * AI司書の定例整理提案: 保管庫の整理候補を洗い出して通知する(提案のみ・削除しない)。
+ * 実際の整理(要約して削除)は保管庫ページで人間が候補ごとに承認した場合のみ。
+ */
+async function runVaultCurationPropose(): Promise<string> {
+  const { proposeVaultCuration } = await import("./vaultCuration");
+  const candidates = proposeVaultCuration();
+  if (candidates.length === 0) return "整理候補はありません(保管庫は整っています)。";
+  const summary = `保管庫の整理候補が${candidates.length}件あります: ${candidates
+    .slice(0, 3)
+    .map((c) => `「${c.doc.title}」(${c.reason})`)
+    .join(" / ")}${candidates.length > 3 ? " ほか" : ""}`;
+  recordMemory({
+    category: "company",
+    actor: "AI司書",
+    action: "保管庫の整理候補を定例提案",
+    detail: summary.slice(0, 200),
+    tags: ["vault", "curation", "agent-schedule"],
+  });
+  void notifyOs("Musasabi — 保管庫の整理候補", summary, "warn").catch(() => undefined);
+  return `${summary}\n(提案のみ・削除は保管庫ページで候補ごとに承認した場合のみ実行されます)`;
+}
+
 /** スケジュール1件を今すぐ実行する(手動/定時共通の実実行)。 */
 export async function runScheduleNow(schedule: AgentSchedule): Promise<AgentSchedule> {
   const startedAt = Date.now();
   let log: ScheduleRunLog;
+  if (schedule.kind === "vault_curation") {
+    try {
+      const report = await runVaultCurationPropose();
+      log = { atMs: startedAt, status: "completed", brainName: "AI司書(決定論・提案のみ)", report };
+    } catch (error) {
+      appLogger.warn("scheduled vault curation failed", { error: String(error) });
+      log = { atMs: startedAt, status: "error", brainName: "-", report: String(error) };
+    }
+    const updated: AgentSchedule = {
+      ...schedule,
+      lastRunMs: startedAt,
+      runs: [log, ...schedule.runs].slice(0, MAX_RUN_LOGS),
+    };
+    upsertSchedule(updated);
+    return updated;
+  }
   if (schedule.kind === "forecast_verify") {
     try {
       const report = await runForecastVerify();
