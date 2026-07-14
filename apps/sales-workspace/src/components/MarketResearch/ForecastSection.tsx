@@ -17,6 +17,7 @@ import { recordMemory } from "../../lib/memoryStorage";
 import { saveBinaryFile } from "../../lib/saveFile";
 import { sendAgentNotification } from "../../lib/freeConnectors";
 import { notifyOs } from "../../lib/osNotify";
+import { buildAccuracyDigest, trackForecastOutcome } from "../../lib/forecastTracking";
 
 // 市場調査部: 未来予測(シナリオ分岐)。
 // 市場実データ(RSS)+社内RAGを入力に、AIの発展を半年〜1年先まで複数分岐で予測。
@@ -53,15 +54,21 @@ export function ForecastSection() {
     try {
       const brain = await detectBrain(loadLlmSettings(), await resolveLlmFetch());
       const inputs = await gatherInputs();
-      // AGI深層予測: 過去の予測履歴を渡して較正(学習ノート生成)
-      const pastDigest = localStorage.getItem("musasabi.forecastHistory") ?? "";
+      // AGI深層予測: 過去の予測履歴+的中率実績を渡して較正(学習ノート生成)
+      const history = localStorage.getItem("musasabi.forecastHistory") ?? "";
+      const accuracy = buildAccuracyDigest();
+      const pastDigest = [history, accuracy].filter((s) => s.trim() !== "").join("\n");
       const forecast = await runForecastDeep(brain.provider, inputs, pastDigest);
       setResult(forecast);
-      // 履歴を保存(次回の較正に使う・直近3件)
+      // 履歴を保存(次回の較正に使う・直近3件)+的中率トラッキングへ pending 登録
       if (forecast.selectedLeaf) {
         const entry = `${new Date().toLocaleDateString("ja-JP")} 選出: ${forecast.selectedLeaf.main.title} → ${forecast.selectedLeaf.sub.title}(較正後実現性${forecast.selectedLeaf.sub.calibratedPlausibility}%)`;
-        const prev = pastDigest.split("\n").filter((l) => l.trim() !== "").slice(0, 2);
+        const prev = history.split("\n").filter((l) => l.trim() !== "").slice(0, 2);
         localStorage.setItem("musasabi.forecastHistory", [entry, ...prev].join("\n"));
+        trackForecastOutcome(
+          `${forecast.selectedLeaf.main.title} → ${forecast.selectedLeaf.sub.title}: ${forecast.selectedLeaf.sub.at6Months}`,
+          forecast.selectedLeaf.sub.calibratedPlausibility,
+        );
       }
       recordMemory({
         category: "company",
