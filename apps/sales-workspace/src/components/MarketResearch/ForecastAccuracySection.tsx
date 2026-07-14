@@ -4,6 +4,7 @@ import { loadMemoryRecords, recordMemory } from "../../lib/memoryStorage";
 import {
   autoVerifyForecastOutcomes,
   forecastAccuracyStats,
+  forecastAccuracyTrend,
   loadForecastOutcomes,
   removeForecastOutcome,
   setForecastOutcomeStatus,
@@ -28,6 +29,89 @@ const STATUS_COLOR: Record<ForecastOutcomeStatus, string> = {
   partial: "#F59E0B",
   miss: "#EF4444",
 };
+
+/** 的中率の週次推移チャート(単一系列・検証済み色 #16A34A・判定日ベースの決定論集計)。 */
+function AccuracyTrendChart({ records }: { records: ForecastOutcomeRecord[] }) {
+  const points = forecastAccuracyTrend(records);
+  const hasData = points.some((p) => p.hitRatePercent !== null);
+  if (!hasData) return null;
+
+  const W = 460;
+  const H = 150;
+  const PAD = { top: 18, right: 44, bottom: 24, left: 34 };
+  const plotW = W - PAD.left - PAD.right;
+  const plotH = H - PAD.top - PAD.bottom;
+  const x = (i: number) => PAD.left + (points.length <= 1 ? plotW / 2 : (i / (points.length - 1)) * plotW);
+  const y = (pct: number) => PAD.top + (1 - pct / 100) * plotH;
+  const LINE = "#16A34A";
+
+  // null(判定なし週)は線を切る — セグメントごとの折れ線にする
+  const segments: Array<Array<{ i: number; pct: number }>> = [];
+  let current: Array<{ i: number; pct: number }> = [];
+  points.forEach((p, i) => {
+    if (p.hitRatePercent === null) {
+      if (current.length > 0) segments.push(current);
+      current = [];
+    } else {
+      current.push({ i, pct: p.hitRatePercent });
+    }
+  });
+  if (current.length > 0) segments.push(current);
+  const lastIdx = [...points].map((p, i) => ({ p, i })).filter((x2) => x2.p.hitRatePercent !== null).pop()!.i;
+
+  return (
+    <div className="card" style={{ marginTop: "0.6rem", padding: "0.5rem 0.7rem", maxWidth: `${W + 16}px` }}>
+      <strong style={{ fontSize: "0.8rem" }}>的中率の推移(週次・判定ベース)</strong>
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="的中率の週次推移チャート">
+        {[0, 50, 100].map((g) => (
+          <g key={g}>
+            <line x1={PAD.left} x2={W - PAD.right} y1={y(g)} y2={y(g)} stroke="var(--border)" strokeWidth={1} />
+            <text x={PAD.left - 6} y={y(g) + 3} textAnchor="end" fontSize={9} fill="var(--text-muted)">
+              {g}%
+            </text>
+          </g>
+        ))}
+        {segments.map((seg, si) => (
+          <polyline
+            key={si}
+            points={seg.map((s) => `${x(s.i)},${y(s.pct)}`).join(" ")}
+            fill="none"
+            stroke={LINE}
+            strokeWidth={2}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+        ))}
+        {points.map((p, i) =>
+          p.hitRatePercent === null ? null : (
+            <circle key={i} cx={x(i)} cy={y(p.hitRatePercent)} r={4} fill={LINE} stroke="var(--bg-card)" strokeWidth={2}>
+              <title>{`${p.label}週: 的中率${p.hitRatePercent}%(判定${p.judged}件)`}</title>
+            </circle>
+          ),
+        )}
+        {points[lastIdx].hitRatePercent !== null && (
+          <text
+            x={Math.min(x(lastIdx) + 8, W - 4)}
+            y={y(points[lastIdx].hitRatePercent!) + 3}
+            fontSize={11}
+            fontWeight={700}
+            fill="var(--text)"
+          >
+            {points[lastIdx].hitRatePercent}%
+          </text>
+        )}
+        {points.map((p, i) => (
+          <text key={i} x={x(i)} y={H - 8} textAnchor="middle" fontSize={9} fill="var(--text-muted)">
+            {p.label}
+          </text>
+        ))}
+      </svg>
+      <p style={{ margin: 0, fontSize: "0.68rem", color: "var(--text-muted)" }}>
+        判定日ベースの7日ビン(hit=1, partial=0.5)。詳細は下の記録一覧で確認できます。
+      </p>
+    </div>
+  );
+}
 
 export function ForecastAccuracySection() {
   const [records, setRecords] = useState<ForecastOutcomeRecord[]>(() => loadForecastOutcomes());
@@ -105,6 +189,8 @@ export function ForecastAccuracySection() {
             : " — 見積もりは妥当です"}
         </p>
       )}
+
+      <AccuracyTrendChart records={records} />
 
       <button type="button" style={{ marginTop: "0.5rem" }} onClick={() => void handleAutoVerify()} disabled={busy}>
         {busy ? "実績データと突合中…" : "⚖ 実績データと自動突合(RSS+社内記録)"}

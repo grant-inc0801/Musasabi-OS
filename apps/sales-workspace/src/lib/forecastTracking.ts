@@ -128,6 +128,45 @@ export function forecastAccuracyStats(records = loadForecastOutcomes()): Forecas
   };
 }
 
+export interface AccuracyTrendPoint {
+  /** ビン開始時刻(7日ビン)。 */
+  weekStartMs: number;
+  /** 表示ラベル(M/D)。 */
+  label: string;
+  /** 判定済みに対する的中率(hit=1, partial=0.5)。判定なしは null。 */
+  hitRatePercent: number | null;
+  /** そのビンで判定された件数。 */
+  judged: number;
+}
+
+/**
+ * 的中率の週次推移(判定日時ベース・7日ビン×直近weeks)。
+ * チャート表示用の決定論集計。
+ */
+export function forecastAccuracyTrend(
+  records = loadForecastOutcomes(),
+  weeks = 8,
+  nowMs = Date.now(),
+): AccuracyTrendPoint[] {
+  const DAY = 24 * 60 * 60 * 1000;
+  const points: AccuracyTrendPoint[] = [];
+  for (let i = weeks - 1; i >= 0; i -= 1) {
+    const start = nowMs - (i + 1) * 7 * DAY;
+    const end = nowMs - i * 7 * DAY;
+    const judged = records.filter(
+      (r) => r.status !== "pending" && (r.verifiedAtMs ?? r.createdAtMs) >= start && (r.verifiedAtMs ?? r.createdAtMs) < end,
+    );
+    const score = judged.reduce((s, r) => s + (r.status === "hit" ? 1 : r.status === "partial" ? 0.5 : 0), 0);
+    points.push({
+      weekStartMs: start,
+      label: new Date(start).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" }),
+      hitRatePercent: judged.length === 0 ? null : Math.round((score / judged.length) * 100),
+      judged: judged.length,
+    });
+  }
+  return points;
+}
+
 /**
  * 次回予測の較正フィードバック文(pastDigest へ追記する)。
  * 的中率と傾向を1〜2行で要約し、予測エンジンの学習ノート生成に使わせる。
