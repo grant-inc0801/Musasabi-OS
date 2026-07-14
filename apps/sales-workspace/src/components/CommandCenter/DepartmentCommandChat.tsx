@@ -11,6 +11,7 @@ import { VoiceInputButton } from "./VoiceInputButton";
 import { recordMemory } from "../../lib/memoryStorage";
 import { saveAgentDocToVault } from "../../lib/vaultStorage";
 import { buildVaultSearchReply, parseVaultSearchQuery, searchVault } from "../../lib/vaultSearch";
+import { buildTodayDigestReply, isTodayDigestQuery } from "../../lib/todayDigest";
 import { appendDeptChat, loadDeptChatHistory } from "../../lib/deptChatStorage";
 import { buildAssistantReply, HELP_SUGGESTIONS } from "../../lib/assistantHelp";
 import { loadLlmSettings } from "../../lib/llmSettings";
@@ -153,6 +154,9 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
       } else if (vaultQuery !== null) {
         // 保管庫検索コマンド: 「保管庫で◯◯を探して」→ 実文書を直接検索し引用回答(LLM不要)
         reply = buildVaultSearchReply(vaultQuery, await searchVault(vaultQuery));
+      } else if (isTodayDigestQuery(message)) {
+        // 「今日何した?」→ 当日の実データダイジェストで即答(LLM不要)
+        reply = buildTodayDigestReply();
       } else if (asRun || RUN_PREFIX.test(message)) {
         // 実行指示 → エージェント自律実行(Claude Code と同じ指示→実行→報告の流れ)
         const instruction = message.replace(RUN_PREFIX, "").trim() || message;
