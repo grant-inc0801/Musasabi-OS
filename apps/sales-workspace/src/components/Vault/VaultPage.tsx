@@ -37,6 +37,7 @@ export function VaultPage() {
   const [query, setQuery] = useState("");
   const [candidates, setCandidates] = useState<CurationCandidate[] | null>(null);
   const [editing, setEditing] = useState<{ id: string; title: string; tags: string } | null>(null);
+  const [viewing, setViewing] = useState<VaultDocument | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   function handleSaveEdit(): void {
@@ -342,6 +343,9 @@ export function VaultPage() {
                       </span>
                     </td>
                     <td style={cellStyle}>
+                      <button type="button" onClick={() => setViewing(d)}>
+                        開く
+                      </button>{" "}
                       <button
                         type="button"
                         onClick={() => setEditing({ id: d.id, title: d.title, tags: d.tags.join("、") })}
@@ -362,6 +366,51 @@ export function VaultPage() {
           保存した資料は Company Brain の意味検索へ自動索引されます(分類: vault)。
         </p>
       </section>
+
+      {viewing && (
+        <section aria-label="文書ビューア" className="card" style={{ marginTop: "1rem", padding: "0.8rem 1rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+            <h3 style={{ margin: 0 }}>📖 {viewing.title}</h3>
+            <span style={{ fontSize: "0.74rem", color: "var(--text-muted)" }}>
+              {SOURCE_JA[viewing.source]} / {formatChars(viewing.text.length)} /{" "}
+              {new Date(viewing.createdAtMs).toLocaleDateString("ja-JP")}
+              {viewing.tags.length > 0 ? ` / 🏷 ${viewing.tags.join("、")}` : ""}
+            </span>
+            <span style={{ marginLeft: "auto", display: "flex", gap: "0.4rem" }}>
+              <button
+                type="button"
+                onClick={() =>
+                  void saveBinaryFile(
+                    `${viewing.title.replace(/[\\/:*?"<>|]/g, "_")}.md`,
+                    new TextEncoder().encode(viewing.text),
+                    "Markdown",
+                    ["md"],
+                  )
+                }
+              >
+                📄 ファイル保存(.md)
+              </button>
+              <button type="button" onClick={() => setViewing(null)}>閉じる</button>
+            </span>
+          </div>
+          <pre
+            style={{
+              whiteSpace: "pre-wrap",
+              fontSize: "0.82rem",
+              lineHeight: 1.6,
+              marginTop: "0.6rem",
+              maxHeight: "26rem",
+              overflow: "auto",
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid var(--border)",
+              borderRadius: 8,
+              padding: "0.7rem 0.9rem",
+            }}
+          >
+            {viewing.text}
+          </pre>
+        </section>
+      )}
     </>
   );
 }
