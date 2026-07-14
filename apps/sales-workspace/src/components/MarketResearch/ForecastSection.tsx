@@ -71,6 +71,13 @@ export function ForecastSection() {
           forecast.selectedLeaf.sub.calibratedPlausibility,
         );
       }
+      // 予測レポート全文(ツリー込みMD)を保管庫へ自動保存 — RAG索引され
+      // チャット「保管庫で予測を探して」で後から引ける
+      saveAgentDocToVault({
+        title: `未来予測レポート: ${forecast.selectedLeaf ? forecast.selectedLeaf.sub.title.slice(0, 40) : new Date().toLocaleDateString("ja-JP")}`,
+        text: buildForecastMarkdown(forecast),
+        tags: ["agent", "forecast-report"],
+      });
       recordMemory({
         category: "company",
         actor: "市場調査部",
@@ -134,22 +141,21 @@ export function ForecastSection() {
     }
   }
 
-  function saveForecastFile(): void {
-    if (!result) return;
-    const md = [
+  function buildForecastMarkdown(r: DeepForecastResult): string {
+    return [
       `# 未来予測レポート(半年〜1年・シナリオ分岐)`,
-      `生成: ${new Date(result.generatedAtMs).toLocaleString("ja-JP")} / 頭脳: ${result.brainName}`,
+      `生成: ${new Date(r.generatedAtMs).toLocaleString("ja-JP")} / 頭脳: ${r.brainName}`,
       "",
       "## 入力(市場データ)",
-      result.inputsDigest,
+      r.inputsDigest,
       "",
-      ...(result.learningNote ? ["## 🧠 前回予測からの学習", result.learningNote, ""] : []),
-      ...result.scenarios.flatMap((s) => [
+      ...(r.learningNote ? ["## 🧠 前回予測からの学習", r.learningNote, ""] : []),
+      ...r.scenarios.flatMap((s) => [
         `## ${s.ethical ? "" : "【倫理フィルタで除外】"}${s.title}(実現性 ${s.plausibility}%)`,
         `- 半年後: ${s.at6Months}`,
         `- 1年後: ${s.at12Months}`,
         ...(s.ethicsNote ? [`- 除外理由: ${s.ethicsNote}`] : []),
-        ...(result.subBranches[s.id] ?? []).flatMap((sub) => [
+        ...(r.subBranches[s.id] ?? []).flatMap((sub) => [
           `### └ ${sub.ethical ? "" : "【倫理除外】"}${sub.title}(較正後 ${sub.calibratedPlausibility}% / 生成時 ${sub.plausibility}%)`,
           `- 半年後: ${sub.at6Months}`,
           `- 1年後: ${sub.at12Months}`,
@@ -158,16 +164,20 @@ export function ForecastSection() {
         ]),
         "",
       ]),
-      result.selectedLeaf
-        ? `## ✅ 選出シナリオ: ${result.selectedLeaf.main.title} → ${result.selectedLeaf.sub.title}`
+      r.selectedLeaf
+        ? `## ✅ 選出シナリオ: ${r.selectedLeaf.main.title} → ${r.selectedLeaf.sub.title}`
         : "## 選出なし(全分岐が倫理フィルタで除外)",
       "",
       "## 現在取り組める内容(提案)",
-      ...result.proposals.map((p, i) => `${i + 1}. ${p.title} — ${p.detail}`),
+      ...r.proposals.map((p, i) => `${i + 1}. ${p.title} — ${p.detail}`),
     ].join("\n");
+  }
+
+  function saveForecastFile(): void {
+    if (!result) return;
     void saveBinaryFile(
       `ai-forecast-${new Date().toISOString().slice(0, 10)}.md`,
-      new TextEncoder().encode(md),
+      new TextEncoder().encode(buildForecastMarkdown(result)),
       "Markdown",
       ["md"],
     );
