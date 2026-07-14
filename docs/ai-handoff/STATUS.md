@@ -4,7 +4,11 @@
 **Updated:** 2026-07-14
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(第10弾: 予測突合の定例自動実行)
+## 直近の完了内容(第11弾: Mission Control 実データ司令塔)
+Mission Control に「AI自律ループ(実データ)」パネル: 保管庫/予測的中率/定例実行/Brain記録の
+実データタイル+直近AI成果物。タイルクリックで該当ページへ遷移。E2E 7/7・0エラー。
+
+## それ以前の完了内容(第10弾: 予測突合の定例自動実行)
 AgentSchedule に kind "forecast_verify" 追加。定例スケジュールとして予測×実績の自動突合
 (決定論・LLM不使用)が走り、的中率を Brain 記録+OS/Webhook 通知。スケジューラUIに
 テンプレート「予測突合」と⚖バッジ。E2E 7/7・0エラー。
