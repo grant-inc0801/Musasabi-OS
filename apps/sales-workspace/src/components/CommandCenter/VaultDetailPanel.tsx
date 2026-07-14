@@ -3,6 +3,7 @@ import { VAULT_STORAGE_POLICIES } from "@musasabi/ai-company";
 import { recordMemory } from "../../lib/memoryStorage";
 import {
   VAULT_CAPACITY_CHARS,
+  addVaultDocument,
   loadVaultDocs,
   removeVaultDocument,
   vaultUsageChars,
@@ -43,6 +44,38 @@ export function VaultDetailPanel({ onClose }: { onClose: () => void }) {
     }
     return true;
   });
+
+  async function handleImportFiles(files: FileList | null): Promise<void> {
+    if (!files || files.length === 0) return;
+    const added: string[] = [];
+    for (const file of Array.from(files)) {
+      try {
+        const text = await file.text();
+        if (text.trim() === "") continue;
+        const doc = addVaultDocument({
+          title: file.name.replace(/\.[^.]+$/, ""),
+          text,
+          source: "upload",
+          tags: ["upload"],
+        });
+        added.push(doc.title);
+      } catch (e) {
+        setNote(e instanceof Error ? e.message : String(e));
+        break;
+      }
+    }
+    if (added.length > 0) {
+      setDocs(loadVaultDocs());
+      setNote(`${added.length}件の資料を保管庫へ保存しました(RAG索引対象): ${added.join(" / ")}`);
+      recordMemory({
+        category: "company",
+        actor: "保管庫",
+        action: "資料を保管庫へ取込(コマンドセンター)",
+        detail: added.join(" / ").slice(0, 200),
+        tags: ["vault", "upload"],
+      });
+    }
+  }
 
   function handleRemove(doc: VaultDocument): void {
     setDocs(removeVaultDocument(doc.id));
@@ -102,6 +135,22 @@ export function VaultDetailPanel({ onClose }: { onClose: () => void }) {
             <b>{docs.filter((d) => d.source === "agent").length}件</b>
           </div>
         </div>
+      </div>
+
+      <div className="detail-block">
+        <strong>資料の取込</strong>
+        <div style={{ marginTop: "0.4rem" }}>
+          <input
+            type="file"
+            multiple
+            accept=".txt,.md,.csv,.json,.log,.tsv"
+            aria-label="コマンドセンターから保管庫へ取り込むファイル"
+            onChange={(e) => void handleImportFiles(e.target.files)}
+          />
+        </div>
+        <p style={{ margin: "0.3rem 0 0", fontSize: "0.72rem", color: "var(--text-muted)" }}>
+          テキスト文書(複数可)をここから直接取り込めます(1文書4万文字まで)。
+        </p>
       </div>
 
       <div className="detail-block">
