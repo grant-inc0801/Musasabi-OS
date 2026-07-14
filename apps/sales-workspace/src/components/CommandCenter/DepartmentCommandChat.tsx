@@ -149,7 +149,18 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
     const brain = brainRef.current;
     try {
       const vaultQuery = parseVaultSearchQuery(message);
-      if (agentRef.current && APPROVE_WORDS.includes(message)) {
+      const isHelp = /^(ヘルプ|help|使い方|何ができる)[??!!。]?$/i.test(message.trim());
+      if (isHelp) {
+        // コマンド一覧(決定論・LLM不要)
+        reply = [
+          "🤖 使えるコマンド:",
+          "・「実行 ◯◯」または ▶実行 — エージェントが実際に自律実行(承認ノードは「承認」で再開)",
+          "・「保管庫で◯◯を探して」 — 保管庫の資料を検索し引用回答",
+          "・「今日何した?」 — 当日の実イベント・成果物・的中率を即答",
+          "・「接続状況は?」 — ローカルAI連携(LLM/埋め込み/音声/画像)を実診断",
+          "・その他の質問 — 社内データ(RAG)+会話メモリで回答します",
+        ].join("\n");
+      } else if (agentRef.current && APPROVE_WORDS.includes(message)) {
         // 承認 → 実行再開
         reply = await approveAndResume();
       } else if (vaultQuery !== null) {
