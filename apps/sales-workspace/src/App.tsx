@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { isSetupComplete } from "@musasabi/shared";
 import { ConnectionSettingsPanel } from "./components/Settings/ConnectionSettingsPanel";
+import { LocalAiStatusPanel } from "./components/Settings/LocalAiStatusPanel";
 import { EmployeeSettingsPanel } from "./components/Settings/EmployeeSettingsPanel";
 import { DataManagementPanel } from "./components/Settings/DataManagementPanel";
 import { CompanyPage } from "./components/Company/CompanyPage";
@@ -503,6 +504,7 @@ export function App() {
           <CompanyPage onNavigateToCallTraining={() => setPage("sales_call_training")} />
         ) : (
           <>
+            <LocalAiStatusPanel />
             <EmployeeSettingsPanel />
             <DataManagementPanel />
             <ConnectionSettingsPanel />
