@@ -23,6 +23,22 @@ export interface LocalServiceStatus {
   hint?: string;
 }
 
+/** チャット文からの接続診断コマンド判定(接続状況は?/ローカルAIの状態/診断して など)。 */
+export function isDiagnosticsQuery(message: string): boolean {
+  const normalized = message.replace(/[??!!。\s]/g, "");
+  return /^(接続状況|接続状態|ローカルAIの状態|ローカルAI診断|診断)(は|を)?(どう|教えて|確認|して)?$/.test(normalized);
+}
+
+/** 診断結果をチャット返信文へ整形する(決定論)。 */
+export function buildDiagnosticsReply(statuses: LocalServiceStatus[]): string {
+  const mark: Record<ServiceState, string> = { ok: "🟢", fallback: "🟡", unavailable: "🔴" };
+  const lines = statuses.map((s) => {
+    const head = `${mark[s.state]} ${s.label}: ${s.detail}`;
+    return s.hint ? `${head}\n 💡 ${s.hint}` : head;
+  });
+  return `🔍 ローカルAI連携の診断結果:\n${lines.join("\n")}\n— 詳細は設定ページの「ローカルAI連携の状態」で確認できます。`;
+}
+
 /** すべてのローカルAI連携を診断する(並列・各3秒程度)。 */
 export async function probeLocalServices(): Promise<LocalServiceStatus[]> {
   const llm = loadLlmSettings();

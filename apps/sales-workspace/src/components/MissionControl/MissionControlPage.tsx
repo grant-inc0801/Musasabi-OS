@@ -22,6 +22,7 @@ import { VAULT_CAPACITY_CHARS, loadVaultDocs, vaultUsageChars } from "../../lib/
 import { forecastAccuracyStats } from "../../lib/forecastTracking";
 import { loadSchedules, nextRunMs } from "../../lib/agentSchedule";
 import { loadMemoryRecords } from "../../lib/memoryStorage";
+import { unreadAppEventCount } from "../../lib/appEvents";
 
 // Musasabi OS Mission Control Dashboard(Phase 1)。AI企業全体の司令室ホーム。
 // すべてダミーデータ(@musasabi/mission-control)で動作。後から GitHub / Claude Code /
@@ -74,7 +75,15 @@ export function MissionControlPage({ onOpenPage }: { onOpenPage?: (page: string)
         <div className="mc-header-right">
           <span className="mc-clock">{timeStr}</span>
           <span className="mc-chip">AI稼働率 <b>{util}%</b></span>
-          <span className="mc-chip">🔔 <b>{summary.pendingApprovals}</b></span>
+          <button
+            type="button"
+            className="mc-chip"
+            style={{ cursor: "pointer", border: "none", font: "inherit" }}
+            title="未読の実イベント(通知センターへ)"
+            onClick={() => onOpenPage?.("notifications")}
+          >
+            🔔 <b>{unreadAppEventCount()}</b>
+          </button>
           <span className="mc-chip">👤 管理者</span>
         </div>
       </header>
