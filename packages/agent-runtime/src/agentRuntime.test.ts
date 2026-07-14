@@ -320,3 +320,29 @@ test("AGI深層予測: 履歴を渡すと学習ノートを生成し、サブ分
   assert.equal(result.selectedLeaf!.sub.ethical, true);
   assert.equal(result.selectedLeaf!.sub.calibratedPlausibility, 55);
 });
+
+test("的中率トラッキング: 予測と実績の突合が決定論で hit/partial/miss を提案する", async () => {
+  const { evaluateForecastOutcome, extractForecastKeywords } = await import("./forecast");
+  // キーワード抽出: 一般語(半年/予測など)は除外される
+  const kws = extractForecastKeywords("ローカルLLMと小型モデルの実用化が半年以内に進むと予測");
+  assert.ok(kws.includes("LLM"));
+  assert.ok(kws.includes("小型モデル") || kws.includes("モデル"));
+  assert.ok(!kws.includes("半年"));
+  // hit: 実績見出しに予測キーワードが十分現れる
+  const hit = evaluateForecastOutcome("ローカルLLMと小型モデルの実用化が主流に", [
+    "各社がローカルLLM対応を発表",
+    "小型モデルの実用化事例が急増",
+    "エッジでの実用化が主流になりつつある",
+  ]);
+  assert.equal(hit.suggestion, "hit");
+  assert.ok(hit.matchRatio >= 0.6);
+  assert.ok(hit.matchedKeywords.includes("LLM"));
+  // miss: 実績に予測キーワードがほぼ現れない
+  const miss = evaluateForecastOutcome("量子コンピュータの商用化が加速", [
+    "クラウド各社が値下げを発表",
+    "新しいスマートフォンが発売",
+  ]);
+  assert.equal(miss.suggestion, "miss");
+  // 空予測は miss(ゼロ除算なし)
+  assert.equal(evaluateForecastOutcome("", ["何か"]).suggestion, "miss");
+});

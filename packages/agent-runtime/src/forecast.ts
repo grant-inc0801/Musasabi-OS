@@ -359,3 +359,45 @@ export async function runForecastDeep(
     constitutionNotes,
   };
 }
+
+// ---------------------------------------------------------------------------
+// 予測の的中率トラッキング(予測と実績の突合)
+// ---------------------------------------------------------------------------
+
+export type ForecastOutcomeSuggestion = "hit" | "partial" | "miss";
+
+export interface ForecastOutcomeEvaluation {
+  /** 予測キーワードのうち実績(証拠)に現れた割合(0〜1)。 */
+  matchRatio: number;
+  /** 実績に現れた予測キーワード。 */
+  matchedKeywords: string[];
+  /** 抽出した予測キーワード全体。 */
+  keywords: string[];
+  /** 決定論の判定候補(hit>=0.6 / partial>=0.3 / miss)。人間が上書きできる。 */
+  suggestion: ForecastOutcomeSuggestion;
+}
+
+/** 予測文からキーワードを抽出する(漢字・カタカナ・英数の2文字以上の連なり)。 */
+export function extractForecastKeywords(text: string): string[] {
+  const runs = text.match(/[一-鿿]{2,}|[゠-ヿ]{2,}|[A-Za-z0-9]{2,}/g) ?? [];
+  // 予測文で頻出する一般語はキーワードにしない(突合の水増し防止)
+  const stop = new Set(["半年", "以内", "1年", "予測", "予想", "見込", "可能", "業界", "市場", "する", "なる", "こと"]);
+  return [...new Set(runs.filter((w) => !stop.has(w)))];
+}
+
+/**
+ * 予測と実績(RSS見出し・社内記録などの証拠テキスト)を突合する(決定論)。
+ * キーワード一致率で hit / partial / miss を提案する。最終判定は人間が上書きできる。
+ */
+export function evaluateForecastOutcome(
+  forecastText: string,
+  evidence: readonly string[],
+): ForecastOutcomeEvaluation {
+  const keywords = extractForecastKeywords(forecastText);
+  const corpus = evidence.join("\n");
+  const matchedKeywords = keywords.filter((k) => corpus.includes(k));
+  const matchRatio = keywords.length === 0 ? 0 : matchedKeywords.length / keywords.length;
+  const suggestion: ForecastOutcomeSuggestion =
+    matchRatio >= 0.6 ? "hit" : matchRatio >= 0.3 ? "partial" : "miss";
+  return { matchRatio: Math.round(matchRatio * 100) / 100, matchedKeywords, keywords, suggestion };
+}

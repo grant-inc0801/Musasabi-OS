@@ -11,6 +11,7 @@ import {
 import { ResearchReportsSection } from "./ResearchReportsSection";
 import { RssSourcesSection } from "./RssSourcesSection";
 import { ForecastSection } from "./ForecastSection";
+import { ForecastAccuracySection } from "./ForecastAccuracySection";
 
 // 市場調査部ページ(従来画面)。AI最新情報・技術評価・組み合わせ研究・
 // 部署間連携/CEO提案(D-20260706-009)。すべてMock(実Web巡回・実API接続なし)。
@@ -30,6 +31,7 @@ export function MarketResearchPage() {
     <>
       <RssSourcesSection />
       <ForecastSection />
+      <ForecastAccuracySection />
       <section aria-label="市場調査KPI">
         <h3 style={{ marginTop: 0 }}>KPI(Mock)</h3>
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
