@@ -6,6 +6,7 @@ import {
   importVaultJson,
   loadVaultDocs,
   removeVaultDocument,
+  updateVaultDocument,
   vaultUsageChars,
   type VaultDocument,
 } from "../../lib/vaultStorage";
@@ -35,7 +36,20 @@ export function VaultPage() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [candidates, setCandidates] = useState<CurationCandidate[] | null>(null);
+  const [editing, setEditing] = useState<{ id: string; title: string; tags: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  function handleSaveEdit(): void {
+    if (!editing) return;
+    setDocs(
+      updateVaultDocument(editing.id, {
+        title: editing.title,
+        tags: editing.tags.split(/[、,\s]+/).filter((t) => t !== ""),
+      }),
+    );
+    setNote(`「${editing.title.trim() || "無題の文書"}」を更新しました(索引は次回更新で追従)。`);
+    setEditing(null);
+  }
 
   const usage = vaultUsageChars(docs);
   const usagePercent = Math.min(100, Math.round((usage / VAULT_CAPACITY_CHARS) * 100));
@@ -285,25 +299,62 @@ export function VaultPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((d) => (
-                <tr key={d.id}>
-                  <td style={cellStyle}>{d.title}</td>
-                  <td style={cellStyle}>{SOURCE_JA[d.source]}</td>
-                  <td style={cellStyle}>{formatChars(d.text.length)}</td>
-                  <td style={cellStyle}>{new Date(d.createdAtMs).toLocaleDateString("ja-JP")}</td>
-                  <td style={{ ...cellStyle, maxWidth: "22rem" }}>
-                    <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
-                      {d.text.replace(/\s+/g, " ").slice(0, 80)}
-                      {d.text.length > 80 ? "…" : ""}
-                    </span>
-                  </td>
-                  <td style={cellStyle}>
-                    <button type="button" onClick={() => handleRemove(d)}>
-                      削除
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {filtered.map((d) =>
+                editing?.id === d.id ? (
+                  <tr key={d.id}>
+                    <td style={cellStyle} colSpan={4}>
+                      <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", alignItems: "center" }}>
+                        <input
+                          aria-label="タイトルを編集"
+                          value={editing.title}
+                          onChange={(e) => setEditing({ ...editing, title: e.target.value })}
+                          style={{ minWidth: "14rem" }}
+                        />
+                        <input
+                          aria-label="タグを編集"
+                          value={editing.tags}
+                          placeholder="タグ(読点・空白区切り)"
+                          onChange={(e) => setEditing({ ...editing, tags: e.target.value })}
+                          style={{ minWidth: "10rem" }}
+                        />
+                      </div>
+                    </td>
+                    <td style={cellStyle} colSpan={2}>
+                      <button type="button" onClick={handleSaveEdit}>保存</button>{" "}
+                      <button type="button" onClick={() => setEditing(null)}>キャンセル</button>
+                    </td>
+                  </tr>
+                ) : (
+                  <tr key={d.id}>
+                    <td style={cellStyle}>
+                      {d.title}
+                      {d.tags.length > 0 && (
+                        <div style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>🏷 {d.tags.join("、")}</div>
+                      )}
+                    </td>
+                    <td style={cellStyle}>{SOURCE_JA[d.source]}</td>
+                    <td style={cellStyle}>{formatChars(d.text.length)}</td>
+                    <td style={cellStyle}>{new Date(d.createdAtMs).toLocaleDateString("ja-JP")}</td>
+                    <td style={{ ...cellStyle, maxWidth: "22rem" }}>
+                      <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
+                        {d.text.replace(/\s+/g, " ").slice(0, 80)}
+                        {d.text.length > 80 ? "…" : ""}
+                      </span>
+                    </td>
+                    <td style={cellStyle}>
+                      <button
+                        type="button"
+                        onClick={() => setEditing({ id: d.id, title: d.title, tags: d.tags.join("、") })}
+                      >
+                        編集
+                      </button>{" "}
+                      <button type="button" onClick={() => handleRemove(d)}>
+                        削除
+                      </button>
+                    </td>
+                  </tr>
+                ),
+              )}
             </tbody>
           </table>
         )}

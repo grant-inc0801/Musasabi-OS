@@ -63,6 +63,29 @@ export function addVaultDocument(input: {
   return doc;
 }
 
+/**
+ * 文書のタイトル・タグを編集する(本文は不変)。
+ * タイトルが変わるとチャンクテキストも変わるため、旧チャンクは次回の索引更新で
+ * prune され、新タイトルで再索引される(brainRag の既存機構に追従)。
+ */
+export function updateVaultDocument(
+  id: string,
+  changes: { title?: string; tags?: string[] },
+): VaultDocument[] {
+  const next = loadVaultDocs().map((d) => {
+    if (d.id !== id) return d;
+    return {
+      ...d,
+      title: changes.title !== undefined ? changes.title.trim().slice(0, 80) || d.title : d.title,
+      tags: changes.tags !== undefined ? changes.tags.map((t) => t.trim()).filter((t) => t !== "") : d.tags,
+      // タイトル変更でチャンクIDを変えて再索引させる(IDに版数を含める)
+      id: changes.title !== undefined && changes.title.trim() !== d.title ? `${d.id}-r${Date.now() % 100000}` : d.id,
+    };
+  });
+  save(next);
+  return next;
+}
+
 export function removeVaultDocument(id: string): VaultDocument[] {
   const next = loadVaultDocs().filter((d) => d.id !== id);
   save(next);
