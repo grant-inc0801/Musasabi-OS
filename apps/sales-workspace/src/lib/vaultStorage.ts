@@ -98,6 +98,29 @@ export function savePlanningGuideToVault(): { doc: VaultDocument; created: boole
 }
 
 /**
+ * エージェント成果物(実行報告・議事録)を保管庫へ自動保存する。
+ * 容量超過などの失敗は握りつぶさず結果として返す(呼び出し側で通知に載せる)。
+ */
+export function saveAgentDocToVault(input: {
+  title: string;
+  text: string;
+  tags?: string[];
+}): { ok: true; doc: VaultDocument } | { ok: false; error: string } {
+  if (input.text.trim() === "") return { ok: false, error: "本文が空のため保存しませんでした。" };
+  try {
+    const doc = addVaultDocument({
+      title: input.title,
+      text: input.text,
+      source: "agent",
+      tags: input.tags ?? ["agent"],
+    });
+    return { ok: true, doc };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+/**
  * RAG索引用のチャンク(1文書を約400文字ごとに分割)。
  * 文書ごとの最大チャンク数を制限して索引の偏りを防ぐ。
  */

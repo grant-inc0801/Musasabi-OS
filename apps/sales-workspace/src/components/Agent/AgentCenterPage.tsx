@@ -19,6 +19,7 @@ import { saveBinaryFile } from "../../lib/saveFile";
 import { isTtsAvailable, speakJaBest } from "../../lib/voice";
 import { sendAgentNotification } from "../../lib/freeConnectors";
 import { notifyOs } from "../../lib/osNotify";
+import { saveAgentDocToVault } from "../../lib/vaultStorage";
 
 // エージェント実行センター — Musasabi を「本物のエージェント」として動かす画面。
 // 頭脳: ローカルLLM(Ollama・無料・localhost・外部送信なし)を自動検出。
@@ -86,6 +87,16 @@ export function AgentCenterPage() {
         detail: result.conclusion.slice(0, 200),
         tags: ["ai-meeting"],
       });
+      // 議事録を保管庫へ自動保存(全文がRAG索引され後から意味検索で引ける)
+      saveAgentDocToVault({
+        title: `議事録: ${topic}`,
+        text: [
+          `部署AI会議 議事録 — ${topic}(頭脳: ${result.brainName})`,
+          ...result.turns.map((t) => `R${t.round} ${t.personaName}: ${t.content}`),
+          `AI CEO 結論: ${result.conclusion}`,
+        ].join("\n"),
+        tags: ["agent", "minutes"],
+      });
     } finally {
       setMeetingBusy(false);
     }
@@ -151,7 +162,17 @@ export function AgentCenterPage() {
     for (const w of s.brainWrites) {
       recordMemory({ category: "work", actor: "agent", action: w.action, detail: w.detail, tags: ["agent-run"] });
     }
-    setSavedNote(`Company Brain へ ${s.brainWrites.length} 件保存しました(監査ログ ${s.auditLog.length} 件)。`);
+    // 成果物(最終報告)を保管庫へ自動保存 — RAG索引されチャット等から参照できる
+    let vaultNote = "";
+    if (s.finalReport && s.finalReport.trim() !== "") {
+      const saved = saveAgentDocToVault({
+        title: `実行報告: ${s.goal.title}`,
+        text: `目標: ${s.goal.title}\n${s.goal.description}\n\n${s.finalReport}`,
+        tags: ["agent", "report"],
+      });
+      vaultNote = saved.ok ? " 成果物を保管庫へ保存しました(RAG索引対象)。" : ` ⚠ 保管庫への保存に失敗: ${saved.error}`;
+    }
+    setSavedNote(`Company Brain へ ${s.brainWrites.length} 件保存しました(監査ログ ${s.auditLog.length} 件)。${vaultNote}`);
     // 無料コネクタ(Webhook)設定時のみ実通知(未設定なら何も送らない)
     void sendAgentNotification(`エージェント実行完了: ${s.goal.title}`, s.finalReport ?? "").catch(() => undefined);
     void notifyOs("Musasabi — 実行完了", s.goal.title).catch(() => undefined);

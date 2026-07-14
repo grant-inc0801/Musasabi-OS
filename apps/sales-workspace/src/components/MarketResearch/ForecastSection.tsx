@@ -18,6 +18,7 @@ import { saveBinaryFile } from "../../lib/saveFile";
 import { sendAgentNotification } from "../../lib/freeConnectors";
 import { notifyOs } from "../../lib/osNotify";
 import { buildAccuracyDigest, trackForecastOutcome } from "../../lib/forecastTracking";
+import { saveAgentDocToVault } from "../../lib/vaultStorage";
 
 // 市場調査部: 未来予測(シナリオ分岐)。
 // 市場実データ(RSS)+社内RAGを入力に、AIの発展を半年〜1年先まで複数分岐で予測。
@@ -114,6 +115,14 @@ export function ForecastSection() {
       if (state.status === "completed") {
         for (const w of state.brainWrites) {
           recordMemory({ category: "work", actor: "forecast-agent", action: w.action, detail: w.detail, tags: ["forecast-build"] });
+        }
+        // 成果物(最終報告)を保管庫へ自動保存(RAG索引対象)
+        if (state.finalReport && state.finalReport.trim() !== "") {
+          saveAgentDocToVault({
+            title: `実行報告: ${proposal.title}`,
+            text: `目標: ${proposal.title}\n${proposal.detail}\n\n${state.finalReport}`,
+            tags: ["agent", "forecast-build"],
+          });
         }
         void sendAgentNotification(`未来予測の取り組み完了: ${proposal.title}`, state.finalReport ?? "").catch(() => undefined);
         void notifyOs("Musasabi — 予測対応の構築完了", proposal.title).catch(() => undefined);
