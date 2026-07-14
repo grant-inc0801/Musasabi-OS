@@ -4,7 +4,11 @@
 **Updated:** 2026-07-14
 **Branch:** `claude/musasabi-epic-beta-001-c6svi5`
 
-## 直近の完了内容(第18弾: チャット「今日何した?」)
+## 直近の完了内容(第19弾: 的中率の週次推移チャート)
+forecastAccuracyTrend(7日ビン×8週・判定ベース)+市場調査部にSVG折れ線
+(検証済み#16A34A・判定なし週は線を分断・直近値ラベル・ツールチップ)。E2E 6/6・0エラー。
+
+## それ以前の完了内容(第18弾: チャット「今日何した?」)
 todayDigest に isTodayDigestQuery/buildTodayDigestReply を追加し、チャットで
 「今日何した?」「本日の動きは?」に当日実データで即答(決定論・誤発火防止)。
 E2E 7/7・0エラー。
