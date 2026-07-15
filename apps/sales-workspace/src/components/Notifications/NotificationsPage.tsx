@@ -37,10 +37,13 @@ export function NotificationsPage() {
   const [showRead, setShowRead] = useState(false);
   const [events, setEvents] = useState<AppEvent[]>(() => loadAppEvents());
   const [showReadEvents, setShowReadEvents] = useState(false);
+  const [levelFilter, setLevelFilter] = useState<"all" | AppEventLevel>("all");
 
   const visible = showRead ? items : unreadNotifications(items, readIds);
   const unreadCount = unreadNotifications(items, readIds).length;
-  const visibleEvents = showReadEvents ? events : events.filter((e) => !e.read);
+  const visibleEvents = (showReadEvents ? events : events.filter((e) => !e.read)).filter(
+    (e) => levelFilter === "all" || e.level === levelFilter,
+  );
   const unreadEvents = unreadAppEventCount(events);
 
   function markRead(id: string): void {
@@ -73,6 +76,16 @@ export function NotificationsPage() {
             <input type="checkbox" checked={showReadEvents} onChange={(e) => setShowReadEvents(e.target.checked)} />
             既読も表示
           </label>
+          <select
+            aria-label="実イベントのレベルで絞り込み"
+            value={levelFilter}
+            onChange={(e) => setLevelFilter(e.target.value as "all" | AppEventLevel)}
+          >
+            <option value="all">すべてのレベル</option>
+            <option value="info">情報のみ</option>
+            <option value="warn">要対応のみ</option>
+            <option value="error">エラーのみ</option>
+          </select>
           {events.length > 0 && (
             <button
               type="button"
@@ -91,7 +104,11 @@ export function NotificationsPage() {
         </p>
         {visibleEvents.length === 0 ? (
           <p style={{ color: "var(--text-muted)" }}>
-            {events.length === 0 ? "実イベントはまだありません。エージェント実行や定例実行で記録されます。" : "未読の実イベントはありません。"}
+            {events.length === 0
+              ? "実イベントはまだありません。エージェント実行や定例実行で記録されます。"
+              : levelFilter !== "all"
+                ? "条件に合う実イベントはありません(絞り込みを解除すると表示されます)。"
+                : "未読の実イベントはありません。"}
           </p>
         ) : (
           <ul style={{ listStyle: "none", paddingLeft: 0 }}>
