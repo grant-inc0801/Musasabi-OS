@@ -4,6 +4,7 @@ import {
   AgentRuntime,
   chatWithHistory,
   detectBrain,
+  runDiscussion,
   type AgentRunState,
   type DetectedBrain,
 } from "@musasabi/agent-runtime";
@@ -155,6 +156,7 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
         reply = [
           "🤖 使えるコマンド:",
           "・「実行 ◯◯」または ▶実行 — エージェントが実際に自律実行(承認ノードは「承認」で再開)",
+          "・「会議 ◯◯について」 — 部署AI会議を開催し結論を返信(議事録は保管庫へ)",
           "・「保管庫で◯◯を探して」 — 保管庫の資料を検索し引用回答",
           "・「今日何した?」 — 当日の実イベント・成果物・的中率を即答",
           "・「接続状況は?」 — ローカルAI連携(LLM/埋め込み/音声/画像)を実診断",
@@ -172,6 +174,37 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
       } else if (isDiagnosticsQuery(message)) {
         // 「接続状況は?」→ ローカルAI連携を実診断して即答
         reply = buildDiagnosticsReply(await probeLocalServices());
+      } else if (/^会議[ :、\s]/.test(message)) {
+        // 「会議 ◯◯」→ 部署AI会議を開催し結論を返信・議事録を保管庫へ保存
+        const topic = message.replace(/^会議[ :、\s]+/, "").trim();
+        if (topic === "") {
+          reply = "会議の議題を「会議 ◯◯について」の形式で指定してください。";
+        } else {
+          const brain2 = brainRef.current ?? (await detectBrain(loadLlmSettings(), await resolveLlmFetch()));
+          brainRef.current = brain2;
+          const result = await runDiscussion(brain2.provider, topic);
+          recordMemory({
+            category: "company",
+            actor: "ai-meeting",
+            action: `部署AI会議(チャット開催): ${topic}`,
+            detail: result.conclusion.slice(0, 200),
+            tags: ["ai-meeting"],
+          });
+          saveAgentDocToVault({
+            title: `議事録: ${topic}`,
+            text: [
+              `部署AI会議 議事録 — ${topic}(頭脳: ${result.brainName}・チャットから開催)`,
+              ...result.turns.map((t) => `R${t.round} ${t.personaName}: ${t.content}`),
+              `AI CEO 結論: ${result.conclusion}`,
+            ].join("\n"),
+            tags: ["agent", "minutes"],
+          });
+          const digest = result.turns
+            .slice(0, 3)
+            .map((t) => `・${t.personaName}: ${t.content.replace(/\s+/g, " ").slice(0, 50)}…`)
+            .join("\n");
+          reply = `🏛 部署AI会議を開催しました(議題: ${topic} / ${result.turns.length}発言)\n${digest}\n\n🏁 AI CEO 結論:\n${result.conclusion}\n— 議事録は保管庫へ保存済み(「保管庫で${topic.slice(0, 10)}を探して」で引けます)`;
+        }
       } else if (asRun || RUN_PREFIX.test(message)) {
         // 実行指示 → エージェント自律実行(Claude Code と同じ指示→実行→報告の流れ)
         const instruction = message.replace(RUN_PREFIX, "").trim() || message;
