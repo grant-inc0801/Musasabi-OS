@@ -64,6 +64,8 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
   const brainRef = useRef<DetectedBrain | null>(null);
   // 実行中のエージェント(承認待ち再開用にチャットセッション内で保持)
   const agentRef = useRef<{ rt: AgentRuntime; state: AgentRunState } | null>(null);
+  // 直近のチャット会議(「実行 この結論」で結論をそのまま実行できるようにする)
+  const lastMeetingRef = useRef<{ topic: string; conclusion: string } | null>(null);
 
   // 起動時に頭脳を検出(ローカルLLM優先・未検出はルールベース)。
   useEffect(() => {
@@ -199,15 +201,21 @@ export function DepartmentCommandChat({ departments: _departments }: { departmen
             ].join("\n"),
             tags: ["agent", "minutes"],
           });
+          lastMeetingRef.current = { topic, conclusion: result.conclusion };
           const digest = result.turns
             .slice(0, 3)
             .map((t) => `・${t.personaName}: ${t.content.replace(/\s+/g, " ").slice(0, 50)}…`)
             .join("\n");
-          reply = `🏛 部署AI会議を開催しました(議題: ${topic} / ${result.turns.length}発言)\n${digest}\n\n🏁 AI CEO 結論:\n${result.conclusion}\n— 議事録は保管庫へ保存済み(「保管庫で${topic.slice(0, 10)}を探して」で引けます)`;
+          reply = `🏛 部署AI会議を開催しました(議題: ${topic} / ${result.turns.length}発言)\n${digest}\n\n🏁 AI CEO 結論:\n${result.conclusion}\n— 議事録は保管庫へ保存済み。「実行 この結論」でそのまま実行に移せます`;
         }
       } else if (asRun || RUN_PREFIX.test(message)) {
         // 実行指示 → エージェント自律実行(Claude Code と同じ指示→実行→報告の流れ)
-        const instruction = message.replace(RUN_PREFIX, "").trim() || message;
+        let instruction = message.replace(RUN_PREFIX, "").trim() || message;
+        // 「実行 この結論」→ 直近のチャット会議の結論をそのまま実行目標にする
+        if (/^(この|会議の)?結論(を実行)?$/.test(instruction) && lastMeetingRef.current) {
+          const m = lastMeetingRef.current;
+          instruction = `会議「${m.topic}」の結論を実行に移す。結論: ${m.conclusion}`;
+        }
         recordMemory({ category: "work", actor: "user", action: "チャットから実行指示", detail: instruction, tags: ["agent-chat-run"] });
         reply = await runInstruction(instruction);
       } else if (brain?.source === "ollama") {
