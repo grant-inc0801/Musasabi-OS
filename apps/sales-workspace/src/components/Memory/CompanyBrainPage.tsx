@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { MEMORY_CATEGORIES, MEMORY_CATEGORY_LABEL_JA, MemoryEngine } from "@musasabi/memory";
 import type { MemoryCategory } from "@musasabi/memory";
 import { loadMemoryRecords, promoteMemoriesNow } from "../../lib/memoryStorage";
-import { searchBrain } from "../../lib/brainRag";
+import { searchBrain, vaultIndexCoverage } from "../../lib/brainRag";
 import type { SearchHit } from "@musasabi/brain-rag";
 import { saveBinaryFile } from "../../lib/saveFile";
 
@@ -52,7 +52,10 @@ export function CompanyBrainPage() {
     try {
       const { hits, state } = await searchBrain(q, 5);
       setSemHits(hits);
-      setSemNote(`${state.providerName} / 索引 ${state.indexedCount} 件${state.source === "fallback" ? "(Ollama で nomic-embed-text を取得すると実埋め込みに切替)" : ""}`);
+      const vault = vaultIndexCoverage();
+      const vaultNote =
+        vault.docCount > 0 ? ` / 保管庫の索引 ${vault.indexedChunks}/${vault.totalChunks}チャンク(${vault.docCount}文書)` : "";
+      setSemNote(`${state.providerName} / 索引 ${state.indexedCount} 件${vaultNote}${state.source === "fallback" ? "(Ollama で nomic-embed-text を取得すると実埋め込みに切替)" : ""}`);
     } catch (e) {
       setSemNote(`検索に失敗しました: ${String(e)}`);
     } finally {

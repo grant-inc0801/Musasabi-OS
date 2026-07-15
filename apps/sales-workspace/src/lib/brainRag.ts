@@ -105,6 +105,35 @@ export async function ensureBrainIndex(): Promise<BrainRagState> {
   return { providerName: detected.provider.name, source: detected.source, indexedCount: index.size };
 }
 
+export interface VaultIndexCoverage {
+  /** 索引済みの保管庫チャンク数。 */
+  indexedChunks: number;
+  /** 保管庫の全チャンク数(索引対象)。 */
+  totalChunks: number;
+  /** 保管庫の文書数。 */
+  docCount: number;
+}
+
+/** 保管庫の索引カバレッジ(索引済みチャンク/全チャンク)。 */
+export function vaultIndexCoverage(): VaultIndexCoverage {
+  const chunks = vaultChunksForIndex();
+  const liveIds = new Set(chunks.map((c) => c.id));
+  const indexedChunks = loadIndex()
+    .toJSON()
+    .filter((d) => d.meta?.["分類"] === "vault" && liveIds.has(d.id.replace(/^[^:]+:/, ""))).length;
+  return { indexedChunks, totalChunks: chunks.length, docCount: loadVaultDocsCount() };
+}
+
+function loadVaultDocsCount(): number {
+  try {
+    const raw = localStorage.getItem("musasabi.vaultDocs");
+    const parsed = raw ? (JSON.parse(raw) as unknown[]) : [];
+    return Array.isArray(parsed) ? parsed.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
 /** 意味検索: クエリに関連する社内記録を返す。 */
 export async function searchBrain(query: string, topK = 5): Promise<{
   hits: SearchHit[];
