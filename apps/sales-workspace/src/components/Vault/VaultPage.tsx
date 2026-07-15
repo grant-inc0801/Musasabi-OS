@@ -39,6 +39,7 @@ export function VaultPage() {
   const [candidates, setCandidates] = useState<CurationCandidate[] | null>(null);
   const [editing, setEditing] = useState<{ id: string; title: string; tags: string } | null>(null);
   const [viewing, setViewing] = useState<VaultDocument | null>(null);
+  const [sortKey, setSortKey] = useState<"newest" | "oldest" | "size" | "title" | "source">("newest");
   const fileRef = useRef<HTMLInputElement>(null);
 
   function handleSaveEdit(): void {
@@ -147,6 +148,21 @@ export function VaultPage() {
           d.tags.some((t) => t.includes(query.trim())),
       )
     : docs;
+
+  const sorted = [...filtered].sort((a, b) => {
+    switch (sortKey) {
+      case "oldest":
+        return a.createdAtMs - b.createdAtMs;
+      case "size":
+        return b.text.length - a.text.length;
+      case "title":
+        return a.title.localeCompare(b.title, "ja");
+      case "source":
+        return SOURCE_JA[a.source].localeCompare(SOURCE_JA[b.source], "ja") || b.createdAtMs - a.createdAtMs;
+      default:
+        return b.createdAtMs - a.createdAtMs;
+    }
+  });
 
   return (
     <>
@@ -276,13 +292,26 @@ export function VaultPage() {
 
       <section aria-label="保管資料一覧" style={{ marginTop: "1rem" }}>
         <h3 style={{ margin: "0 0 0.4rem" }}>保管資料({filtered.length}件)</h3>
-        <input
-          type="search"
-          placeholder="タイトル・本文・タグで絞り込み"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          style={{ marginBottom: "0.5rem", minWidth: "18rem" }}
-        />
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap", marginBottom: "0.5rem" }}>
+          <input
+            type="search"
+            placeholder="タイトル・本文・タグで絞り込み"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            style={{ minWidth: "18rem" }}
+          />
+          <select
+            aria-label="保管資料の並び替え"
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value as typeof sortKey)}
+          >
+            <option value="newest">新しい順</option>
+            <option value="oldest">古い順</option>
+            <option value="size">サイズが大きい順</option>
+            <option value="title">タイトル順</option>
+            <option value="source">出所順</option>
+          </select>
+        </div>
         {filtered.length === 0 ? (
           <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
             {docs.length === 0
@@ -301,7 +330,7 @@ export function VaultPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((d) =>
+              {sorted.map((d) =>
                 editing?.id === d.id ? (
                   <tr key={d.id}>
                     <td style={cellStyle} colSpan={4}>
