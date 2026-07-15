@@ -13,6 +13,7 @@ import {
 import { recordMemory } from "../../lib/memoryStorage";
 import { saveBinaryFile } from "../../lib/saveFile";
 import { proposeVaultCuration, summarizeAndRemove, type CurationCandidate } from "../../lib/vaultCuration";
+import { isTtsAvailable, speakJaBest, stopSpeaking } from "../../lib/voice";
 
 // 保管庫(Knowledge Vault)ページ(本番・完全ローカル)。
 // テキスト資料(txt/md/csv 等)を実保存し、Company Brain の RAG 索引へ統合する。
@@ -377,6 +378,15 @@ export function VaultPage() {
               {viewing.tags.length > 0 ? ` / 🏷 ${viewing.tags.join("、")}` : ""}
             </span>
             <span style={{ marginLeft: "auto", display: "flex", gap: "0.4rem" }}>
+              {isTtsAvailable() && (
+                <button
+                  type="button"
+                  title="文書の冒頭(最大400文字)を読み上げます(VOICEVOX検出時は高品質音声)"
+                  onClick={() => void speakJaBest(viewing.text.slice(0, 400))}
+                >
+                  🔊 読み上げ
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() =>
@@ -390,7 +400,15 @@ export function VaultPage() {
               >
                 📄 ファイル保存(.md)
               </button>
-              <button type="button" onClick={() => setViewing(null)}>閉じる</button>
+              <button
+                type="button"
+                onClick={() => {
+                  stopSpeaking();
+                  setViewing(null);
+                }}
+              >
+                閉じる
+              </button>
             </span>
           </div>
           <pre
