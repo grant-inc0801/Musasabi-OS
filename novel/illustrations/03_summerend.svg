@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560" role="img" aria-label="夏の終わりの屋上、街の灯りを見る湊と、階段の踊り場から忍び寄る財前の影">
+  <defs>
+    <linearGradient id="sky03" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#20305a"/>
+      <stop offset="0.5" stop-color="#5a4a6e"/>
+      <stop offset="1" stop-color="#c07a5e"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="560" fill="#120e18"/>
+  <rect x="18" y="18" width="864" height="524" fill="url(#sky03)"/>
+  <!-- early stars appearing at top -->
+  <g fill="#e7ecff">
+    <circle cx="120" cy="70" r="1.5"/><circle cx="230" cy="110" r="1.2"/><circle cx="360" cy="70" r="1.6"/>
+    <circle cx="640" cy="90" r="1.3"/><circle cx="760" cy="130" r="1.5"/><circle cx="500" cy="100" r="1.1"/>
+  </g>
+  <!-- thin late-summer clouds turning autumn -->
+  <g fill="#e8b98f" opacity="0.35">
+    <ellipse cx="300" cy="150" rx="120" ry="12"/>
+    <ellipse cx="620" cy="180" rx="140" ry="10"/>
+  </g>
+  <!-- distant town lights below the hill -->
+  <rect x="18" y="360" width="864" height="60" fill="#241a2a" opacity="0.8"/>
+  <g fill="#ffdf9a">
+    <rect x="60" y="372" width="4" height="6"/><rect x="90" y="380" width="4" height="6"/><rect x="140" y="374" width="4" height="6"/>
+    <rect x="210" y="384" width="4" height="6"/><rect x="260" y="376" width="4" height="6"/><rect x="330" y="382" width="4" height="6"/>
+    <rect x="600" y="378" width="4" height="6"/><rect x="660" y="372" width="4" height="6"/><rect x="720" y="384" width="4" height="6"/>
+    <rect x="780" y="376" width="4" height="6"/><rect x="820" y="382" width="4" height="6"/><rect x="440" y="386" width="4" height="6"/>
+    <rect x="500" y="378" width="4" height="6"/>
+  </g>
+  <ellipse cx="450" cy="400" rx="420" ry="40" fill="#ffcf8a" opacity="0.10"/>
+  <!-- rooftop floor & railing -->
+  <rect x="18" y="420" width="864" height="122" fill="#171019"/>
+  <line x1="18" y1="430" x2="882" y2="430" stroke="#3a2c3e" stroke-width="3"/>
+  <g stroke="#3a2c3e" stroke-width="5">
+    <line x1="70" y1="360" x2="70" y2="430"/>
+    <line x1="230" y1="360" x2="230" y2="430"/>
+    <line x1="18" y1="362" x2="360" y2="362"/>
+    <line x1="18" y1="392" x2="360" y2="392"/>
+  </g>
+  <!-- Minato at the railing, back to us, looking at the town -->
+  <g fill="#0b0710" transform="translate(200,430)">
+    <ellipse cx="0" cy="6" rx="26" ry="7" opacity="0.4"/>
+    <path d="M0,-108 c-14,0 -23,11 -23,25 l0,78 c0,6 5,10 12,10 l22,0 c7,0 12,-4 12,-10 l0,-78 c0,-14 -9,-25 -23,-25 z"/>
+    <circle cx="0" cy="-122" r="15"/>
+    <!-- forearms on railing -->
+    <path d="M-20,-70 l-4,-8 l48,0 l-4,8 z" opacity="0.9"/>
+  </g>
+  <!-- stairwell doorway on the right, warm light spilling -->
+  <g transform="translate(660,300)">
+    <rect x="0" y="0" width="150" height="130" fill="#0e0a12"/>
+    <rect x="16" y="14" width="118" height="116" fill="#e8a85a" opacity="0.55"/>
+    <rect x="16" y="14" width="118" height="116" fill="none" stroke="#5a3a24" stroke-width="4"/>
+  </g>
+  <!-- Zaizen's long shadow reaching across the rooftop from the doorway -->
+  <polygon points="676,430 560,430 720,392 736,392" fill="#000000" opacity="0.35"/>
+  <!-- Zaizen silhouette in the lit doorway, hand slightly raised, faint smile suggested by posture -->
+  <g fill="#0a0510" transform="translate(712,300)">
+    <path d="M0,4 c-14,0 -23,11 -23,25 l0,92 c0,6 5,10 12,10 l22,0 c7,0 12,-4 12,-10 l0,-92 c0,-14 -9,-25 -23,-25 z"/>
+    <circle cx="0" cy="-12" r="15"/>
+    <!-- one hand extended (the offered alliance) -->
+    <path d="M-20,26 l-30,10 l4,12 l30,-10 z"/>
+  </g>
+  <rect x="18" y="502" width="864" height="40" fill="#000000" opacity="0.4"/>
+  <text x="36" y="529" font-family="'Yu Mincho','Hiragino Mincho ProN',serif" font-size="19" fill="#ffe3c0" letter-spacing="2">――夏が、終わる。そして、二学期が、幕を開ける。</text>
+  <rect x="18" y="18" width="864" height="524" fill="none" stroke="#c07a5e" stroke-width="1.5" opacity="0.6"/>
+</svg>

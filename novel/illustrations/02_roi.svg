@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560" role="img" aria-label="電光掲示板に映る資本効率一位、歓声を上げる三人">
+  <defs>
+    <linearGradient id="hall02" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141a2e"/>
+      <stop offset="1" stop-color="#0c1020"/>
+    </linearGradient>
+    <linearGradient id="board02" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a2233"/>
+      <stop offset="1" stop-color="#06121c"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="560" fill="#0a0d16"/>
+  <rect x="18" y="18" width="864" height="524" fill="url(#hall02)"/>
+  <!-- big results board -->
+  <g transform="translate(150,60)">
+    <rect x="0" y="0" width="600" height="270" rx="8" fill="url(#board02)" stroke="#1f7fa8" stroke-width="3"/>
+    <rect x="0" y="0" width="600" height="270" rx="8" fill="none" stroke="#39c6f0" stroke-width="1" opacity="0.5"/>
+    <text x="300" y="58" text-anchor="middle" font-family="'Yu Gothic','Hiragino Sans',sans-serif" font-size="26" fill="#6fe3ff" letter-spacing="4">資本効率 (ROI) ランキング</text>
+    <line x1="40" y1="78" x2="560" y2="78" stroke="#1f7fa8" stroke-width="1.5"/>
+    <text x="60" y="128" font-family="'Yu Gothic',sans-serif" font-size="24" fill="#e8fbff">第 1 位</text>
+    <text x="230" y="128" font-family="'Yu Gothic',sans-serif" font-size="24" fill="#e8fbff">チーム・アッシュ (F)</text>
+    <!-- glowing figure -->
+    <text x="300" y="216" text-anchor="middle" font-family="'Yu Gothic',sans-serif" font-weight="bold" font-size="72" fill="#ffe27a" letter-spacing="2">2,400%</text>
+    <text x="300" y="250" text-anchor="middle" font-family="'Yu Gothic',sans-serif" font-size="18" fill="#8fd8ef">元手50スター → 利益1,200スター</text>
+  </g>
+  <!-- board glow -->
+  <ellipse cx="450" cy="195" rx="360" ry="150" fill="#39c6f0" opacity="0.10"/>
+  <!-- floor -->
+  <rect x="18" y="430" width="864" height="112" fill="#0d1120"/>
+  <line x1="18" y1="430" x2="882" y2="430" stroke="#233052" stroke-width="2"/>
+  <!-- three silhouettes cheering: Ban (big), Minato (center), Hina (small) -->
+  <g fill="#05070e">
+    <!-- Ban: tall, arms up -->
+    <g transform="translate(300,430)">
+      <ellipse cx="0" cy="8" rx="30" ry="7" opacity="0.5"/>
+      <path d="M0,-108 c-16,0 -26,12 -26,28 l0,74 c0,6 5,10 12,10 l28,0 c7,0 12,-4 12,-10 l0,-74 c0,-16 -10,-28 -26,-28 z"/>
+      <circle cx="0" cy="-122" r="17"/>
+      <path d="M-22,-96 L-52,-150 l10,-6 l30,50 z"/>
+      <path d="M22,-96 L52,-150 l-10,-6 l-30,50 z"/>
+    </g>
+    <!-- Minato: center, one fist up -->
+    <g transform="translate(450,430)">
+      <ellipse cx="0" cy="8" rx="24" ry="6" opacity="0.5"/>
+      <path d="M0,-88 c-13,0 -21,10 -21,23 l0,60 c0,5 4,9 10,9 l22,0 c6,0 10,-4 10,-9 l0,-60 c0,-13 -8,-23 -21,-23 z"/>
+      <circle cx="0" cy="-100" r="14"/>
+      <path d="M14,-78 L34,-126 l9,4 l-18,44 z"/>
+    </g>
+    <!-- Hina: small, laptop hugged, jumping -->
+    <g transform="translate(590,430)">
+      <ellipse cx="0" cy="8" rx="20" ry="5" opacity="0.5"/>
+      <path d="M0,-70 c-11,0 -18,9 -18,20 l0,48 c0,5 4,8 9,8 l18,0 c5,0 9,-3 9,-8 l0,-48 c0,-11 -7,-20 -18,-20 z"/>
+      <circle cx="0" cy="-82" r="12"/>
+      <rect x="-16" y="-56" width="32" height="20" rx="2" fill="#101623"/>
+    </g>
+  </g>
+  <rect x="18" y="502" width="864" height="40" fill="#000000" opacity="0.4"/>
+  <text x="36" y="529" font-family="'Yu Mincho','Hiragino Mincho ProN',serif" font-size="19" fill="#cfe7ff" letter-spacing="2">――金がなくても、価値は生める。</text>
+  <rect x="18" y="18" width="864" height="524" fill="none" stroke="#39c6f0" stroke-width="1.5" opacity="0.6"/>
+</svg>

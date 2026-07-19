@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560" role="img" aria-label="星霜マルシェの旗の下、灰谷湊と白鷺令子が交わす和解の握手">
+  <defs>
+    <linearGradient id="sky06" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4c98a"/>
+      <stop offset="1" stop-color="#fbe9cf"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="560" fill="#1c1610"/>
+  <rect x="18" y="18" width="864" height="524" fill="url(#sky06)"/>
+  <!-- warm sun -->
+  <circle cx="450" cy="140" r="60" fill="#fff4d8" opacity="0.9"/>
+  <circle cx="450" cy="140" r="110" fill="#ffe9b8" opacity="0.25"/>
+  <!-- marche banner / bunting -->
+  <path d="M40,90 Q450,150 860,90" fill="none" stroke="#b98a4a" stroke-width="3"/>
+  <g>
+    <polygon points="120,96 150,96 135,124" fill="#d9556a"/>
+    <polygon points="200,108 230,108 215,136" fill="#4a86b0"/>
+    <polygon points="300,118 330,118 315,146" fill="#e0a94a"/>
+    <polygon points="570,118 600,118 585,146" fill="#5aa06a"/>
+    <polygon points="670,108 700,108 685,136" fill="#d9556a"/>
+    <polygon points="750,96 780,96 765,124" fill="#4a86b0"/>
+  </g>
+  <!-- central banner -->
+  <rect x="350" y="70" width="200" height="52" rx="6" fill="#7a4a2a"/>
+  <text x="450" y="104" text-anchor="middle" font-family="'Yu Mincho','Hiragino Mincho ProN',serif" font-size="24" fill="#ffe9c0" letter-spacing="4">星霜マルシェ</text>
+  <!-- market stalls silhouettes behind -->
+  <g fill="#c99a5f" opacity="0.55">
+    <rect x="60" y="300" width="120" height="60"/><polygon points="52,300 188,300 120,272"/>
+    <rect x="720" y="300" width="120" height="60"/><polygon points="712,300 848,300 780,272"/>
+  </g>
+  <!-- ground -->
+  <rect x="18" y="470" width="864" height="72" fill="#8a6238"/>
+  <rect x="18" y="470" width="864" height="10" fill="#6f4d2a"/>
+  <!-- two figures shaking hands, warm backlight -->
+  <!-- Minato (left) -->
+  <g fill="#241812" transform="translate(370,470)">
+    <ellipse cx="0" cy="6" rx="30" ry="8" opacity="0.35"/>
+    <path d="M0,-118 c-16,0 -26,12 -26,28 l0,84 c0,6 5,10 12,10 l28,0 c7,0 12,-4 12,-10 l0,-84 c0,-16 -10,-28 -26,-28 z"/>
+    <circle cx="0" cy="-132" r="18"/>
+    <!-- extended arm to the right -->
+    <path d="M18,-96 L84,-70 l-4,16 l-70,-24 z"/>
+  </g>
+  <!-- Reiko (right), long hair -->
+  <g fill="#2a1c26" transform="translate(530,470)">
+    <ellipse cx="0" cy="6" rx="30" ry="8" opacity="0.35"/>
+    <path d="M0,-118 c-16,0 -26,12 -26,28 l0,84 c0,6 5,10 12,10 l28,0 c7,0 12,-4 12,-10 l0,-84 c0,-16 -10,-28 -26,-28 z"/>
+    <circle cx="0" cy="-132" r="18"/>
+    <!-- long silver-dark hair -->
+    <path d="M-16,-140 c-16,10 -22,40 -18,74 l10,0 c-2,-30 4,-56 16,-66 z" fill="#4a3a4e"/>
+    <path d="M16,-140 c16,10 22,40 18,74 l-10,0 c2,-30 -4,-56 -16,-66 z" fill="#4a3a4e"/>
+    <!-- extended arm to the left -->
+    <path d="M-18,-96 L-84,-70 l4,16 l70,-24 z"/>
+  </g>
+  <!-- clasped hands in the middle, catching the light -->
+  <ellipse cx="450" cy="404" rx="26" ry="16" fill="#ffe9c0" opacity="0.6"/>
+  <ellipse cx="450" cy="404" rx="15" ry="10" fill="#3a2820"/>
+  <!-- little sparkle -->
+  <g fill="#fff7dc">
+    <path d="M450,376 l3,9 l9,3 l-9,3 l-3,9 l-3,-9 l-9,-3 l9,-3 z"/>
+  </g>
+  <rect x="18" y="502" width="864" height="40" fill="#000000" opacity="0.35"/>
+  <text x="36" y="529" font-family="'Yu Mincho','Hiragino Mincho ProN',serif" font-size="19" fill="#fff0d6" letter-spacing="2">――次は、奪い合いじゃなく、生み合いで。</text>
+  <rect x="18" y="18" width="864" height="524" fill="none" stroke="#c99a5f" stroke-width="1.5" opacity="0.7"/>
+</svg>
